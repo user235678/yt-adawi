@@ -173,15 +173,20 @@ const CompactHeader: React.FC = () => {
                         </button>
 
                         {/* Panier mobile */}
-                        <Link
+                         <Link
                             to="/checkout"
-                            className="text-black hover:text-adawi-gold transition-colors p-2 rounded hover:bg-adawi-beige/50"
+                            className="text-black hover:text-adawi-gold transition-colors p-1.5 rounded hover:bg-adawi-beige/50 relative inline-flex items-center justify-center"
                             aria-label="Panier"
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                                     d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2 4h12m-8 4a1 1 0 11-2 0 1 1 0 012 0zm8 0a1 1 0 11-2 0 1 1 0 012 0z" />
                             </svg>
+                            {state.itemCount > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-adawi-gold text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                                    {state.itemCount > 99 ? '99+' : state.itemCount}
+                                </span>
+                            )}
                         </Link>
 
                         {/* Menu Hamburger */}
@@ -222,7 +227,7 @@ const CompactHeader: React.FC = () => {
                                             value={searchQuery}
                                             onChange={handleSearchChange}
                                             placeholder="Rechercher..."
-                                            className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent bg-white text-black placeholder-gray-500"
+                                            className="flex-1 w-14 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent bg-white text-black placeholder-gray-500"
                                         />
                                         <button
                                             type="submit"
