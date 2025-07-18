@@ -182,8 +182,8 @@ export default function Boutique() {
             name: "T-shirt Enfant S",
             price: "3500 fcfa",
             priceValue: 3500,
-            image: "/template/5.png",
-            hoverImage: "/template/9.png", // Image de survol ajoutée
+            image: "/public/9.png",
+            hoverImage: "/template/5.png", // Image de survol ajoutée
             image1: "/template/6.png", // Nouvelle image supplémentaire
             image2: "/template/8.png", // Nouvelle image supplémentaire
             date: new Date(2023, 8, 15),
