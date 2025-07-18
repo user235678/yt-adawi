@@ -52,6 +52,68 @@ const ProductGrid = ({ products, selectedSize, selectedColor, onProductClick }: 
     return sizeMatch && colorMatch;
   });
 
+  // CSS personnalisé pour les styles complexes
+  const customStyles = `
+    .product-grid-custom {
+      display: grid;
+      gap: 0.75rem;
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .product-card-custom {
+      transition: all 0.3s ease;
+    }
+
+    .product-card-custom:hover {
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    .product-image-hover-custom {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .product-card-custom:hover .product-image-main-custom {
+      opacity: 0;
+    }
+
+    .product-card-custom:hover .product-image-hover-custom {
+      opacity: 1;
+    }
+
+    @media (min-width: 640px) {
+      .product-grid-custom {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+      }
+    }
+
+    @media (min-width: 768px) {
+      .product-grid-custom {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.25rem;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .product-grid-custom {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    @media (min-width: 1280px) {
+      .product-grid-custom {
+        grid-template-columns: repeat(5, 1fr);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .product-grid-custom {
+        gap: 0.5rem;
+      }
+    }
+  `;
+
   // Si aucun produit ne correspond aux filtres
   if (filteredProducts.length === 0) {
     return (
@@ -68,65 +130,68 @@ const ProductGrid = ({ products, selectedSize, selectedColor, onProductClick }: 
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
-      {filteredProducts.map((product) => (
-        <div
-          key={product.id}
-          onClick={() => onProductClick?.(product)}
-          className="group cursor-pointer flex flex-col bg-white overflow-hidden hover:shadow-lg transition-all duration-300"
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              onProductClick?.(product);
-            }
-          }}
-          aria-label={`Voir les détails de ${product.name}`}
-        >
-          {/* Image du produit avec effet de survol*/}
+    <>
+      {/* Styles CSS personnalisés */}
+      <style dangerouslySetInnerHTML={{ __html: customStyles }} />
 
-          <div className="relative w-full h-48 sm:h-52 md:h-56 overflow-hidden mx-2 my-3 group">
-            {/* LIGNES EN HAUT */}
-          
-            <div className="pl--15 absolute top--20 left-1/2 -translate-x-1/2 flex space-x-2 z-10 ">
-              <span className="w-6 h-0.5 bg-gray-300 rounded"></span>
-              <span className="w-6 h-0.5 bg-gray-300 rounded"></span>
-              <span className="w-6 h-0.5 bg-gray-300 rounded"></span>
+      <div className="product-grid-custom">
+        {filteredProducts.map((product) => (
+          <div
+            key={product.id}
+            onClick={() => onProductClick?.(product)}
+            className="product-card-custom group flex flex-col bg-white overflow-hidden cursor-pointer rounded-lg"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onProductClick?.(product);
+              }
+            }}
+            aria-label={`Voir les détails de ${product.name}`}
+          >
+            {/* Image du produit avec effet de survol */}
+            <div className="relative w-full overflow-hidden mx-1 my-1.5 sm:mx-3 sm:my-2 xl:mx-2 xl:my-3 rounded-lg bg-gray-100">
+              {/* LIGNES EN HAUT - masquées sur mobile */}
+              <div className="hidden sm:flex absolute top-2 left-1/2 transform -translate-x-1/2 space-x-2 z-10">
+                <span className="w-6 h-0.5 bg-gray-300 rounded-full"></span>
+                <span className="w-6 h-0.5 bg-gray-300 rounded-full"></span>
+                <span className="w-6 h-0.5 bg-gray-300 rounded-full"></span>
+              </div>
+
+              {/* Conteneur d'image avec aspect ratio fixe */}
+              <div className="w-full aspect-square sm:aspect-[4/5] md:aspect-[3/4]">
+                {/* IMAGE PRINCIPALE */}
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="product-image-main-custom w-full h-full object-contain sm:object-cover transition-opacity duration-300 p-2 sm:p-0"
+                />
+
+                {/* IMAGE DE SURVOL */}
+                {product.hoverImage && (
+                  <img
+                    src={product.hoverImage}
+                    alt={`${product.name} - vue alternative`}
+                    className="product-image-hover-custom absolute inset-0 w-full h-full object-contain sm:object-cover p-2 sm:p-0"
+                  />
+                )}
+              </div>
             </div>
 
-           
-            {/* IMAGE PRINCIPALE */}
-            <img
-              src={product.image}
-              alt={product.name}
-              className="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-0"
-            />
-
-            {/* IMAGE DE SURVOL */}
-            {product.hoverImage && (
-              <img
-                src={product.hoverImage}
-                alt={`${product.name} - vue alternative`}
-                className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-              />
-            )}
+            {/* Informations du produit - optimisées pour mobile */}
+            <div className="px-2 pb-3 sm:px-4 sm:pb-4 flex-1 flex flex-col items-center text-center">
+              <h3 className="text-xs sm:text-sm font-medium text-black mb-1 transition-colors duration-300 line-clamp-2 leading-tight">
+                {product.name}
+              </h3>
+              <p className="text-sm sm:text-base font-bold text-black">
+                {product.price}
+              </p>
+            </div>
           </div>
-
-
-          {/* Informations du produit - réduites et centrées */}
-          <div className="px-4 pb-4 flex-1 flex flex-col items-center text-center">
-            <h3 className="text-sm font-medium text-black mb-1  transition-colors duration-300 line-clamp-2">
-              {product.name}
-            </h3>
-            <p className="text-base font-bold text-black">
-              {product.price}
-            </p>
-
-          </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+    </>
   );
 };
 

@@ -145,17 +145,91 @@ export default function Search() {
     setSelectedImageAlt("");
   };
 
+  // CSS personnalisé pour la grille de résultats de recherche
+  const searchResultsStyles = `
+    .search-results-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+    }
+
+    .search-result-card {
+      transition: all 0.3s ease;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .search-result-card:hover {
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    .search-result-image-container {
+      overflow: hidden;
+      position: relative;
+      border-radius: 0.75rem 0.75rem 0 0;
+      background-color: #f3f4f6;
+    }
+
+    .search-result-image {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: contain;
+      transition: transform 0.3s ease;
+      padding: 0.5rem;
+    }
+
+    .search-result-card:hover .search-result-image {
+      transform: scale(1.05);
+    }
+
+    @media (min-width: 640px) {
+      .search-results-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+      }
+      
+      .search-result-image {
+        aspect-ratio: 4 / 3;
+        object-fit: cover;
+        padding: 0;
+      }
+    }
+
+    @media (min-width: 768px) {
+      .search-results-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .search-results-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .search-results-grid {
+        gap: 0.5rem;
+      }
+      
+      .search-result-card {
+        border-radius: 0.5rem;
+      }
+    }
+  `;
+
   return (
     <div className="min-h-screen bg-white">
       <TopBanner />
       <Header />
 
       {/* Section des résultats */}
-      <section className="bg-white px-6 py-12">
+      <section className="bg-white px-4 sm:px-6 py-8 sm:py-12">
         <div className="max-w-6xl mx-auto">
           {/* En-tête des résultats */}
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-black mb-2">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-xl sm:text-2xl font-bold text-black mb-2">
               Résultats de recherche
             </h1>
             {query && (
@@ -165,50 +239,56 @@ export default function Search() {
             )}
           </div>
 
+          {/* Styles CSS personnalisés */}
+          <style dangerouslySetInnerHTML={{ __html: searchResultsStyles }} />
+
           {/* Résultats */}
           {query ? (
             results.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="search-results-grid">
                 {results.map((result) => (
                   <div
                     key={result.id}
-                    className="bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-hidden"
+                    className="search-result-card bg-white border border-gray-200 rounded-xl overflow-hidden"
                   >
-                    <div className="overflow-hidden group cursor-pointer">
+                    <div 
+                      className="search-result-image-container group cursor-pointer"
+                      onClick={() => handleOpenImageModal(result.image, result.name)}
+                    >
                       <img
                         src={result.image}
                         alt={result.name}
-                        className="w-full aspect-[4/3] object-cover transition-transform duration-300 group-hover:scale-105"
-                        onClick={() => handleOpenImageModal(result.image, result.name)}
+                        className="search-result-image"
                       />
                     </div>
-                    <div className="p-4 flex flex-col h-full">
+                    <div className="p-3 sm:p-4 flex flex-col flex-grow">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-semibold text-adawi-gold bg-adawi-gold/10 px-2 py-1 rounded">
+                        <span className="text-xs font-semibold text-adawi-gold bg-adawi-gold/10 px-2 py-1 rounded truncate max-w-[70%]">
                           {result.category}
                         </span>
                         {result.price && (
-                          <span className="text-lg font-bold text-gray-800">
+                          <span className="text-sm sm:text-base font-bold text-gray-800 whitespace-nowrap">
                             {result.price}
                           </span>
                         )}
                       </div>
-                      <h3 className="text-base font-semibold text-gray-900 mb-1">
+                      <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-2 line-clamp-2">
                         {result.name}
                       </h3>
 
-                      <button
-                        onClick={() => handleOpenProductModal(result)}
-                        aria-label={`Voir plus sur ${result.name}`}
-                        className="text-black text-center w-full bg-adawi-gold hover:bg-adawi-gold/90 font-medium py-2 px-4 rounded-xl transition-colors duration-300"
-                      >
-                        Voir plus
-                      </button>
+                      <div className="mt-auto pt-2">
+                        <button
+                          onClick={() => handleOpenProductModal(result)}
+                          aria-label={`Voir plus sur ${result.name}`}
+                          className="text-black text-center w-full bg-adawi-gold hover:bg-adawi-gold/90 font-medium py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg transition-colors duration-300 text-xs sm:text-sm"
+                        >
+                          Voir plus
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
-
             ) : (
               <div className="text-center py-12">
                 <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

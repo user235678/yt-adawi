@@ -38,10 +38,10 @@ export default function Boutique() {
             name: "Polo Rouge XXL",
             price: "10000 fcfa",
             priceValue: 10000,
-            image: "/template/5.png",
-            hoverImage: "/template/6.png", // Image de survol ajoutée
-            image1: "/template/8.png", // Nouvelle image supplémentaire
-            image2: "/template/9.png", // Nouvelle image supplémentaire
+            image: "/5.png",
+            hoverImage: "/6.png", // Image de survol ajoutée
+            image1: "/8.png", // Nouvelle image supplémentaire
+            image2: "/9.png", // Nouvelle image supplémentaire
             date: new Date(2023, 5, 15),
             category: "homme",
             size: "xxl",
@@ -52,10 +52,10 @@ export default function Boutique() {
             name: "Veste Noire L",
             price: "25000 fcfa",
             priceValue: 25000,
-            image: "/template/5.png",
-            hoverImage: "/template/8.png", // Image de survol ajoutée
-            image1: "/template/6.png", // Nouvelle image supplémentaire
-            image2: "/template/0.png", // Nouvelle image supplémentaire
+            image: "/5.png",
+            hoverImage: "/8.png", // Image de survol ajoutée
+            image1: "/6.png", // Nouvelle image supplémentaire
+            image2: "/0.png", // Nouvelle image supplémentaire
             date: new Date(2023, 6, 20),
             category: "homme",
             size: "l",
@@ -66,10 +66,10 @@ export default function Boutique() {
             name: "Chemise Blanche M",
             price: "7000 fcfa",
             priceValue: 7000,
-            image: "/template/5.png",
-            hoverImage: "/template/9.png", // Image de survol ajoutée
-            image1: "/template/8.png", // Nouvelle image supplémentaire
-            image2: "/template/6.png", // Nouvelle image supplémentaire
+            image: "/5.png",
+            hoverImage: "/9.png", // Image de survol ajoutée
+            image1: "/8.png", // Nouvelle image supplémentaire
+            image2: "/6.png", // Nouvelle image supplémentaire
             date: new Date(2023, 7, 5),
             category: "homme",
             size: "m",
@@ -80,10 +80,10 @@ export default function Boutique() {
             name: "Cardigan Vert XXL",
             price: "5000 fcfa",
             priceValue: 5000,
-            image: "/template/5.png",
-            hoverImage: "/template/0.png", // Image de survol ajoutée
-            image1: "/template/9.png", // Nouvelle image supplémentaire
-            image2: "/template/8.png", // Nouvelle image supplémentaire
+            image: "/5.png",
+            hoverImage: "/0.png", // Image de survol ajoutée
+            image1: "/9.png", // Nouvelle image supplémentaire
+            image2: "/8.png", // Nouvelle image supplémentaire
             date: new Date(2023, 8, 10),
             category: "homme",
             size: "xxl",
@@ -94,10 +94,10 @@ export default function Boutique() {
             name: "T-shirt Rouge M",
             price: "4000 fcfa",
             priceValue: 4000,
-            image: "/template/5.png",
-            hoverImage: "/template/6.png", // Image de survol ajoutée
-            image1: "/template/0.png", // Nouvelle image supplémentaire
-            image2: "/template/9.png", // Nouvelle image supplémentaire
+            image: "/5.png",
+            hoverImage: "/6.png", // Image de survol ajoutée
+            image1: "/0.png", // Nouvelle image supplémentaire
+            image2: "/9.png", // Nouvelle image supplémentaire
             date: new Date(2023, 4, 12),
             category: "homme",
             size: "m",
@@ -110,10 +110,10 @@ export default function Boutique() {
             name: "Robe Élégante S",
             price: "18000 fcfa",
             priceValue: 18000,
-            image: "/template/5.png",
-            hoverImage: "/template/8.png", // Image de survol ajoutée
-            image1: "/template/6.png", // Nouvelle image supplémentaire
-            image2: "/template/9.png", // Nouvelle image supplémentaire
+            image: "/5.png",
+            hoverImage: "/8.png", // Image de survol ajoutée
+            image1: "/6.png", // Nouvelle image supplémentaire
+            image2: "/9.png", // Nouvelle image supplémentaire
             date: new Date(2023, 7, 25),
             category: "femme",
             size: "s",
@@ -124,10 +124,10 @@ export default function Boutique() {
             name: "Blouse Blanche M",
             price: "12000 fcfa",
             priceValue: 12000,
-            image: "/template/5.png",
-            hoverImage: "/template/9.png", // Image de survol ajoutée
-            image1: "/template/8.png", // Nouvelle image supplémentaire
-            image2: "/template/0.png", // Nouvelle image supplémentaire
+            image: "/5.png",
+            hoverImage: "/9.png", // Image de survol ajoutée
+            image1: "/8.png", // Nouvelle image supplémentaire
+            image2: "/0.png", // Nouvelle image supplémentaire
             date: new Date(2023, 8, 5),
             category: "femme",
             size: "m",
@@ -138,10 +138,10 @@ export default function Boutique() {
             name: "Jupe Noire L",
             price: "15000 fcfa",
             priceValue: 15000,
-            image: "/template/5.png",
-            hoverImage: "/template/0.png", // Image de survol ajoutée
-            image1: "/template/9.png", // Nouvelle image supplémentaire
-            image2: "/template/6.png", // Nouvelle image supplémentaire
+            image: "/5.png",
+            hoverImage: "/0.png", // Image de survol ajoutée
+            image1: "/9.png", // Nouvelle image supplémentaire
+            image2: "/6.png", // Nouvelle image supplémentaire
             date: new Date(2023, 6, 18),
             category: "femme",
             size: "l",
@@ -152,10 +152,10 @@ export default function Boutique() {
             name: "Veste Verte XL",
             price: "10 fcfa",
             priceValue: 22000,
-            image: "/template/5.png",
-            hoverImage: "/template/6.png", // Image de survol ajoutée
-            image1: "/template/8.png", // Nouvelle image supplémentaire
-            image2: "/template/0.png", // Nouvelle image supplémentaire
+            image: "/5.png",
+            hoverImage: "/6.png", // Image de survol ajoutée
+            image1: "/8.png", // Nouvelle image supplémentaire
+            image2: "/0.png", // Nouvelle image supplémentaire
             date: new Date(2023, 5, 30),
             category: "femme",
             size: "xl",
@@ -166,10 +166,10 @@ export default function Boutique() {
             name: "Pantalon Rouge M",
             price: "13500 fcfa",
             priceValue: 13500,
-            image: "/template/5.png",
-            hoverImage: "/template/8.png", // Image de survol ajoutée
-            image1: "/template/9.png", // Nouvelle image supplémentaire
-            image2: "/template/6.png", // Nouvelle image supplémentaire
+            image: "/5.png",
+            hoverImage: "/8.png", // Image de survol ajoutée
+            image1: "/9.png", // Nouvelle image supplémentaire
+            image2: "/6.png", // Nouvelle image supplémentaire
             date: new Date(2023, 9, 2),
             category: "femme",
             size: "m",
@@ -182,10 +182,10 @@ export default function Boutique() {
             name: "T-shirt Enfant S",
             price: "3500 fcfa",
             priceValue: 3500,
-            image: "/public/9.png",
+            image: "/9.png",
             hoverImage: "/5.png", // Image de survol ajoutée
             image1: "/6.png", // Nouvelle image supplémentaire
-            image2: "/template/8.png", // Nouvelle image supplémentaire
+            image2: "/8.png", // Nouvelle image supplémentaire
             date: new Date(2023, 8, 15),
             category: "enfant",
             size: "s",
@@ -196,10 +196,10 @@ export default function Boutique() {
             name: "Pantalon Enfant M",
             price: "4500 fcfa",
             priceValue: 4500,
-            image: "/template/5.png",
-            hoverImage: "/template/0.png", // Image de survol ajoutée
-            image1: "/template/9.png", // Nouvelle image supplémentaire
-            image2: "/template/6.png", // Nouvelle image supplémentaire
+            image: "/5.png",
+            hoverImage: "/0.png", // Image de survol ajoutée
+            image1: "/9.png", // Nouvelle image supplémentaire
+            image2: "/6.png", // Nouvelle image supplémentaire
             date: new Date(2023, 7, 20),
             category: "enfant",
             size: "m",
@@ -210,10 +210,10 @@ export default function Boutique() {
             name: "Robe Enfant S",
             price: "5000 fcfa",
             priceValue: 5000,
-            image: "/template/5.png",
-            hoverImage: "/template/6.png", // Image de survol ajoutée
-            image1: "/template/8.png", // Nouvelle image supplémentaire
-            image2: "/template/0.png", // Nouvelle image supplémentaire
+            image: "/5.png",
+            hoverImage: "/6.png", // Image de survol ajoutée
+            image1: "/8.png", // Nouvelle image supplémentaire
+            image2: "/0.png", // Nouvelle image supplémentaire
             date: new Date(2023, 9, 5),
             category: "enfant",
             size: "s",
@@ -224,10 +224,10 @@ export default function Boutique() {
             name: "Veste Enfant M",
             price: "6000 fcfa",
             priceValue: 6000,
-            image: "/template/5.png",
-            hoverImage: "/template/8.png", // Image de survol ajoutée
-            image1: "/template/9.png", // Nouvelle image supplémentaire
-            image2: "/template/0.png", // Nouvelle image supplémentaire
+            image: "/5.png",
+            hoverImage: "/8.png", // Image de survol ajoutée
+            image1: "/9.png", // Nouvelle image supplémentaire
+            image2: "/0.png", // Nouvelle image supplémentaire
             date: new Date(2023, 6, 10),
             category: "enfant",
             size: "m",
@@ -238,10 +238,10 @@ export default function Boutique() {
             name: "Pyjama Enfant S",
             price: "4000 fcfa",
             priceValue: 4000,
-            image: "/template/5.png",
-            hoverImage: "/template/9.png", // Image de survol ajoutée
-            image1: "/template/6.png", // Nouvelle image supplémentaire
-            image2: "/template/8.png", // Nouvelle image supplémentaire
+            image: "/5.png",
+            hoverImage: "/9.png", // Image de survol ajoutée
+            image1: "/6.png", // Nouvelle image supplémentaire
+            image2: "/8.png", // Nouvelle image supplémentaire
             date: new Date(2023, 8, 25),
             category: "enfant",
             size: "s",
@@ -254,10 +254,10 @@ export default function Boutique() {
             name: "Montre Classique",
             price: "35000 fcfa",
             priceValue: 35000,
-            image: "/template/montres/mont.png",
-            hoverImage: "/template/montres/mont1.png", // Image de survol ajoutée
-            image1: "/template/9.png", // Nouvelle image supplémentaire
-            image2: "/template/6.png", // Nouvelle image supplémentaire
+            image: "/mont.png",
+            hoverImage: "/mont1.png", // Image de survol ajoutée
+            image1: "/9.png", // Nouvelle image supplémentaire
+            image2: "/6.png", // Nouvelle image supplémentaire
             date: new Date(2023, 7, 12),
             category: "montre",
             size: "l",
@@ -268,10 +268,10 @@ export default function Boutique() {
             name: "Montre Sport",
             price: "28000 fcfa",
             priceValue: 28000,
-            image: "/template/montres/istockp.png",
-            hoverImage: "/template/montres/mont.png", // Image de survol ajoutée
-            image1: "/template/8.png", // Nouvelle image supplémentaire
-            image2: "/template/9.png", // Nouvelle image supplémentaire
+            image: "/istockp.png",
+            hoverImage: "/mont.png", // Image de survol ajoutée
+            image1: "/8.png", // Nouvelle image supplémentaire
+            image2: "/9.png", // Nouvelle image supplémentaire
             date: new Date(2023, 8, 18),
             category: "montre",
             size: "m",
@@ -282,10 +282,10 @@ export default function Boutique() {
             name: "Montre Luxe",
             price: "75000 fcfa",
             priceValue: 75000,
-            image: "/template/montres/mont.png",
-            hoverImage: "/template/montres/2.png", // Image de survol ajoutée
-            image1: "/template/montres/", // Nouvelle image supplémentaire
-            image2: "/template/0.png", // Nouvelle image supplémentaire
+            image: "/mont.png",
+            hoverImage: "/2.png", // Image de survol ajoutée
+            image1: "/montres/", // Nouvelle image supplémentaire
+            image2: "/0.png", // Nouvelle image supplémentaire
             date: new Date(2023, 9, 1),
             category: "montre",
             size: "l",
@@ -296,10 +296,10 @@ export default function Boutique() {
             name: "Montre Digitale",
             price: "15000 fcfa",
             priceValue: 15000,
-            image: "/template/montres/mont.png",
-            hoverImage: "/template/montres/2.png", // Image de survol ajoutée
-            image1: "/template/6.png", // Nouvelle image supplémentaire
-            image2: "/template/8.png", // Nouvelle image supplémentaire
+            image: "/mont.png",
+            hoverImage: "/2.png", // Image de survol ajoutée
+            image1: "/6.png", // Nouvelle image supplémentaire
+            image2: "/8.png", // Nouvelle image supplémentaire
             date: new Date(2023, 6, 25),
             category: "montre",
             size: "s",
@@ -310,10 +310,10 @@ export default function Boutique() {
             name: "Montre Femme",
             price: "42000 fcfa",
             priceValue: 42000,
-            image: "/template/montres/mont1.png",
-            hoverImage: "/template/montres/2.png", // Image de survol ajoutée
-            image1: "/template/9.png", // Nouvelle image supplémentaire
-            image2: "/template/6.png", // Nouvelle image supplémentaire
+            image: "/mont1.png",
+            hoverImage: "/2.png", // Image de survol ajoutée
+            image1: "/9.png", // Nouvelle image supplémentaire
+            image2: "/6.png", // Nouvelle image supplémentaire
             date: new Date(2023, 5, 20),
             category: "montre",
             size: "s",

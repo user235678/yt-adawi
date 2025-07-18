@@ -14,7 +14,7 @@ const CompactHeader: React.FC = () => {
     const { state } = useCart();
 
     const navItems = [
-        { name: "Maison", to: "/index" },
+        { name: "Maison", to: "/" },
         { name: "Boutique", to: "/boutique" },
         { name: "Blog", to: "/blog" },
         { name: "A-propos", to: "/a-propos" },
@@ -87,7 +87,7 @@ const CompactHeader: React.FC = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6">
                 <div className="flex items-center justify-between h-14">
                     {/* Logo */}
-                    <Link to="/index" className="flex items-center">
+                    <Link to="/" className="flex items-center">
                         <img src="/lOGO_FOND_BLANC-removebg.png" alt="Logo Adawi" className="w-40 h-35" />
                     </Link>
 
