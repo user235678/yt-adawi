@@ -20,7 +20,7 @@ export const meta: MetaFunction = () => {
 type SortOption = "featured" | "newest" | "price-low" | "price-high";
 
 export default function Boutique() {
-    // États séparés pour filtrage et tri
+    // États séparés poure filtrage et tri
     const [activeCategory, setActiveCategory] = useState<ProductCategory>("vedette");
     const [selectedSize, setSelectedSize] = useState<ProductSize | undefined>(undefined);
     const [selectedColor, setSelectedColor] = useState<ProductColor | undefined>(undefined);
