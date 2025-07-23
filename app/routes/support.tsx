@@ -3,6 +3,15 @@ import { useState } from "react";
 import TopBanner from "~/components/TopBanner";
 import Header from "~/components/CompactHeader";
 import Footer from "~/components/Footer";
+import {
+  MessageCircle,
+  Mail,
+  Phone,
+  Package,
+  RefreshCw,
+  Ruler,
+  Truck
+} from "lucide-react";
 
 export const meta: MetaFunction = () => {
   return [
