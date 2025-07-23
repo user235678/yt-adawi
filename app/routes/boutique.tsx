@@ -186,7 +186,7 @@ export default function Boutique() {
             hoverImage: "/5.png", // Image de survol ajoutée
             image1: "/6.png", // Nouvelle image supplémentaire
             image2: "/8.png", // Nouvelle image supplémentaire
-            date: new Date(2023, 8, 15),
+            date: new Date(2025, 12, 20),
             category: "enfant",
             size: "s",
             color: "blanc"
@@ -286,7 +286,7 @@ export default function Boutique() {
             hoverImage: "/2.png", // Image de survol ajoutée
             image1: "/montres/", // Nouvelle image supplémentaire
             image2: "/0.png", // Nouvelle image supplémentaire
-            date: new Date(2023, 9, 1),
+            date: new Date(2025, 12, 20),
             category: "montre",
             size: "l",
             color: "blanc"
@@ -300,7 +300,7 @@ export default function Boutique() {
             hoverImage: "/2.png", // Image de survol ajoutée
             image1: "/6.png", // Nouvelle image supplémentaire
             image2: "/8.png", // Nouvelle image supplémentaire
-            date: new Date(2023, 6, 25),
+            date: new Date(2025, 12, 20),
             category: "montre",
             size: "s",
             color: "noir"
@@ -314,11 +314,12 @@ export default function Boutique() {
             hoverImage: "/2.png", // Image de survol ajoutée
             image1: "/9.png", // Nouvelle image supplémentaire
             image2: "/6.png", // Nouvelle image supplémentaire
-            date: new Date(2023, 5, 20),
+            date: new Date(2025, 12, 20),
             category: "montre",
             size: "s",
             color: "rouge"
-        }
+        },
+       
     ];
 
     // Répéter les produits (optionnel, pour avoir plus de produits)

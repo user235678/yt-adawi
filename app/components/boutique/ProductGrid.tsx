@@ -151,7 +151,7 @@ const ProductGrid = ({ products, selectedSize, selectedColor, onProductClick }: 
             aria-label={`Voir les détails de ${product.name}`}
           >
             {/* Image du produit avec effet de survol */}
-            <div className="relative w-full overflow-hidden mx-1 my-1.5 sm:mx-3 sm:my-2 xl:mx-2 xl:my-3 rounded-lg bg-gray-100">
+            <div className="relative w-full overflow-hidden mx-1 my-1.5 sm:mx-3 sm:my-2 xl:mx-2 xl:my-3 rounded">
               {/* LIGNES EN HAUT - masquées sur mobile */}
               <div className="hidden sm:flex absolute top-2 left-1/2 transform -translate-x-1/2 space-x-2 z-10">
                 <span className="w-6 h-0.5 bg-gray-300 rounded-full"></span>
