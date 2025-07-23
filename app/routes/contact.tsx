@@ -134,8 +134,7 @@ export default function Contact() {
             <section className="bg-white">
                 <div className="w-full h-[400px] relative">
                     <iframe
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3967.0123456789!2d1.2345678!3d6.1234567!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sCarrefour%20Bodjona%2C%20Lom%C3%A9%2C%20Togo!5e0!3m2!1sfr!2stg!4v1234567890123!5m2!1sfr!2stg"
-                        width="100%"
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3812.0768282401923!2d1.2077794748024113!3d6.125413693861329!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x10215f618ff4057f%3A0x283893dcd5d0ac3b!2sInstitut%20africain%20d'informatique%20(IAI-%20Togo)!5e1!3m2!1sfr!2stg!4v1753272772713!5m2!1sfr!2stg" width="100%"
                         height="100%"
                         style={{ border: 0 }}
                         allowFullScreen

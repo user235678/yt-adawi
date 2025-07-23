@@ -20,7 +20,7 @@ export default function APropos() {
       {/* Hero Section avec image de boutique */}
       <section className="relative h-[500px] overflow-hidden">
         <img
-          src="/template/image.png"
+          src="/image.png"
           alt="Intérieur moderne de la boutique Adawi avec vêtements suspendus, éclairage design et comptoir central"
           className="w-full h-full object-cover"
         />
@@ -79,7 +79,7 @@ export default function APropos() {
       <section className="bg-white">
         <div className="w-full h-[400px] md:h-[500px] overflow-hidden">
           <img
-            src="/template/image1.png"
+            src="/image1.png"
             alt="Collection de vêtements colorés suspendus sur cintres dans un dressing moderne"
             className="w-full h-full object-cover"
           />

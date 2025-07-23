@@ -11,7 +11,7 @@ interface HeroProps {
 const Hero: React.FC<HeroProps> = ({ 
   mainImage = "/template/5.png", 
   secondaryImage = "/template/6.png",
-  title = ["L'élégance est",<br />, "une attitude.",<br />," Trouvez la",<br />," vôtre ici"],
+  title = ["L'élégance est une attitude Trouvez la vôtre ici"],
   features = ["Matériaux durables", "Fabriqué en France", "Livraison rapide"],
   buttonText = "Voir la collection"
 }) => {

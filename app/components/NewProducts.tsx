@@ -9,11 +9,11 @@ interface Product {
 
 const NewProducts: React.FC = () => {
   const products: Product[] = [
-    { id: 1, name: "", image: "/template/0.png" },
-    { id: 2, name: "", image: "/template/5.png" },
-    { id: 3, name: "", image: "/template/6.png" },
-    { id: 4, name: "", image: "/template/8.png" },
-    { id: 5, name: "", image: "/template/9.png" },
+    { id: 1, name: "", image: "/0.png" },
+    { id: 2, name: "", image: "/5.png" },
+    { id: 3, name: "", image: "/6.png" },
+    { id: 4, name: "", image: "/8.png" },
+    { id: 5, name: "", image: "/9.png" },
   ];
 
   return (
