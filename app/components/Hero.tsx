@@ -8,9 +8,9 @@ interface HeroProps {
   buttonText?: string;
 }
 
-const Hero: React.FC<HeroProps> = ({ 
-  mainImage = "/5.png", 
-  secondaryImage = "/6.png",
+const Hero: React.FC<HeroProps> = ({
+  mainImage = "/men.png",
+  secondaryImage = "/men.png",
   title = "L'élégance est une attitude. Trouvez la vôtre ici",
   features = ["Matériaux durables", "Fabriqué en France", "Livraison rapide"],
   buttonText = "Voir la collection"
@@ -18,13 +18,13 @@ const Hero: React.FC<HeroProps> = ({
   return (
     <section className="bg-adawi-beige-dark px-4 sm:px-6 py-16">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12 md:pl-24">
-        
+
         {/* Left Content */}
         <div className="w-full md:flex-1 text-center md:text-left">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black mb-8 leading-tight">
             {title}
           </h1>
-          
+
           <ul className="space-y-3 mb-8">
             {features.map((feature, index) => (
               <li key={index} className="flex items-center justify-center md:justify-start text-black">
@@ -43,19 +43,22 @@ const Hero: React.FC<HeroProps> = ({
 
         {/* Right Images - cachées sur petit écran */}
         <div className="hidden md:flex flex-1 justify-end pr-10">
-          <div className="relative">
-            <img 
-              src={mainImage}  
-              alt="Homme élégant en costume" 
-              className="rounded-lg shadow-lg max-w-[280px] w-full h-auto object-cover"
+          <div className="relative right-10 w-fit">
+            <img
+              src={mainImage}
+              alt="Homme élégant en costume"
+              className="rounded-lg shadow-lg max-w-[360px] w-full h-auto object-cover"
             />
-            <img 
-              src={secondaryImage}   
-              alt="Collection mode" 
-              className="absolute -bottom-8 -right-8 rounded-lg shadow-lg max-w-[180px] w-full h-auto object-cover"
+
+            <img
+              src={secondaryImage}
+              alt="Collection mode"
+              className="absolute bottom-0 right-0 translate-x-2/4 translate-y-1/4 rounded-lg shadow-lg max-w-[180px] w-full h-auto object-cover"
             />
           </div>
         </div>
+
+
       </div>
     </section>
   );
