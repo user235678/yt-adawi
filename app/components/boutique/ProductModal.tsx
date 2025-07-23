@@ -246,7 +246,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
               <button 
                 onClick={handleAddToCart}
                 disabled={isAddingToCart}
-                className={`w-full py-4 px-6 font-medium text-lg transition-all duration-200 ${
+                className={`w-full py-4 px-6 rounded-full font-medium text-lg transition-all duration-200 ${
                   isAddingToCart
                     ? 'bg-adawi-gold text-white cursor-not-allowed'
                     : 'bg-black text-white hover:bg-gray-800'

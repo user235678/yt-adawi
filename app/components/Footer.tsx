@@ -1,20 +1,27 @@
 import { Link } from "@remix-run/react";
-import { Facebook, Twitter, Github, Linkedin } from "lucide-react";
+import { Facebook, Twitter, Github, Linkedin, Instagram } from "lucide-react";
 
+
+const socialLinks = [
+  { icon: Facebook, url: "https://facebook.com" },
+  { icon: Twitter, url: "https://twitter.com" },
+  { icon: Github, url: "https://github.com" },
+  { icon: Instagram, url: "https://instagram.com" },
+];
 export default function Footer() {
   return (
-    <footer className="bg-gray-600 text-gray-300 px-6 py-12">
+    <footer className="bg-gray-400 text-black px-4 sm:px-6 py-12">
       <div className="max-w-7xl mx-auto">
-        {/* Grille principale */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
+        {/* Grille principale responsive : 2 colonnes sur mobile, 4 sur md */}
+        <div className="grid grid-cols-2sm:grid-cols-2 md:grid-cols-4 gap-10">
           {/* Logo + Coordonnées */}
-          <div>
+          <div className="col-span-2 md:col-span-1">
             <div className="flex items-center mb-4">
-              <img src="ADAWI_LOGO BLANC_PNG.png"
-              className="w-40 h-auto " 
-              alt="Logo ADAWI" />
-              
-              {/* <span className="text-2xl font-bold text-white">Adawi</span> */}
+              <img
+                src="ADAWI_LOGO BLANC_PNG.png"
+                className="w-32 sm:w-40 h-auto"
+                alt="Logo ADAWI"
+              />
             </div>
             <div className="space-y-1 text-sm">
               <p>Carrefour Bodiona</p>
@@ -23,36 +30,23 @@ export default function Footer() {
             </div>
 
             {/* Réseaux sociaux */}
-            <div className="flex space-x-4 mt-6">
-              <a
-                href="#"
-                className="w-9 h-9 bg-gray-700 rounded-full flex items-center justify-center hover:bg-amber-500 transition-transform duration-300 ease-out hover:scale-110 hover:rotate-[360deg]"
-              >
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                className="w-9 h-9 bg-gray-700 rounded-full flex items-center justify-center hover:bg-amber-500 transition-transform duration-300 ease-out hover:scale-110 hover:rotate-[360deg]"
-              >
-                <Twitter className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                className="w-9 h-9 bg-gray-700 rounded-full flex items-center justify-center hover:bg-amber-500 transition-transform duration-300 ease-out hover:scale-110 hover:rotate-[360deg]"
-              >
-                <Github className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                className="w-9 h-9 bg-gray-700 rounded-full flex items-center justify-center hover:bg-amber-500 transition-transform duration-300 ease-out hover:scale-110 hover:rotate-[360deg]"
-              >
-                <Linkedin className="w-5 h-5" />
-              </a>
+            <div className="flex space-x-4 mt-6 text-white">
+              {socialLinks.map(({ icon: Icon, url }, idx) => (
+                <a
+                  key={idx}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-9 h-9 bg-gray-700 rounded-full flex items-center justify-center hover:bg-amber-500 transition-transform duration-300 ease-out hover:scale-110 hover:rotate-[360deg]"
+                >
+                  <Icon className="w-5 h-5" />
+                </a>
+              ))}
             </div>
           </div>
 
           {/* Bloc Commander */}
-          <div className="mt-20">
+          <div>
             <h3 className="text-lg font-semibold text-black mb-4">Commander</h3>
             <ul className="space-y-2 text-sm text-black">
               <li><Link to="/homme" className="hover:text-white">Homme</Link></li>
@@ -63,10 +57,10 @@ export default function Footer() {
           </div>
 
           {/* Bloc Info */}
-          <div className="mt-20">
+          <div>
             <h3 className="text-lg font-semibold text-black mb-4">Informations</h3>
             <ul className="space-y-2 text-sm text-black">
-              <li><Link to="/index" className=" hover:text-white">À propos</Link></li>
+              <li><Link to="/" className="hover:text-white">À propos</Link></li>
               <li><Link to="/blog" className="hover:text-white">Blog</Link></li>
               <li><Link to="/services" className="hover:text-white">Services</Link></li>
               <li><Link to="/equipe" className="hover:text-white">Notre équipe</Link></li>
@@ -75,7 +69,7 @@ export default function Footer() {
           </div>
 
           {/* Bloc Aide */}
-          <div className="mt-20">
+          <div>
             <h3 className="text-lg font-semibold text-black mb-4">Aide</h3>
             <ul className="space-y-2 text-sm text-black">
               <li><Link to="/faq" className="hover:text-white">FAQ</Link></li>
@@ -86,8 +80,6 @@ export default function Footer() {
             </ul>
           </div>
         </div>
-
-        
       </div>
     </footer>
   );
