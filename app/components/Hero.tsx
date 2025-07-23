@@ -11,22 +11,23 @@ interface HeroProps {
 const Hero: React.FC<HeroProps> = ({ 
   mainImage = "/5.png", 
   secondaryImage = "/6.png",
-  title = ["L'élégance est une attitude Trouvez la vôtre ici"],
+  title = "L'élégance est une attitude. Trouvez la vôtre ici",
   features = ["Matériaux durables", "Fabriqué en France", "Livraison rapide"],
   buttonText = "Voir la collection"
 }) => {
   return (
-    <section className="bg-adawi-beige-dark px-6 py-16">
-      <div className="max-w-7xl mx-auto flex items-center justify-between pl-24">
+    <section className="bg-adawi-beige-dark px-4 sm:px-6 py-16">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12 md:pl-24">
+        
         {/* Left Content */}
-        <div className="flex-1 max-w-lg pl-35">
-          <h1 className="text-4xl md:text-5xl font-bold  text-black mb-8 leading-tight">
-            "{title}"
+        <div className="w-full md:flex-1 text-center md:text-left">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black mb-8 leading-tight">
+            {title}
           </h1>
           
           <ul className="space-y-3 mb-8">
             {features.map((feature, index) => (
-              <li key={index} className=" flex items-center text-black">
+              <li key={index} className="flex items-center justify-center md:justify-start text-black">
                 <svg className="w-5 h-5 text-black mr-3" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
@@ -35,13 +36,13 @@ const Hero: React.FC<HeroProps> = ({
             ))}
           </ul>
 
-          <button className="bg-adawi-gold  hover:bg-adawi-gold/300 text-black px-8 py-3 rounded-full font-medium transition-colors">
+          <button className="bg-adawi-gold hover:bg-adawi-gold/300 text-black px-8 py-3 rounded-full font-medium transition-colors">
             {buttonText}
           </button>
         </div>
 
-        {/* Right Images - Redimensionnées */}
-        <div className="flex-1 flex justify-end pr-30 pr-36">
+        {/* Right Images - cachées sur petit écran */}
+        <div className="hidden md:flex flex-1 justify-end pr-10">
           <div className="relative">
             <img 
               src={mainImage}  
