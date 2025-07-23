@@ -4,12 +4,17 @@ import Header from "~/components/CompactHeader";
 import Footer from "~/components/Footer";
 import { useState } from "react";
 import { Link } from "@remix-run/react";
+import { redirect } from "@remix-run/node";
 
 export const meta: MetaFunction = () => {
   return [
     { title: "Login - Adawi" },
     { name: "description", content: "Connectez-vous à votre compte Adawi" },
   ];
+};
+
+export const loader = () => {
+  return redirect("/auth");
 };
 
 export default function Login() {
@@ -35,7 +40,7 @@ export default function Login() {
     <div className="min-h-screen bg-white">
       <TopBanner />
       <Header />
-      
+
       {/* Section de connexion */}
       <section className="bg-gray-200 px-6 py-16">
         <div className="max-w-md mx-auto">
@@ -43,12 +48,12 @@ export default function Login() {
           <h1 className="text-3xl font-bold text-black text-center mb-4 tracking-wider">
             LOGIN
           </h1>
-          
+
           {/* Texte descriptif */}
           <p className="text-gray-600 text-center mb-8 text-sm">
             Veuillez entrer vos identifiants de connexion:
           </p>
-          
+
           {/* Formulaire */}
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Champ Email */}
@@ -63,7 +68,7 @@ export default function Login() {
                 required
               />
             </div>
-            
+
             {/* Champ Password avec lien "Forgot password" */}
             <div className="relative">
               <input
@@ -82,7 +87,7 @@ export default function Login() {
                 Mot de passe oublié?
               </Link>
             </div>
-            
+
             {/* Bouton Login */}
             <button
               type="submit"
@@ -91,10 +96,10 @@ export default function Login() {
               CONNEXION
             </button>
           </form>
-          
+
           {/* Lien d'inscription */}
           <p className="text-center mt-6 text-sm text-gray-600">
-            {"Nouveau Membre? "}
+            {`Nouveau Membre? `}
             <Link
               to="/signup"
               className="text-gray-800 hover:text-black transition-colors underline"
@@ -104,7 +109,7 @@ export default function Login() {
           </p>
         </div>
       </section>
-      
+
       <Footer />
     </div>
   );

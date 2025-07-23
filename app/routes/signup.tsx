@@ -4,12 +4,17 @@ import Header from "~/components/CompactHeader";
 import Footer from "~/components/Footer";
 import { useState } from "react";
 import { Link } from "@remix-run/react";
+import { redirect } from "@remix-run/node";
 
 export const meta: MetaFunction = () => {
   return [
     { title: "Sign Up - Adawi" },
     { name: "description", content: "Créez votre compte Adawi" },
   ];
+};
+
+export const loader = () => {
+  return redirect("/auth");
 };
 
 export default function SignUp() {
@@ -37,7 +42,7 @@ export default function SignUp() {
     <div className="min-h-screen bg-white">
       <TopBanner />
       <Header />
-      
+
       {/* Section d'inscription */}
       <section className="bg-gray-200 px-6 py-16">
         <div className="max-w-md mx-auto">
@@ -45,12 +50,12 @@ export default function SignUp() {
           <h1 className="text-3xl font-bold text-black text-center mb-4 tracking-wider">
             SIGN UP
           </h1>
-          
+
           {/* Texte descriptif */}
           <p className="text-gray-600 text-center mb-8 text-sm">
             Creer votre compte pour commencer:
           </p>
-          
+
           {/* Formulaire */}
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Champ Prénom */}
@@ -78,7 +83,7 @@ export default function SignUp() {
                 required
               />
             </div>
-            
+
             {/* Champ Email */}
             <div>
               <input
@@ -91,7 +96,7 @@ export default function SignUp() {
                 required
               />
             </div>
-            
+
             {/* Champ Password */}
             <div>
               <input
@@ -104,7 +109,7 @@ export default function SignUp() {
                 required
               />
             </div>
-            
+
             {/* Bouton Sign Up */}
             <button
               type="submit"
@@ -113,10 +118,10 @@ export default function SignUp() {
               S'inscrire
             </button>
           </form>
-          
+
           {/* Lien de connexion */}
           <p className="text-center mt-6 text-sm text-gray-600">
-            {"Déja membre? "}
+            {`Déja membre? `}
             <Link
               to="/login"
               className="text-gray-800 hover:text-black transition-colors underline"
@@ -126,7 +131,7 @@ export default function SignUp() {
           </p>
         </div>
       </section>
-      
+
       <Footer />
     </div>
   );
