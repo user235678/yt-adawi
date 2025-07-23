@@ -27,10 +27,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
       name: "Montre Sport",
       price: "28000 fcfa",
       priceValue: 28000,
-      image: "/template/montres/istockp.png",
-      hoverImage: "/template/6.png", // Image de survol ajoutée
-      image1: "/template/0.png", // Nouvelle image supplémentaire
-      image2: "/template/9.png", // Nouvelle image supplémentaire
+      image: "/istockp.png",
+      hoverImage: "/6.png", // Image de survol ajoutée
+      image1: "/0.png", // Nouvelle image supplémentaire
+      image2: "/9.png", // Nouvelle image supplémentaire
       date: new Date(2023, 8, 18),
       category: "montre",
       size: "m",
@@ -41,10 +41,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
       name: "Veste Noire L",
       price: "25000 fcfa",
       priceValue: 25000,
-      image: "/template/5.png",
-      hoverImage: "/template/8.png", // Image de survol ajoutée
-      image1: "/template/6.png", // Nouvelle image supplémentaire
-      image2: "/template/0.png", // Nouvelle image supplémentaire
+      image: "/5.png",
+      hoverImage: "/8.png", // Image de survol ajoutée
+      image1: "/6.png", // Nouvelle image supplémentaire
+      image2: "/0.png", // Nouvelle image supplémentaire
       date: new Date(2023, 6, 20),
       category: "homme",
       size: "l",
@@ -55,10 +55,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
       name: "Chemise Blanche M",
       price: "7000 fcfa",
       priceValue: 7000,
-      image: "/template/5.png",
-      hoverImage: "/template/9.png", // Image de survol ajoutée
-      image1: "/template/8.png", // Nouvelle image supplémentaire
-      image2: "/template/6.png", // Nouvelle image supplémentaire
+      image: "/5.png",
+      hoverImage: "/9.png", // Image de survol ajoutée
+      image1: "/8.png", // Nouvelle image supplémentaire
+      image2: "/6.png", // Nouvelle image supplémentaire
       date: new Date(2023, 7, 5),
       category: "homme",
       size: "m",
@@ -69,10 +69,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
       name: "Cardigan Vert XXL",
       price: "5000 fcfa",
       priceValue: 5000,
-      image: "/template/5.png",
-      hoverImage: "/template/0.png", // Image de survol ajoutée
-      image1: "/template/9.png", // Nouvelle image supplémentaire
-      image2: "/template/8.png", // Nouvelle image supplémentaire
+      image: "/5.png",
+      hoverImage: "/0.png", // Image de survol ajoutée
+      image1: "/9.png", // Nouvelle image supplémentaire
+      image2: "/8.png", // Nouvelle image supplémentaire
       date: new Date(2023, 8, 10),
       category: "homme",
       size: "xxl",
@@ -83,10 +83,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
       name: "T-shirt Rouge M",
       price: "4000 fcfa",
       priceValue: 4000,
-      image: "/template/5.png",
-      hoverImage: "/template/6.png", // Image de survol ajoutée
-      image1: "/template/0.png", // Nouvelle image supplémentaire
-      image2: "/template/9.png", // Nouvelle image supplémentaire
+      image: "/5.png",
+      hoverImage: "/6.png", // Image de survol ajoutée
+      image1: "/0.png", // Nouvelle image supplémentaire
+      image2: "/9.png", // Nouvelle image supplémentaire
       date: new Date(2023, 4, 12),
       category: "homme",
       size: "m",
