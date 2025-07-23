@@ -57,7 +57,7 @@ export default function Newsletter() {
 
         <div className=" w-'45' h-45  ">
           <img
-            src="/template/10.png"
+            src="/10.png"
             alt="Vêtements suspendus dans un dressing"
             className="w-3/4 h-1/4 object-cover"
           />
