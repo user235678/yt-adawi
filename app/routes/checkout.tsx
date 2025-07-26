@@ -18,10 +18,10 @@ export default function Checkout() {
     const [orderNote, setOrderNote] = useState('');
 
     const subtotal = state.total;
-    const shippingFee = subtotal >= 100 ? 0 : 10; // Livraison gratuite à partir de 100€
-    const taxRate = 0.18; // 18% de taxes
-    const taxes = subtotal * taxRate;
-    const finalTotal = subtotal + shippingFee + taxes;
+    // const shippingFee = subtotal >= 100 ? 0 : 10; // Livraison gratuite à partir de 100€
+    // const taxRate = 0.18; // 18% de taxes
+    // const taxes = subtotal * taxRate;
+    const finalTotal = subtotal ;
 
     const updateQuantity = (id: string, newQuantity: number) => {
         dispatch({ type: 'UPDATE_QUANTITY', payload: { id, quantity: newQuantity } });
@@ -74,11 +74,12 @@ export default function Checkout() {
                 
                 {/* Message de livraison gratuite */}
                 <p className="text-center text-gray-600 mb-12">
-                    {subtotal >= 100 ? (
+                    {/* {subtotal >= 100 ? (
                         "Vous êtes éligible pour une livraison gratuite."
                     ) : (
                         `Ajoutez ${(100 - subtotal).toFixed(0)} fcfa de produits pour une livraison gratuite.`
-                    )}
+                    )} */}
+                    Frais de livraison payé à la réception du produit
                 </p>
 
                 {/* En-têtes du tableau */}
@@ -185,15 +186,16 @@ export default function Checkout() {
                                 <span className="text-gray-600">Subtotal:</span>
                                 <span className="font-medium text-black">{subtotal.toFixed(2)} fcfa</span>
                             </div>
-                            <div className="flex justify-between text-base">
-                                <span className="text-gray-600">Shipping:</span>
+                            {/* <div className="flex justify-between text-base">
+                                <span className="text-gray-600">Livraison:</span>
                                 <span className="font-medium text-black">
                                     {shippingFee === 0 ? 'Free' : `${shippingFee.toFixed(2)} fcfa`}
+                                    
                                 </span>
-                            </div>
+                            </div> */}
                             <div className="flex justify-between text-base">
                                 <span className="text-gray-600">Taxes:</span>
-                                <span className="font-medium text-black">{taxes.toFixed(2)} fcfa</span>
+                                <span className="font-medium text-black">0 fcfa</span>
                             </div>
                             <div className="border-t pt-3">
                                 <div className="flex justify-between text-lg font-bold">
@@ -204,7 +206,7 @@ export default function Checkout() {
                         </div>
 
                         <p className="text-sm text-gray-500">
-                            Taxes and <span className="underline">shipping</span> calculated at checkout
+                            Taxes et <span className="underline">shipping</span> calculated at checkout
                         </p>
 
                         {/* Bouton checkout */}
