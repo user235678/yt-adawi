@@ -228,7 +228,7 @@ export default function Boutique() {
             hoverImage: "/8.png", // Image de survol ajoutée
             image1: "/9.png", // Nouvelle image supplémentaire
             image2: "/0.png", // Nouvelle image supplémentaire
-            date: new Date(2023, 6, 10),
+            date: new Date("2025-07-20"),
             category: "enfant",
             size: "m",
             color: "vert"
@@ -242,7 +242,7 @@ export default function Boutique() {
             hoverImage: "/9.png", // Image de survol ajoutée
             image1: "/6.png", // Nouvelle image supplémentaire
             image2: "/8.png", // Nouvelle image supplémentaire
-            date: new Date(2023, 8, 25),
+            date: new Date("2025-07-20"),
             category: "enfant",
             size: "s",
             color: "blanc"
@@ -300,7 +300,7 @@ export default function Boutique() {
             hoverImage: "/2.png", // Image de survol ajoutée
             image1: "/6.png", // Nouvelle image supplémentaire
             image2: "/8.png", // Nouvelle image supplémentaire
-            date: new Date(2025, 12, 20),
+            date: new Date(2025, 5, 20),
             category: "montre",
             size: "s",
             color: "noir"
@@ -314,12 +314,12 @@ export default function Boutique() {
             hoverImage: "/2.png", // Image de survol ajoutée
             image1: "/9.png", // Nouvelle image supplémentaire
             image2: "/6.png", // Nouvelle image supplémentaire
-            date: new Date(2025, 12, 20),
+            date: new Date("2025-07-20"),
             category: "montre",
             size: "s",
             color: "rouge"
         },
-       
+
     ];
 
     // Répéter les produits (optionnel, pour avoir plus de produits)
@@ -328,15 +328,18 @@ export default function Boutique() {
     //  ÉTAPE 1: FILTRAGE PAR CATÉGORIE
     const filteredByCategory = allProducts.filter(product => {
         if (activeCategory === "vedette") {
-            return true; // Tous les produits pour "vedette"
+            return true; // Afficher tous les produits
         } else if (activeCategory === "nouveaute") {
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            return product.date >= thirtyDaysAgo;
+            const today = new Date();
+            const productDate = new Date(product.date); // Assure que product.date est bien une Date
+            const daysDiff = Math.floor((today.getTime() - productDate.getTime()) / (1000 * 60 * 60 * 24));
+            return daysDiff <= 30;
         } else {
             return product.category === activeCategory;
         }
     });
+    
+
 
     // ÉTAPE 2: TRI (appliqué APRÈS le filtrage)
     const sortProducts = (products: Product[], option: SortOption) => {
@@ -449,7 +452,7 @@ export default function Boutique() {
             </main>
 
             {/* Modal produit */}
-            <ProductModal 
+            <ProductModal
                 product={selectedProduct}
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}

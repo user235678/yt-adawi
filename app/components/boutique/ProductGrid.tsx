@@ -42,6 +42,15 @@ const ProductGrid = ({ products, selectedSize, selectedColor, onProductClick }: 
     };
     return colorMap[color] || "bg-gray-100 text-gray-800";
   };
+  function isNewProduct(productDate: Date | string): boolean {
+    const today = new Date();
+    const date = new Date(productDate);
+    const diffTime = today.getTime() - date.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays <= 30;
+  }
+
+
 
   // Filtrer les produits selon la taille et la couleur sélectionnées
   const filteredProducts = products.filter(product => {
@@ -150,6 +159,7 @@ const ProductGrid = ({ products, selectedSize, selectedColor, onProductClick }: 
             }}
             aria-label={`Voir les détails de ${product.name}`}
           >
+
             {/* Image du produit avec effet de survol */}
             <div className="relative w-full overflow-hidden mx-1 my-1.5 sm:mx-3 sm:my-2 xl:mx-2 xl:my-3 rounded">
               {/* LIGNES EN HAUT - masquées sur mobile */}
@@ -177,6 +187,13 @@ const ProductGrid = ({ products, selectedSize, selectedColor, onProductClick }: 
                   />
                 )}
               </div>
+              {isNewProduct(product.date) && (
+                <span className="absolute bottom-2 right-2 z-20 bg-adawi-gold-light text-red-500 text-[10px] sm:text-xs font-semibold px-2 py-1 rounded shadow-md uppercase">
+                  NEW
+                </span>
+              )}
+
+
             </div>
 
             {/* Informations du produit - optimisées pour mobile */}

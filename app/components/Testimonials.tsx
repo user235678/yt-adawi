@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function Testimonials() {
   const [index, setIndex] = useState(0);
@@ -15,12 +16,24 @@ export default function Testimonials() {
       text: "Des vêtements élégants et durables. L'équipe est très à l'écoute.",
       author: "Jean Martin",
     },
+    {
+      text: "Des vêtements élégants et résistants. L'équipe est très à l'écoute.",
+      author: "Jean Marc",
+    },
   ];
 
   const changeIndex = (offset: number) => {
     const newIndex = (index + offset + testimonials.length) % testimonials.length;
     setIndex(newIndex);
   };
+
+  // ⏱️ Défilement automatique toutes les 5 secondes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex(prev => (prev + 1) % testimonials.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [testimonials.length]);
 
   return (
     <section className="bg-gray-100 px-4 py-8 text-center text-black text-sm">
@@ -29,8 +42,18 @@ export default function Testimonials() {
       <div className="max-w-2xl mx-auto">
         <div className="text-3xl mb-2 leading-none">“</div>
 
-        <p className="mb-2">{testimonials[index].text}</p>
-        <p className="font-medium mb-3">{testimonials[index].author}</p>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.4 }}
+          >
+            <p className="mb-2">{testimonials[index].text}</p>
+            <p className="font-medium mb-3">{testimonials[index].author}</p>
+          </motion.div>
+        </AnimatePresence>
 
         <div className="text-3xl mb-3 leading-none">”</div>
 
@@ -46,9 +69,7 @@ export default function Testimonials() {
               <button
                 key={i}
                 onClick={() => setIndex(i)}
-                className={`w-2 h-2 rounded-full ${
-                  i === index ? "bg-black" : "bg-black/30"
-                }`}
+                className={`w-2 h-2 rounded-full ${i === index ? "bg-black" : "bg-black/30"}`}
               />
             ))}
           </div>

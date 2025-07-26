@@ -58,6 +58,14 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
     };
     return colorMap[color] || "bg-gray-400 border-gray-400";
   };
+  function isNewProduct(productDate: Date | string): boolean {
+    const today = new Date();
+    const date = new Date(productDate);
+    const diffTime = today.getTime() - date.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays <= 30;
+  }
+
 
   // Fonction pour augmenter la quantité
   const increaseQuantity = () => {
@@ -105,11 +113,11 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
   const currentImage = productImages[selectedImageIndex];
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
-      <div 
+      <div
         className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
@@ -130,13 +138,21 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Section images */}
             <div className="space-y-4">
+
               {/* Image principale */}
               <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
                 <img
                   src={currentImage}
                   alt={product.name}
                   className="w-full h-full object-cover"
+
                 />
+                {isNewProduct(product.date) && (
+                  <span className="absolute top-2 left-2 z-20 bg-adawi-gold-light text-red-500 text-[10px] sm:text-xs font-semibold px-2 py-1 rounded shadow-md uppercase">
+                    NEW
+                  </span>
+                )}
+
               </div>
 
               {/* Carrousel de miniatures avec les 4 images */}
@@ -145,11 +161,10 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                   <button
                     key={index}
                     onClick={() => setSelectedImageIndex(index)}
-                    className={`relative w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
-                      selectedImageIndex === index
+                    className={`relative w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 ${selectedImageIndex === index
                         ? 'border-adawi-gold shadow-md'
                         : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                      }`}
                   >
                     <img
                       src={image}
@@ -160,6 +175,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                     {selectedImageIndex === index && (
                       <div className="absolute inset-0 bg-adawi-gold/10"></div>
                     )}
+
                   </button>
                 ))}
               </div>
@@ -183,11 +199,10 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
-                      className={`px-4 py-2 border text-sm font-medium transition-colors duration-200 ${
-                        selectedSize === size
+                      className={`px-4 py-2 border text-sm font-medium transition-colors duration-200 ${selectedSize === size
                           ? 'border-black bg-black text-white'
                           : 'border-gray-300 text-black hover:border-gray-400'
-                      }`}
+                        }`}
                     >
                       {size}
                     </button>
@@ -205,13 +220,11 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                     <button
                       key={color}
                       onClick={() => setSelectedColor(color)}
-                      className={`w-8 h-8 rounded border-2 transition-all duration-200 ${
-                        getProductColorStyle(color)
-                      } ${
-                        selectedColor === color 
-                          ? 'ring-2 ring-adawi-gold ring-offset-2' 
+                      className={`w-8 h-8 rounded border-2 transition-all duration-200 ${getProductColorStyle(color)
+                        } ${selectedColor === color
+                          ? 'ring-2 ring-adawi-gold ring-offset-2'
                           : 'hover:ring-1 hover:ring-gray-300 hover:ring-offset-1'
-                      }`}
+                        }`}
                       aria-label={`Sélectionner la couleur ${color}`}
                     />
                   ))}
@@ -220,12 +233,11 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
 
               {/* Quantité avec fonctionnalité */}
               <div className="flex items-center gap-4">
-                <button 
-                  className={`w-10 h-10 border flex items-center justify-center text-lg font-medium transition-colors ${
-                    quantity > 1 
-                      ? 'border-gray-300 hover:bg-gray-50 text-black' 
+                <button
+                  className={`w-10 h-10 border flex items-center justify-center text-lg font-medium transition-colors ${quantity > 1
+                      ? 'border-gray-300 hover:bg-gray-50 text-black'
                       : 'border-gray-200 text-gray-400 cursor-not-allowed'
-                  }`}
+                    }`}
                   onClick={decreaseQuantity}
                   disabled={quantity <= 1}
                   aria-label="Diminuer la quantité"
@@ -233,7 +245,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                   -
                 </button>
                 <span className="text-lg text-black font-medium min-w-[2rem] text-center">{quantity}</span>
-                <button 
+                <button
                   className="w-10 h-10 border text-black border-gray-300 flex items-center justify-center text-lg font-medium hover:bg-gray-50 transition-colors"
                   onClick={increaseQuantity}
                   aria-label="Augmenter la quantité"
@@ -243,14 +255,13 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
               </div>
 
               {/* Bouton d'ajout au panier mis à jour */}
-              <button 
+              <button
                 onClick={handleAddToCart}
                 disabled={isAddingToCart}
-                className={`w-full py-4 px-6 rounded-full font-medium text-lg transition-all duration-200 ${
-                  isAddingToCart
+                className={`w-full py-4 px-6 rounded-full font-medium text-lg transition-all duration-200 ${isAddingToCart
                     ? 'bg-adawi-gold text-white cursor-not-allowed'
                     : 'bg-black text-white hover:bg-gray-800'
-                }`}
+                  }`}
               >
                 {isAddingToCart ? (
                   <span className="flex items-center justify-center">
@@ -275,8 +286,8 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                     </svg>
                   </summary>
                   <div className="pt-2 pb-4 text-sm text-gray-700">
-                    <p>Découvrez ce magnifique {product.name.toLowerCase()} de notre collection {product.category}. 
-                    Confectionné avec soin et attention aux détails, ce produit allie style et confort.</p>
+                    <p>Découvrez ce magnifique {product.name.toLowerCase()} de notre collection {product.category}.
+                      Confectionné avec soin et attention aux détails, ce produit allie style et confort.</p>
                   </div>
                 </details>
 
