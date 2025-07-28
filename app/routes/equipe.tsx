@@ -184,7 +184,7 @@ export default function Equipe() {
             <h1 className="text-4xl md:text-5xl font-bold text-adawi-brown mb-4 tracking-tight">
               Notre Équipe
             </h1>
-            <p className="text-xl text-adawi-brown-light max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl text-black max-w-2xl mx-auto leading-relaxed">
               Découvrez les visages passionnés qui font d'Adawi une référence mode au Togo. Une équipe unie par l'amour de la mode et l'excellence du service.
             </p>
           </div>
@@ -197,7 +197,7 @@ export default function Equipe() {
               <h2 className="text-3xl md:text-4xl font-bold text-adawi-brown mb-4">
                 Direction
               </h2>
-              <p className="text-xl text-adawi-brown-light">
+              <p className="text-xl text-black">
                 Les visionnaires qui guident Adawi vers l'excellence
               </p>
             </div>
@@ -223,16 +223,16 @@ export default function Equipe() {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm text-adawi-brown-light">
+                        <p className="text-sm text-black">
                           {leader.experience}
                         </p>
-                        <p className="text-xs text-adawi-brown-light">
+                        <p className="text-xs text-black">
                           {leader.speciality}
                         </p>
                       </div>
                     </div>
                     
-                    <p className="text-adawi-brown-light mb-4 leading-relaxed">
+                    <p className="text-black mb-4 leading-relaxed">
                       {leader.bio}
                     </p>
                     
@@ -269,7 +269,7 @@ export default function Equipe() {
                     <h3 className="text-lg font-semibold text-adawi-brown mb-2">
                       {dept.name}
                     </h3>
-                    <p className="text-sm text-adawi-brown-light mb-3">
+                    <p className="text-sm text-black mb-3">
                       {dept.description}
                     </p>
                     <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${dept.color}`}>
@@ -289,12 +289,12 @@ export default function Equipe() {
               <h2 className="text-3xl md:text-4xl font-bold text-adawi-brown mb-4">
                 Rencontrez l'Équipe
               </h2>
-              <p className="text-xl text-adawi-brown-light">
+              <p className="text-xl text-black">
                 Les talents qui donnent vie à l'expérience Adawi
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-8">
               {teamMembers.map((member) => (
                 <div key={member.id} className="bg-white rounded-2xl shadow-lg border border-adawi-gold/20 overflow-hidden hover:shadow-xl transition-all duration-300">
                   <div className="aspect-square bg-gray-100 overflow-hidden">
@@ -309,15 +309,15 @@ export default function Equipe() {
                       <h3 className="text-xl font-semibold text-adawi-brown mb-1">
                         {member.name}
                       </h3>
-                      <p className="text-adawi-gold font-medium text-sm mb-1">
+                      <p className="text-black font-medium text-sm mb-1">
                         {member.role}
                       </p>
-                      <p className="text-xs text-adawi-brown-light">
+                      <p className="text-xs text-black">
                         {member.department}
                       </p>
                     </div>
                     
-                    <p className="text-sm text-adawi-brown-light mb-4 leading-relaxed">
+                    <p className="text-sm text-black mb-4 leading-relaxed">
                       {member.bio}
                     </p>
                     
@@ -333,7 +333,7 @@ export default function Equipe() {
                         <h4 className="text-sm font-semibold text-adawi-brown mb-2">Compétences :</h4>
                         <ul className="space-y-1">
                           {member.skills.map((skill, index) => (
-                            <li key={index} className="text-xs text-adawi-brown-light flex items-center">
+                            <li key={index} className="text-xs text-black flex items-center">
                               <Star className="w-3 h-3 text-adawi-gold mr-2 flex-shrink-0" />
                               {skill}
                             </li>
@@ -355,7 +355,7 @@ export default function Equipe() {
               <h2 className="text-3xl md:text-4xl font-bold text-adawi-brown mb-4">
                 Nos Valeurs
               </h2>
-              <p className="text-xl text-adawi-brown-light">
+              <p className="text-xl text-black">
                 Les principes qui nous unissent et nous guident au quotidien
               </p>
             </div>
@@ -371,7 +371,7 @@ export default function Equipe() {
                     <h3 className="text-xl font-semibold text-adawi-brown mb-4">
                       {value.title}
                     </h3>
-                    <p className="text-adawi-brown-light leading-relaxed">
+                    <p className="text-black leading-relaxed">
                       {value.description}
                     </p>
                   </div>
@@ -392,7 +392,7 @@ export default function Equipe() {
                 <h3 className="text-2xl font-bold text-adawi-brown mb-4">
                   Notre Mission
                 </h3>
-                <p className="text-adawi-brown-light leading-relaxed">
+                <p className="text-black  leading-relaxed">
                   Démocratiser l'élégance et rendre la mode accessible à tous au Togo, en offrant des produits de qualité, des conseils personnalisés et un service d'exception qui révèle la beauté unique de chaque personne.
                 </p>
               </div>
@@ -404,7 +404,7 @@ export default function Equipe() {
                 <h3 className="text-2xl font-bold text-adawi-brown mb-4">
                   Notre Vision
                 </h3>
-                <p className="text-adawi-brown-light leading-relaxed">
+                <p className="text-black leading-relaxed">
                   Devenir la référence mode incontournable en Afrique de l'Ouest, reconnue pour son expertise, son innovation et son impact positif sur la confiance en soi de nos clients.
                 </p>
               </div>

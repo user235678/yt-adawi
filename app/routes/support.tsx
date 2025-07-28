@@ -155,7 +155,7 @@ export default function Support() {
             <h1 className="text-4xl md:text-5xl font-bold text-adawi-brown mb-4 tracking-tight">
               Support Client
             </h1>
-            <p className="text-xl text-adawi-brown-light max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl text-black max-w-2xl mx-auto leading-relaxed">
               Notre équipe dédiée est là pour vous aider. Trouvez rapidement les réponses à vos questions ou contactez-nous directement.
             </p>
           </div>
@@ -168,7 +168,7 @@ export default function Support() {
               <h2 className="text-3xl md:text-4xl font-bold text-adawi-brown mb-4">
                 Aide Rapide
               </h2>
-              <p className="text-xl text-adawi-brown-light">
+              <p className="text-xl text-black">
                 Accédez rapidement aux informations les plus demandées
               </p>
             </div>
@@ -186,7 +186,7 @@ export default function Support() {
                   <h3 className="text-lg font-semibold text-adawi-brown mb-2">
                     {item.title}
                   </h3>
-                  <p className="text-sm text-adawi-brown-light">
+                  <p className="text-sm text-black">
                     {item.description}
                   </p>
                 </a>
@@ -202,7 +202,7 @@ export default function Support() {
               <h2 className="text-3xl md:text-4xl font-bold text-adawi-brown mb-4">
                 Contactez-nous
               </h2>
-              <p className="text-xl text-adawi-brown-light">
+              <p className="text-xl text-black">
                 Choisissez le canal qui vous convient le mieux
               </p>
             </div>
@@ -212,7 +212,7 @@ export default function Support() {
                 <div key={index} className="bg-adawi-beige/30 rounded-2xl p-8 text-center hover:bg-adawi-beige/50 transition-all duration-300">
                   <div className="text-4xl mb-4">{channel.icon}</div>
                   <h3 className="text-xl font-semibold text-adawi-brown mb-2">{channel.title}</h3>
-                  <p className="text-adawi-brown-light mb-4">{channel.description}</p>
+                  <p className="text-black mb-4">{channel.description}</p>
                   
                   <div className="mb-4">
                     <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${channel.color}`}>
@@ -238,7 +238,7 @@ export default function Support() {
               <h2 className="text-3xl md:text-4xl font-bold text-adawi-brown mb-4">
                 Questions Fréquentes
               </h2>
-              <p className="text-xl text-adawi-brown-light">
+              <p className="text-xl text-black">
                 Trouvez rapidement les réponses à vos questions
               </p>
             </div>
@@ -267,7 +267,7 @@ export default function Support() {
                   
                   {activeSection === item.id && (
                     <div className="px-8 pb-6 border-t border-adawi-gold/10">
-                      <p className="text-adawi-brown-light mt-4 leading-relaxed">
+                      <p className="text-black mt-4 leading-relaxed">
                         {item.answer}
                       </p>
                     </div>
@@ -285,7 +285,7 @@ export default function Support() {
               <h2 className="text-3xl md:text-4xl font-bold text-adawi-brown mb-4">
                 Créer un Ticket de Support
               </h2>
-              <p className="text-xl text-adawi-brown-light">
+              <p className="text-xl text-black">
                 Décrivez votre problème en détail pour une assistance rapide et personnalisée
               </p>
             </div>
@@ -303,12 +303,12 @@ export default function Support() {
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border-2 border-adawi-gold/30 rounded-full focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent bg-white text-adawi-brown placeholder-adawi-brown-light"
-                      placeholder="Votre nom complet"
+                      className="w-full px-4 py-3 border-2 border-adawi-gold/30 rounded-full focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent bg-white text-black placeholder-black/25"
+                      placeholder="votre nom complet"
                       required
                     />
                   </div>
-                  <div>
+                  <div> 
                     <label htmlFor="email" className="block text-sm font-medium text-adawi-brown mb-2">
                       Email *
                     </label>
@@ -318,8 +318,8 @@ export default function Support() {
                       name="email"
                       value={formData.email}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border-2 border-adawi-gold/30 rounded-full focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent bg-white text-adawi-brown placeholder-adawi-brown-light"
-                      placeholder="votre@email.com"
+                      className="w-full px-4 py-3 border-2 border-adawi-gold/30 rounded-full focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent bg-white text-black placeholder-black/25"
+                      placeholder="email@gmail.com"
                       required
                     />
                   </div>
@@ -335,7 +335,7 @@ export default function Support() {
                       name="category"
                       value={formData.category}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border-2 border-adawi-gold/30 rounded-full focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent bg-white text-adawi-brown"
+                      className="w-full px-4 py-3 border-2 border-adawi-gold/30 rounded-full focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent bg-white text-black"
                       required
                     >
                       <option value="general">Question générale</option>
@@ -349,14 +349,14 @@ export default function Support() {
                   </div>
                   <div>
                     <label htmlFor="priority" className="block text-sm font-medium text-adawi-brown mb-2">
-                      Priorité
+                      Priorité *
                     </label>
                     <select
                       id="priority"
                       name="priority"
                       value={formData.priority}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border-2 border-adawi-gold/30 rounded-full focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent bg-white text-adawi-brown"
+                      className="w-full px-4 py-3 border-2 border-adawi-gold/30 rounded-full focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent bg-white text-black"
                     >
                       <option value="low">Faible</option>
                       <option value="normal">Normal</option>
@@ -376,7 +376,7 @@ export default function Support() {
                     name="subject"
                     value={formData.subject}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border-2 border-adawi-gold/30 rounded-full focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent bg-white text-adawi-brown placeholder-adawi-brown-light"
+                    className="w-full px-4 py-3 border-2 border-adawi-gold/30 rounded-full focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent bg-white text-black placeholder-black/25"
                     placeholder="Résumé de votre demande"
                     required
                   />
@@ -392,7 +392,7 @@ export default function Support() {
                     value={formData.message}
                     onChange={handleInputChange}
                     rows={6}
-                    className="w-full px-4 py-3 border-2 border-adawi-gold/30 rounded-2xl focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent bg-white text-adawi-brown placeholder-adawi-brown-light resize-none"
+                    className="w-full px-4 py-3 border-2 border-adawi-gold/30 rounded-2xl focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent bg-white text-black placeholder-black/25 resize-none"
                     placeholder="Décrivez votre problème en détail. Plus vous nous donnez d'informations, plus nous pourrons vous aider efficacement..."
                     required
                   />
@@ -405,7 +405,7 @@ export default function Support() {
                     </svg>
                     <div className="text-sm text-adawi-brown">
                       <p className="font-medium mb-1">Temps de réponse estimé :</p>
-                      <ul className="text-adawi-brown-light space-y-1">
+                      <ul className="text-black space-y-1">
                         <li>• Questions générales : 2-4 heures</li>
                         <li>• Problèmes de commande : 1-2 heures</li>
                         <li>• Problèmes urgents : 30 minutes</li>
@@ -434,7 +434,7 @@ export default function Support() {
               <h2 className="text-3xl md:text-4xl font-bold text-adawi-brown mb-4">
                 Ressources Utiles
               </h2>
-              <p className="text-xl text-adawi-brown-light">
+              <p className="text-xl text-black">
                 Explorez nos guides et ressources pour une expérience optimale
               </p>
             </div>
@@ -443,25 +443,25 @@ export default function Support() {
               <a href="/guide-tailles" className="bg-white rounded-2xl p-6 shadow-lg border border-adawi-gold/20 hover:shadow-xl transition-all duration-300 hover:scale-105 text-center group">
                 <div className="text-3xl mb-4 group-hover:scale-110 transition-transform duration-300">📏</div>
                 <h3 className="text-lg font-semibold text-adawi-brown mb-2">Guide des Tailles</h3>
-                <p className="text-sm text-adawi-brown-light">Trouvez votre taille parfaite</p>
+                <p className="text-sm text-black">Trouvez votre taille parfaite</p>
               </a>
 
               <a href="/retour" className="bg-white rounded-2xl p-6 shadow-lg border border-adawi-gold/20 hover:shadow-xl transition-all duration-300 hover:scale-105 text-center group">
                 <div className="text-3xl mb-4 group-hover:scale-110 transition-transform duration-300">🔄</div>
                 <h3 className="text-lg font-semibold text-adawi-brown mb-2">Retours</h3>
-                <p className="text-sm text-adawi-brown-light">Politique de retour</p>
+                <p className="text-sm text-black">Politique de retour</p>
               </a>
 
               <a href="/livraison" className="bg-white rounded-2xl p-6 shadow-lg border border-adawi-gold/20 hover:shadow-xl transition-all duration-300 hover:scale-105 text-center group">
                 <div className="text-3xl mb-4 group-hover:scale-110 transition-transform duration-300">🚚</div>
                 <h3 className="text-lg font-semibold text-adawi-brown mb-2">Livraison</h3>
-                <p className="text-sm text-adawi-brown-light">Infos de livraison</p>
+                <p className="text-sm text-black">Infos de livraison</p>
               </a>
 
               <a href="/services" className="bg-white rounded-2xl p-6 shadow-lg border border-adawi-gold/20 hover:shadow-xl transition-all duration-300 hover:scale-105 text-center group">
                 <div className="text-3xl mb-4 group-hover:scale-110 transition-transform duration-300">⚙️</div>
                 <h3 className="text-lg font-semibold text-adawi-brown mb-2">Nos Services</h3>
-                <p className="text-sm text-adawi-brown-light">Découvrez nos services</p>
+                <p className="text-sm text-black">Découvrez nos services</p>
               </a>
             </div>
           </div>

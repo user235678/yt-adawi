@@ -49,10 +49,10 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-semibold text-black mb-4">Commander</h3>
             <ul className="space-y-2 text-sm text-black">
-              <li><Link to="/homme" className="hover:text-white">Homme</Link></li>
-              <li><Link to="/femme" className="hover:text-white">Femme</Link></li>
-              <li><Link to="/enfants" className="hover:text-white">Enfants</Link></li>
-              <li><Link to="/montres" className="hover:text-white">Montres</Link></li>
+              <li><Link to="/boutique" className="hover:text-white">Homme</Link></li>
+              <li><Link to="/boutique" className="hover:text-white">Femme</Link></li>
+              <li><Link to="/boutique" className="hover:text-white">Enfants</Link></li>
+              <li><Link to="/boutique" className="hover:text-white">Montres</Link></li>
             </ul>
           </div>
 

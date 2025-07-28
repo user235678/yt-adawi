@@ -197,7 +197,7 @@ export default function FAQ() {
             <h1 className="text-4xl md:text-5xl font-bold text-adawi-brown mb-4 tracking-tight">
               Questions Fréquentes
             </h1>
-            <p className="text-xl text-adawi-brown-light max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl text-black max-w-2xl mx-auto leading-relaxed">
               Trouvez rapidement les réponses à vos questions. Notre équipe support est là pour vous aider.
             </p>
           </div>
@@ -213,7 +213,7 @@ export default function FAQ() {
                 placeholder="Rechercher dans les questions fréquentes..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 border-2 border-adawi-gold/30 rounded-full focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent bg-white text-adawi-brown placeholder-adawi-brown-light text-lg"
+                className="w-full pl-12 pr-4 py-4 border-2 border-adawi-gold/30 rounded-full focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent bg-white text-adawi-brown placeholder-black/25 text-lg"
               />
             </div>
           </div>
@@ -282,7 +282,7 @@ export default function FAQ() {
                     
                     {activeSection === item.id && (
                       <div className="px-8 pb-6 border-t border-adawi-gold/10">
-                        <p className="text-adawi-brown-light mt-4 leading-relaxed">
+                        <p className="text-black mt-4 leading-relaxed">
                           {item.answer}
                         </p>
                       </div>
@@ -300,7 +300,7 @@ export default function FAQ() {
             <h2 className="text-3xl md:text-4xl font-bold text-adawi-brown mb-4">
               Vous ne trouvez pas votre réponse ?
             </h2>
-            <p className="text-xl text-adawi-brown-light mb-12 max-w-2xl mx-auto">
+            <p className="text-xl text-black mb-12 max-w-2xl mx-auto">
               Notre équipe support est disponible pour vous aider personnellement
             </p>
             
@@ -308,7 +308,7 @@ export default function FAQ() {
               <div className="bg-white rounded-2xl p-8 shadow-lg border border-adawi-gold/20 hover:shadow-xl transition-all duration-300">
                 <Phone className="w-12 h-12 text-adawi-gold mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-adawi-brown mb-2">Téléphone</h3>
-                <p className="text-adawi-brown-light mb-4">Lun-Ven: 8h-18h<br />Sam: 9h-15h</p>
+                <p className="text-black mb-4">Lun-Ven: 8h-18h<br />Sam: 9h-15h</p>
                 <a href="tel:+22890000000" className="text-adawi-gold font-medium hover:text-adawi-brown">
                   +228 90 00 00 00
                 </a>
@@ -317,7 +317,7 @@ export default function FAQ() {
               <div className="bg-white rounded-2xl p-8 shadow-lg border border-adawi-gold/20 hover:shadow-xl transition-all duration-300">
                 <Mail className="w-12 h-12 text-adawi-gold mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-adawi-brown mb-2">Email</h3>
-                <p className="text-adawi-brown-light mb-4">Réponse sous 24h<br />7j/7</p>
+                <p className="text-black mb-4">Réponse sous 24h<br />7j/7</p>
                 <a href="mailto:support@adawi.com" className="text-adawi-gold font-medium hover:text-adawi-brown">
                   support@adawi.com
                 </a>
@@ -326,7 +326,7 @@ export default function FAQ() {
               <div className="bg-white rounded-2xl p-8 shadow-lg border border-adawi-gold/20 hover:shadow-xl transition-all duration-300">
                 <MessageCircle className="w-12 h-12 text-adawi-gold mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-adawi-brown mb-2">Chat en Direct</h3>
-                <p className="text-adawi-brown-light mb-4">Assistance immédiate<br />Lun-Ven: 9h-17h</p>
+                <p className="text-black mb-4">Assistance immédiate<br />Lun-Ven: 9h-17h</p>
                 <button className="text-adawi-gold font-medium hover:text-adawi-brown">
                   Démarrer le chat
                 </button>
@@ -358,7 +358,7 @@ export default function FAQ() {
               <h2 className="text-3xl md:text-4xl font-bold text-adawi-brown mb-4">
                 Guides Utiles
               </h2>
-              <p className="text-xl text-adawi-brown-light">
+              <p className="text-xl text-black">
                 Découvrez nos guides pour une meilleure expérience
               </p>
             </div>
@@ -369,7 +369,7 @@ export default function FAQ() {
                 <h3 className="text-lg font-semibold text-adawi-brown mb-2 group-hover:text-adawi-gold">
                   Guide des Tailles
                 </h3>
-                <p className="text-sm text-adawi-brown-light">
+                <p className="text-sm text-black">
                   Trouvez votre taille parfaite
                 </p>
               </a>
@@ -379,7 +379,7 @@ export default function FAQ() {
                 <h3 className="text-lg font-semibold text-adawi-brown mb-2 group-hover:text-adawi-gold">
                   Livraison
                 </h3>
-                <p className="text-sm text-adawi-brown-light">
+                <p className="text-sm text-black">
                   Délais et zones de livraison
                 </p>
               </a>
@@ -389,7 +389,7 @@ export default function FAQ() {
                 <h3 className="text-lg font-semibold text-adawi-brown mb-2 group-hover:text-adawi-gold">
                   Retours & Échanges
                 </h3>
-                <p className="text-sm text-adawi-brown-light">
+                <p className="text-sm text-black">
                   Politique de retour
                 </p>
               </a>

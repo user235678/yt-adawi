@@ -181,7 +181,7 @@ export default function Services() {
             <h1 className="text-4xl md:text-5xl font-bold text-adawi-brown mb-4 tracking-tight">
               Nos Services
             </h1>
-            <p className="text-xl text-adawi-brown-light max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl text-black max-w-2xl mx-auto leading-relaxed">
               Une expérience shopping unique avec des services personnalisés pour sublimer votre style et vous accompagner dans tous vos projets mode.
             </p>
           </div>
@@ -194,7 +194,7 @@ export default function Services() {
               <h2 className="text-3xl md:text-4xl font-bold text-adawi-brown mb-4">
                 Services Principaux
               </h2>
-              <p className="text-xl text-adawi-brown-light">
+              <p className="text-xl text-black">
                 Des services premium pour une expérience mode exceptionnelle
               </p>
             </div>
@@ -217,7 +217,7 @@ export default function Services() {
                       <h3 className="text-xl font-semibold text-adawi-brown mb-2">
                         {service.title}
                       </h3>
-                      <p className="text-adawi-brown-light mb-4">
+                      <p className="text-black mb-4">
                         {service.description}
                       </p>
                       
@@ -239,7 +239,7 @@ export default function Services() {
                       
                       {activeService === service.id && (
                         <div className="mt-4 p-4 bg-adawi-beige/20 rounded-xl">
-                          <p className="text-sm text-adawi-brown leading-relaxed">
+                          <p className="text-sm text-black leading-relaxed">
                             {service.details}
                           </p>
                         </div>
@@ -259,7 +259,7 @@ export default function Services() {
               <h2 className="text-3xl md:text-4xl font-bold text-adawi-brown mb-4">
                 Services Additionnels
               </h2>
-              <p className="text-xl text-adawi-brown-light">
+              <p className="text-xl text-black-light">
                 Des services complémentaires pour répondre à tous vos besoins
               </p>
             </div>
@@ -271,7 +271,7 @@ export default function Services() {
                   <h3 className="text-lg font-semibold text-adawi-brown mb-2">
                     {service.title}
                   </h3>
-                  <p className="text-sm text-adawi-brown-light">
+                  <p className="text-sm text-black">
                     {service.description}
                   </p>
                 </div>
@@ -287,7 +287,7 @@ export default function Services() {
               <h2 className="text-3xl md:text-4xl font-bold text-adawi-brown mb-4">
                 Comment ça marche ?
               </h2>
-              <p className="text-xl text-adawi-brown-light">
+              <p className="text-xl text-black">
                 Un processus simple en 4 étapes pour bénéficier de nos services
               </p>
             </div>
@@ -301,7 +301,7 @@ export default function Services() {
                   <h3 className="text-lg font-semibold text-adawi-brown mb-2">
                     {step.title}
                   </h3>
-                  <p className="text-sm text-adawi-brown-light">
+                  <p className="text-sm text-black">
                     {step.description}
                   </p>
                 </div>
@@ -317,7 +317,7 @@ export default function Services() {
               <h2 className="text-3xl md:text-4xl font-bold text-adawi-brown mb-4">
                 Pourquoi Choisir Nos Services ?
               </h2>
-              <p className="text-xl text-adawi-brown-light">
+              <p className="text-xl text-black">
                 L'excellence au service de votre style
               </p>
             </div>
@@ -330,7 +330,7 @@ export default function Services() {
                 <h3 className="text-xl font-semibold text-adawi-brown mb-4">
                   Expertise Professionnelle
                 </h3>
-                <p className="text-adawi-brown-light">
+                <p className="text-black">
                   Une équipe de professionnels formés aux dernières tendances mode et techniques de stylisme.
                 </p>
               </div>
@@ -342,7 +342,7 @@ export default function Services() {
                 <h3 className="text-xl font-semibold text-adawi-brown mb-4">
                   Service Rapide
                 </h3>
-                <p className="text-adawi-brown-light">
+                <p className="text-black">
                   Des délais respectés et un service efficace pour répondre à vos besoins dans les meilleurs délais.
                 </p>
               </div>
@@ -354,7 +354,7 @@ export default function Services() {
                 <h3 className="text-xl font-semibold text-adawi-brown mb-4">
                   Approche Personnalisée
                 </h3>
-                <p className="text-adawi-brown-light">
+                <p className="text-black">
                   Chaque client est unique. Nos services s'adaptent à vos goûts, votre morphologie et votre budget.
                 </p>
               </div>
@@ -369,7 +369,7 @@ export default function Services() {
               <h2 className="text-3xl md:text-4xl font-bold text-adawi-brown mb-4">
                 Ce que disent nos clients
               </h2>
-              <p className="text-xl text-adawi-brown-light">
+              <p className="text-xl text-black">
                 Leur satisfaction est notre plus belle récompense
               </p>
             </div>
@@ -383,7 +383,7 @@ export default function Services() {
                     ))}
                   </div>
                 </div>
-                <p className="text-adawi-brown-light mb-4 italic">
+                <p className="text-black mb-4 italic">
                   "Le service de stylisme m'a complètement transformée ! Les conseils étaient parfaits et j'ai enfin trouvé mon style."
                 </p>
                 <div className="font-semibold text-adawi-brown">
@@ -399,7 +399,7 @@ export default function Services() {
                     ))}
                   </div>
                 </div>
-                <p className="text-adawi-brown-light mb-4 italic">
+                <p className="text-black mb-4 italic">
                   "Les retouches sont impeccables et le service de livraison premium est un vrai plus. Je recommande !"
                 </p>
                 <div className="font-semibold text-adawi-brown">
@@ -415,7 +415,7 @@ export default function Services() {
                     ))}
                   </div>
                 </div>
-                <p className="text-adawi-brown-light mb-4 italic">
+                <p className="text-black mb-4 italic">
                   "Le programme fidélité et les événements privés font vraiment la différence. Service exceptionnel !"
                 </p>
                 <div className="font-semibold text-adawi-brown">

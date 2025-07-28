@@ -148,7 +148,7 @@ export default function Livraison() {
             <h1 className="text-4xl md:text-5xl font-bold text-adawi-brown mb-4 tracking-tight">
               Livraison
             </h1>
-            <p className="text-xl text-adawi-brown-light max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl text-black max-w-2xl mx-auto leading-relaxed">
               Découvrez nos options de livraison rapide et sécurisée. Nous livrons partout au Togo et à l'international avec un service de qualité.
             </p>
           </div>
@@ -161,7 +161,7 @@ export default function Livraison() {
               <h2 className="text-3xl md:text-4xl font-bold text-adawi-brown mb-4">
                 Zones de Livraison
               </h2>
-              <p className="text-xl text-adawi-brown-light">
+              <p className="text-xl text-black">
                 Délais et tarifs selon votre localisation
               </p>
             </div>
@@ -173,18 +173,18 @@ export default function Livraison() {
                   <h3 className="text-lg font-semibold text-adawi-brown mb-2">
                     {zone.zone}
                   </h3>
-                  <p className="text-sm text-adawi-brown-light mb-4">
+                  <p className="text-sm text-black mb-4">
                     {zone.description}
                   </p>
                   
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center justify-center">
                       <Clock className="w-4 h-4 text-adawi-gold mr-2" />
-                      <span className="text-sm font-medium text-adawi-brown">{zone.delay}</span>
+                      <span className="text-sm font-medium text-black">{zone.delay}</span>
                     </div>
                     <div className="flex items-center justify-center">
                       <CreditCard className="w-4 h-4 text-adawi-gold mr-2" />
-                      <span className="text-sm font-medium text-adawi-brown">{zone.price}</span>
+                      <span className="text-sm font-medium text-black">{zone.price}</span>
                     </div>
                   </div>
                   
@@ -204,7 +204,7 @@ export default function Livraison() {
               <h2 className="text-3xl md:text-4xl font-bold text-adawi-brown mb-4">
                 Options de Livraison
               </h2>
-              <p className="text-xl text-adawi-brown-light">
+              <p className="text-xl text-black">
                 Choisissez l'option qui vous convient le mieux
               </p>
             </div>
@@ -215,14 +215,14 @@ export default function Livraison() {
                   <div className="text-center mb-6">
                     <div className="text-4xl mb-4">{option.icon}</div>
                     <h3 className="text-xl font-semibold text-adawi-brown mb-2">{option.title}</h3>
-                    <p className="text-adawi-brown-light">{option.description}</p>
+                    <p className="text-black">{option.description}</p>
                   </div>
                   
                   <ul className="space-y-3">
                     {option.features.map((feature, featureIndex) => (
                       <li key={featureIndex} className="flex items-start">
                         <CheckCircle className="w-5 h-5 text-adawi-gold mr-3 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm text-adawi-brown">{feature}</span>
+                        <span className="text-sm text-black">{feature}</span>
                       </li>
                     ))}
                   </ul>
@@ -239,7 +239,7 @@ export default function Livraison() {
               <h2 className="text-3xl md:text-4xl font-bold text-adawi-brown mb-4">
                 Comment ça marche ?
               </h2>
-              <p className="text-xl text-adawi-brown-light">
+              <p className="text-xl text-black">
                 Le processus de livraison en 4 étapes simples
               </p>
             </div>
@@ -250,7 +250,7 @@ export default function Livraison() {
                   <span className="text-2xl font-bold text-white">1</span>
                 </div>
                 <h3 className="text-lg font-semibold text-adawi-brown mb-2">Commande</h3>
-                <p className="text-sm text-adawi-brown-light">Passez votre commande en ligne et choisissez votre mode de livraison</p>
+                <p className="text-sm text-black">Passez votre commande en ligne et choisissez votre mode de livraison</p>
               </div>
 
               <div className="text-center">
@@ -258,7 +258,7 @@ export default function Livraison() {
                   <span className="text-2xl font-bold text-white">2</span>
                 </div>
                 <h3 className="text-lg font-semibold text-adawi-brown mb-2">Préparation</h3>
-                <p className="text-sm text-adawi-brown-light">Nous préparons soigneusement votre commande dans nos entrepôts</p>
+                <p className="text-sm text-black">Nous préparons soigneusement votre commande dans nos entrepôts</p>
               </div>
 
               <div className="text-center">
@@ -266,7 +266,7 @@ export default function Livraison() {
                   <span className="text-2xl font-bold text-white">3</span>
                 </div>
                 <h3 className="text-lg font-semibold text-adawi-brown mb-2">Expédition</h3>
-                <p className="text-sm text-adawi-brown-light">Votre colis est expédié avec un numéro de suivi</p>
+                <p className="text-sm text-black">Votre colis est expédié avec un numéro de suivi</p>
               </div>
 
               <div className="text-center">
@@ -274,7 +274,7 @@ export default function Livraison() {
                   <span className="text-2xl font-bold text-white">4</span>
                 </div>
                 <h3 className="text-lg font-semibold text-adawi-brown mb-2">Réception</h3>
-                <p className="text-sm text-adawi-brown-light">Recevez votre commande à l'adresse indiquée</p>
+                <p className="text-sm text-black">Recevez votre commande à l'adresse indiquée</p>
               </div>
             </div>
           </div>
@@ -287,7 +287,7 @@ export default function Livraison() {
               <h2 className="text-3xl md:text-4xl font-bold text-adawi-brown mb-4">
                 Questions Fréquentes
               </h2>
-              <p className="text-xl text-adawi-brown-light">
+              <p className="text-xl text-black">
                 Tout ce que vous devez savoir sur nos livraisons
               </p>
             </div>
@@ -316,7 +316,7 @@ export default function Livraison() {
                   
                   {activeSection === item.id && (
                     <div className="px-8 pb-6 border-t border-adawi-gold/10">
-                      <p className="text-adawi-brown-light mt-4 leading-relaxed">
+                      <p className="text-black mt-4 leading-relaxed">
                         {item.answer}
                       </p>
                     </div>
@@ -335,7 +335,7 @@ export default function Livraison() {
               <h2 className="text-3xl md:text-4xl font-bold text-adawi-brown mb-4">
                 Suivez votre Commande
               </h2>
-              <p className="text-xl text-adawi-brown-light mb-8 max-w-2xl mx-auto">
+              <p className="text-xl text-black mb-8 max-w-2xl mx-auto">
                 Entrez votre numéro de commande pour connaître le statut de votre livraison en temps réel
               </p>
               
@@ -343,7 +343,7 @@ export default function Livraison() {
                 <input
                   type="text"
                   placeholder="Numéro de commande"
-                  className="flex-1 px-4 py-3 border-2 border-adawi-gold/30 rounded-full focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent bg-white text-adawi-brown placeholder-adawi-brown-light"
+                  className="flex-1 px-4 py-3 border-2 border-adawi-gold/30 rounded-full focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent bg-white text-adawi-brown placeholder-black/25"
                 />
                 <button className="bg-adawi-gold text-white px-8 py-3 rounded-full font-semibold hover:bg-adawi-brown transition-colors duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
                   Suivre
