@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface PaginationProps {
@@ -7,47 +8,38 @@ interface PaginationProps {
 }
 
 export default function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
-    const getVisiblePages = () => {
-        const pages = [];
-        const maxVisible = 5;
+    const maxVisible = 3;
+    const [startPage, setStartPage] = useState(1);
 
-        if (totalPages <= maxVisible) {
-            for (let i = 1; i <= totalPages; i++) {
-                pages.push(i);
-            }
-        } else {
-            if (currentPage <= 3) {
-                for (let i = 1; i <= Math.min(maxVisible, totalPages); i++) {
-                    pages.push(i);
-                }
-            } else if (currentPage >= totalPages - 2) {
-                for (let i = Math.max(1, totalPages - maxVisible + 1); i <= totalPages; i++) {
-                    pages.push(i);
-                }
-            } else {
-                for (let i = currentPage - 2; i <= currentPage + 2; i++) {
-                    pages.push(i);
-                }
-            }
+    const endPage = Math.min(startPage + maxVisible - 1, totalPages);
+    const visiblePages = Array.from(
+        { length: endPage - startPage + 1 },
+        (_, i) => startPage + i
+    );
+
+    const handleNextSet = () => {
+        if (startPage + maxVisible <= totalPages) {
+            setStartPage(startPage + 1);
         }
-
-        return pages;
     };
 
-    const visiblePages = getVisiblePages();
+    const handlePrevSet = () => {
+        if (startPage > 1) {
+            setStartPage(startPage - 1);
+        }
+    };
 
     return (
         <div className="flex items-center justify-center space-x-2 mt-8">
             {/* Flèche gauche */}
             <button
-                onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
+                type="button"
+                onClick={handlePrevSet}
+                disabled={startPage === 1}
                 className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                 aria-label="Page précédente"
             >
-                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
+                <ChevronLeft className="w-5 h-5 text-gray-600" />
             </button>
 
             {/* Boutons de pagination numérotés */}
@@ -55,13 +47,14 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
                 {visiblePages.map((page) => (
                     <button
                         key={page}
+                        type="button"
                         onClick={() => onPageChange(page)}
-                        className={`\n                            w-8 h-8 rounded-full text-sm font-medium transition-all duration-200
+                        className={`w-8 h-8 rounded-full text-sm font-medium transition-all duration-200
                             ${currentPage === page
                                 ? 'bg-adawi-gold text-white shadow-md'
                                 : 'text-gray-700 hover:bg-gray-100 hover:text-adawi-gold border border-gray-300'
-                            }
-                        `}>
+                            }`}
+                    >
                         {page}
                     </button>
                 ))}
@@ -69,14 +62,13 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
 
             {/* Flèche droite */}
             <button
-                onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
+                type="button"
+                onClick={handleNextSet}
+                disabled={endPage >= totalPages}
                 className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                 aria-label="Page suivante"
             >
-                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
+                <ChevronRight className="w-5 h-5 text-gray-600" />
             </button>
         </div>
     );

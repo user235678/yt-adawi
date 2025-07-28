@@ -79,6 +79,20 @@ export default function Blog() {
         { id: 30, title: "Look de soirée élégant", date: "02/11/04", image: "/0.png" },
         { id: 31, title: "Mode masculine moderne", date: "03/11/04", image: "/5.png" },
         { id: 32, title: "Style minimaliste", date: "04/11/04", image: "/6.png" },
+
+        // Page 4 (16 articles variés)
+        { id: 33, title: "Les 10 tendances de la saison", date: "05/11/04", image: "/5.png" },
+        { id: 34, title: "Les 10 tendances de la saison", date: "06/11/04", image: "/5.png" },
+        { id: 35, title: "Les 10 tendances de la saison", date: "07/11/04", image: "/5.png" },
+        { id: 36, title: "Les 10 tendances de la saison", date: "08/11/04", image: "/5.png" },
+        { id: 37, title: "Les 10 tendances de la saison", date: "09/11/04", image: "/5.png" },
+        { id: 38, title: "Les 10 tendances de la saison", date: "10/11/04", image: "/5.png" },
+        { id: 39, title: "Les 10 tendances de la saison", date: "11/11/04", image: "/5.png" },
+        { id: 40, title: "Les 10 tendances de la saison", date: "12/11/04", image: "/5.png" },
+        { id: 41, title: "Les 10 tendances de la saison", date: "13/11/04", image: "/5.png" },
+        { id: 42, title: "Les 10 tendances de la saison", date: "14/11/04", image: "/5.png" },
+        { id: 43, title: "Les 10 tendances de la saison", date: "15/11/04", image: "/5.png" },
+        { id: 44, title: "Les 10 tendances de la saison", date: "16/11/04", image: "/5.png" },
     ];
 
     const totalPages = Math.ceil(allBlogPosts.length / postsPerPage);
@@ -99,7 +113,7 @@ export default function Blog() {
             <div className="bg-adawi-beige-dark">
                 <br />
                 <br />
-                <br />
+            
             </div>
             <div className="bg-gray-200">
                 <br />

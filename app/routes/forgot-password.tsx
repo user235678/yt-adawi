@@ -1,180 +1,98 @@
-import type { MetaFunction } from "@remix-run/node";
-import TopBanner from "~/components/TopBanner";
-import Header from "~/components/CompactHeader";
-import Footer from "~/components/Footer";
+import { MetaFunction, ActionFunction } from "@remix-run/node";
+import { Form, useNavigation } from "@remix-run/react";
 import { useState } from "react";
-import { Link } from "@remix-run/react";
+import TopBanner from "~/components/TopBanner";
+import Footer from "~/components/Footer";
+import CompactHeader from "~/components/CompactHeader";
 
-export const meta: MetaFunction = () => {
-  return [
-    { title: "Mot de passe oublié - Adawi" },
-    { name: "description", content: "Réinitialisez votre mot de passe Adawi" },
-  ];
+export const meta: MetaFunction = () => [{ title: "Forgot Password - The Providers" }];
+
+// Action côté serveur : récupère l’email et affiche en console
+export const action: ActionFunction = async ({ request }) => {
+  const formData = await request.formData();
+  const email = formData.get("email");
+
+  console.log("Mot de passe oublié pour :", email);
+
+  // Tu peux ici : générer un token, envoyer un mail, etc.
+  return null;
 };
 
 export default function ForgotPassword() {
-  const [email, setEmail] = useState('');
-  const [isSubmitted, setIsSubmitted] = useState(false);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Password reset request for:', email);
-    setIsSubmitted(true);
-  };
-
-  if (isSubmitted) {
-    return (
-      <div className="min-h-screen bg-white">
-        <TopBanner />
-        <Header />
-
-        {/* Section de confirmation */}
-        <section className="bg-gray-200 px-6 py-16">
-          <div className="max-w-md mx-auto text-center">
-            {/* Icône de confirmation */}
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-6">
-              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-
-            {/* Titre */}
-            <h1 className="text-3xl font-bold text-black text-center mb-4 tracking-wider">
-              EMAIL ENVOYÉ
-            </h1>
-
-            {/* Message de confirmation */}
-            <p className="text-gray-600 text-center mb-8 text-sm leading-relaxed">
-              Un email de réinitialisation a été envoyé à <strong>{email}</strong>.
-              <br />
-              Vérifiez votre boîte de réception et suivez les instructions.
-            </p>
-
-            {/* Informations supplémentaires */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
-              <p className="text-blue-800 text-xs">
-                <strong>Vous ne recevez pas l'email ?</strong>
-                <br />
-                Vérifiez vos spams ou contactez notre support.
-              </p>
-            </div>
-
-            {/* Boutons d'action */}
-            <div className="space-y-4">
-              <Link
-                to="/login"
-                className="block w-full bg-black text-white font-medium py-3 px-4 rounded-none hover:bg-gray-800 transition-colors duration-300 tracking-wider text-center"
-              >
-                RETOUR À LA CONNEXION
-              </Link>
-
-              <button
-                onClick={() => setIsSubmitted(false)}
-                className="block w-full bg-white text-black font-medium py-3 px-4 rounded-none border border-gray-300 hover:bg-gray-50 transition-colors duration-300 tracking-wider"
-              >
-                RENVOYER L'EMAIL
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <Footer />
-      </div>
-    );
-  }
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
+  const [submitted, setSubmitted] = useState(false);
 
   return (
-    <div className="min-h-screen bg-white">
+    <>
       <TopBanner />
-      <Header />
+      <CompactHeader/>
+      <div
+        className="min-h-screen flex items-center justify-center bg-cover bg-center px-4"
+        style={{
+          backgroundImage:
+            "url(https://img.freepik.com/premium-photo/background-image-elegant-clothing-boutique-interior-with-clothes-accessories-display-copy-space_236854-52930.jpg)",
+        }}
+      >
+        <div className="w-full max-w-sm p-8 rounded-[20px] bg-white font-sans font-bold text-black shadow-xl flex flex-col items-center">
+          {/* Logo */}
+          <div className="mb-4">
+            <img
+              src="/ADAWI _ LOGO FOND BLANC.jpg"
+              alt="Logo"
+              className="h-[120px] object-contain"
+            />
+          </div>
 
-      {/* Section de réinitialisation */}
-      <section className="bg-gray-200 px-6 py-16">
-        <div className="max-w-md mx-auto">
-          {/* Titre */}
-          <h1 className="text-3xl font-bold text-black text-center mb-4 tracking-wider">
-            MOT DE PASSE OUBLIÉ
-          </h1>
+          {/* Title */}
+          <div className="text-center text-[24px] text-[#555] mb-6">
+            Forgot Password
+          </div>
 
-          {/* Texte descriptif */}
-          <p className="text-gray-600 text-center mb-8 text-sm leading-relaxed">
-            Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.
-          </p>
-
-          {/* Formulaire */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Champ Email */}
-            <div>
-              <input
-                type="email"
-                name="email"
-                value={email}
-                onChange={handleInputChange}
-                placeholder="Votre adresse e-mail"
-                className="w-full px-4 py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-400 bg-white text-black placeholder-gray-500"
-                required
-              />
+          {submitted ? (
+            <div className="text-center text-green-600">
+              Un lien a été envoyé à votre adresse email. Vérifiez votre boîte de réception et suivez les instructions.
             </div>
+          ) : (
+            <Form
+              method="post"
+              className="w-full space-y-4"
+              onSubmit={() => setSubmitted(true)}
+            >
+              <div className="border-b-2 border-gray-300 hover:border-adawi-gold transition duration-300">
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Your email"
+                  required
+                  className="w-full bg-transparent outline-none border-none text-[18px] text-[#555] py-5 px-2 tracking-wide"
+                />
+              </div>
 
-            {/* Bouton de soumission */}
-            <button
+              <button
               type="submit"
-              className="w-full bg-black text-white font-medium py-3 px-4 rounded-none hover:bg-gray-800 transition-colors duration-300 tracking-wider"
+              disabled={isSubmitting}
+              className={`w-full h-[60px] mt-6 rounded-full text-white text-[20px] font-bold bg-gradient-to-r from-adawi-brown via-adawi-brown-light to-adawi-gold-light shadow-md transition duration-500 hover:bg-right flex items-center justify-center ${
+                isSubmitting ? "opacity-70 cursor-not-allowed" : ""
+              }`}
             >
-              ENVOYER LE LIEN
+              {isSubmitting ? (
+                <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                "Send Reset Link"
+              )}
             </button>
-          </form>
+            </Form>
+          )}
 
-          {/* Informations de sécurité */}
-          <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-yellow-800 text-xs">
-              <strong>Note de sécurité :</strong> Si cette adresse email n'est pas associée à un compte, vous ne recevrez pas d'email.
-            </p>
-          </div>
-
-          {/* Liens de navigation */}
-          <div className="text-center mt-6 space-y-2">
-            <p className="text-sm text-gray-600">
-              Vous vous souvenez de votre mot de passe ?{' '}
-              <Link
-                to="/login"
-                className="text-gray-800 hover:text-black transition-colors underline"
-              >
-                Se connecter
-              </Link>
-            </p>
-            
-            <p className="text-sm text-gray-600">
-              Pas encore de compte ?{' '}
-              <Link
-                to="/signup"
-                className="text-gray-800 hover:text-black transition-colors underline"
-              >
-                Créer un compte
-              </Link>
-            </p>
-          </div>
-
-          {/* Support */}
-          <div className="text-center mt-8 pt-6 border-t border-gray-300">
-            <p className="text-xs text-gray-500 mb-2">
-              Besoin d'aide ?
-            </p>
-            <Link
-              to="/contact"
-              className="text-xs text-gray-600 hover:text-black transition-colors underline"
-            >
-              Contacter le support client
-            </Link>
+          <div className="text-center text-sm text-gray-400 mt-4">
+            <a href="/login" className="hover:text-adawi-gold">
+              Back to login
+            </a>
           </div>
         </div>
-      </section>
-
+      </div>
       <Footer />
-    </div>
+    </>
   );
 }

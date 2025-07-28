@@ -232,7 +232,7 @@ const CompactHeader: React.FC = () => {
                         </form>
 
                         <Link
-                            to="/auth"
+                            to="/login"
                             className="text-adawi-brown hover:text-adawi-gold transition-all duration-200 p-1.5 rounded-full hover:bg-adawi-beige/50 inline-flex items-center justify-center group"
                             aria-label="Compte utilisateur"
                         >
@@ -376,7 +376,7 @@ const CompactHeader: React.FC = () => {
                             {/* Actions Mobile */}
                             <div className="px-2 space-y-1">
                                 <Link
-                                    to="/auth"
+                                    to="/login"
                                     className="flex items-center w-full px-4 py-3 text-sm text-adawi-brown hover:bg-adawi-beige hover:text-adawi-gold rounded-xl transition-all duration-200 transform hover:scale-[1.02] group"
                                     role="menuitem"
                                     onClick={() => setIsMobileMenuOpen(false)}

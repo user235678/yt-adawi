@@ -1,116 +1,110 @@
-import type { MetaFunction } from "@remix-run/node";
-import TopBanner from "~/components/TopBanner";
-import Header from "~/components/CompactHeader";
-import Footer from "~/components/Footer";
+import { MetaFunction, ActionFunction } from "@remix-run/node";
+import { Form, useNavigation } from "@remix-run/react";
 import { useState } from "react";
-import { Link } from "@remix-run/react";
-import { redirect } from "@remix-run/node";
+import { Eye, EyeOff } from "lucide-react";
+import TopBanner from "~/components/TopBanner";
+import Footer from "~/components/Footer";
+import CompactHeader from "~/components/CompactHeader";
 
-export const meta: MetaFunction = () => {
-  return [
-    { title: "Login - Adawi" },
-    { name: "description", content: "Connectez-vous à votre compte Adawi" },
-  ];
-};
+export const meta: MetaFunction = () => [{ title: "The Providers - Login" }];
 
-export const loader = () => {
-  return redirect("/auth");
+// Action fictive (à remplacer par vérif utilisateur plus tard)
+export const action: ActionFunction = async ({ request }) => {
+  const formData = await request.formData();
+  const email = formData.get("email");
+  const password = formData.get("password");
+
+  console.log({ email, password }); // Pour test
+  return null;
 };
 
 export default function Login() {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Login attempt:', formData);
-  };
+  const [showPassword, setShowPassword] = useState(false);
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
 
   return (
-    <div className="min-h-screen bg-white">
+    <>
       <TopBanner />
-      <Header />
+      <CompactHeader/>
+      <div
+        className="min-h-screen flex items-center justify-center bg-cover bg-center px-4"
+        style={{
+          backgroundImage:
+            "url(https://img.freepik.com/premium-photo/background-image-elegant-clothing-boutique-interior-with-clothes-accessories-display-copy-space_236854-52930.jpg)",
+        }}
+      >
+        <div className="w-full max-w-sm h-auto p-6 rounded-[20px] bg-white font-sans font-bold text-black shadow-xl flex flex-col items-center justify-start">
+          {/* Logo */}
+          <div className="w-full h-[160px] flex justify-center items-center mb-2">
+            <img
+              src="/ADAWI _ LOGO FOND BLANC.jpg"
+              alt="Logo"
+              className="h-[140px] object-contain"
+            />
+          </div>
 
-      {/* Section de connexion */}
-      <section className="bg-gray-200 px-6 py-16">
-        <div className="max-w-md mx-auto">
-          {/* Titre */}
-          <h1 className="text-3xl font-bold text-black text-center mb-4 tracking-wider">
+          {/* Title */}
+          <div className="text-center text-[26px] text-adawi-brown tracking-[0.5px] mb-[25px]">
             LOGIN
-          </h1>
+          </div>
 
-          {/* Texte descriptif */}
-          <p className="text-gray-600 text-center mb-8 text-sm">
-            Veuillez entrer vos identifiants de connexion:
-          </p>
-
-          {/* Formulaire */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Champ Email */}
-            <div>
+          {/* Form */}
+          <Form method="post" className="w-full space-y-4">
+            <div className="border-b-2 border-gray-300 hover:border-adawi-gold transition duration-300">
               <input
                 type="email"
                 name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                placeholder="E-mail"
-                className="w-full px-4 py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-400 bg-white text-black placeholder-gray-500"
+                placeholder="Email"
                 required
+                className="w-full bg-transparent outline-none border-none text-[18px] text-[#555] py-5 px-2 tracking-wide"
               />
             </div>
 
-            {/* Champ Password avec lien "Forgot password" */}
-            <div className="relative">
+            <div className="relative border-b-2 border-gray-300 hover:border-adawi-gold transition duration-300">
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
-                value={formData.password}
-                onChange={handleInputChange}
                 placeholder="Password"
-                className="w-full px-4 py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-400 bg-white text-black placeholder-gray-500"
                 required
+                className="w-full bg-transparent outline-none border-none text-[18px] text-[#555] py-5 px-2 pr-10 tracking-wide"
               />
-              <Link
-                to="/forgot-password"
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-xs text-gray-500 hover:text-gray-700 transition-colors"
+              <div
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"
+                onClick={() => setShowPassword((prev) => !prev)}
               >
-                Mot de passe oublié?
-              </Link>
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </div>
             </div>
 
-            {/* Bouton Login */}
             <button
               type="submit"
-              className="w-full bg-black text-white font-medium py-3 px-4 rounded-none hover:bg-gray-800 transition-colors duration-300 tracking-wider"
+              disabled={isSubmitting}
+              className={`w-full h-[60px] mt-6 rounded-full text-white text-[20px] font-bold bg-gradient-to-r from-adawi-brown via-adawi-brown-light to-adawi-gold-light shadow-md transition duration-500 hover:bg-right flex items-center justify-center ${
+                isSubmitting ? "opacity-70 cursor-not-allowed" : ""
+              }`}
             >
-              CONNEXION
+              {isSubmitting ? (
+                <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                "Sign Up"
+              )}
             </button>
-          </form>
+          </Form>
 
-          {/* Lien d'inscription */}
-          <p className="text-center mt-6 text-sm text-gray-600">
-            {`Nouveau Membre? `}
-            <Link
-              to="/signup"
-              className="text-gray-800 hover:text-black transition-colors underline"
-            >
-              Creer un compte
-            </Link>
-          </p>
+          {/* Links */}
+          <div className="text-center text-sm text-gray-400 mt-4">
+            <a href="/forgot-password" className="hover:text-adawi-gold">
+              Forget Password?
+            </a>
+            &nbsp;&nbsp;
+            <a href="/signup" className="hover:text-adawi-gold">
+              Sign up
+            </a>
+          </div>
         </div>
-      </section>
-
+      </div>
       <Footer />
-    </div>
+    </>
   );
 }

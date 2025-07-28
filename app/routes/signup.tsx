@@ -1,138 +1,118 @@
-import type { MetaFunction } from "@remix-run/node";
-import TopBanner from "~/components/TopBanner";
-import Header from "~/components/CompactHeader";
-import Footer from "~/components/Footer";
+import { MetaFunction, ActionFunction } from "@remix-run/node";
+import { Form, useNavigation } from "@remix-run/react";
 import { useState } from "react";
-import { Link } from "@remix-run/react";
-import { redirect } from "@remix-run/node";
+import { Eye, EyeOff } from "lucide-react";
+import TopBanner from "~/components/TopBanner";
+import Footer from "~/components/Footer";
+import CompactHeader from "~/components/CompactHeader";
 
-export const meta: MetaFunction = () => {
-  return [
-    { title: "Sign Up - Adawi" },
-    { name: "description", content: "Créez votre compte Adawi" },
-  ];
+export const meta: MetaFunction = () => [{ title: "The Providers - Sign Up" }];
+
+// Fonction appelée à la soumission du formulaire
+export const action: ActionFunction = async ({ request }) => {
+  const formData = await request.formData();
+  const username = formData.get("username");
+  const email = formData.get("email");
+  const password = formData.get("password");
+
+  console.log({ username, email, password }); // Pour test
+
+  // Tu peux ensuite connecter MongoDB ici si tu veux
+
+  return null;
 };
 
-export const loader = () => {
-  return redirect("/auth");
-};
-
-export default function SignUp() {
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: ''
-  });
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Sign up attempt:', formData);
-  };
+export default function Signup() {
+  const [showPassword, setShowPassword] = useState(false);
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
 
   return (
-    <div className="min-h-screen bg-white">
+    <>
       <TopBanner />
-      <Header />
+      <CompactHeader/>
+      <div
+        className="min-h-screen flex items-center justify-center bg-cover bg-center px-4"
+        style={{
+          backgroundImage:
+            "url(https://img.freepik.com/premium-photo/background-image-elegant-clothing-boutique-interior-with-clothes-accessories-display-copy-space_236854-52930.jpg)",
+        }}
+      >
+        <div className="w-full max-w-md p-[60px_35px_35px_35px] rounded-[20px] bg-white font-sans font-bold text-[#03a1fc] shadow-xl">
+          {/* Logo */}
+          <div className="w-full mb-4 flex justify-center items-center">
+            <img
+              src="/ADAWI _ LOGO FOND BLANC.jpg"
+              alt="Logo"
+              className="h-[140px] object-contain"
+            />
+          </div>
 
-      {/* Section d'inscription */}
-      <section className="bg-gray-200 px-6 py-16">
-        <div className="max-w-md mx-auto">
-          {/* Titre */}
-          <h1 className="text-3xl font-bold text-black text-center mb-4 tracking-wider">
+          <div className="text-center text-[28px] text-[#555] tracking-[0.5px] mb-[10px]">
             SIGN UP
-          </h1>
+          </div>
 
-          {/* Texte descriptif */}
-          <p className="text-gray-600 text-center mb-8 text-sm">
-            Creer votre compte pour commencer:
-          </p>
-
-          {/* Formulaire */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Champ Prénom */}
-            <div>
+          <Form method="post" className="space-y-4">
+            <div className="border-b-2 border-gray-300 hover:border-adawi-gold transition duration-300">
               <input
                 type="text"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleInputChange}
-                placeholder="Nom"
-                className="w-full px-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:border-gray-400 bg-white text-black placeholder-gray-500"
+                name="username"
+                placeholder="Username"
                 required
+                className="w-full bg-transparent outline-none border-none text-[18px] text-[#555] py-5 px-2 tracking-wide"
               />
             </div>
 
-            {/* Champ Nom */}
-            <div>
-              <input
-                type="text"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleInputChange}
-                placeholder="Prenom"
-                className="w-full px-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:border-gray-400 bg-white text-black placeholder-gray-500"
-                required
-              />
-            </div>
-
-            {/* Champ Email */}
-            <div>
+            <div className="border-b-2 border-gray-300 hover:border-adawi-gold transition duration-300">
               <input
                 type="email"
                 name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                placeholder="E-mail"
-                className="w-full px-4 py-3 border rounded-full border-gray-300 focus:outline-none focus:border-gray-400 bg-white text-black placeholder-gray-500"
+                placeholder="Email"
                 required
+                className="w-full bg-transparent outline-none border-none text-[18px] text-[#555] py-5 px-2 tracking-wide"
               />
             </div>
 
-            {/* Champ Password */}
-            <div>
+            <div className="relative border-b-2 border-gray-300 hover:border-adawi-gold transition duration-300">
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                placeholder="Mot de passe"
-                className="w-full px-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:border-gray-400 bg-white text-black placeholder-gray-500"
+                placeholder="Password"
                 required
+                className="w-full bg-transparent outline-none border-none text-[18px] text-[#555] py-5 px-2 pr-10 tracking-wide"
               />
+              <div
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"
+                onClick={() => setShowPassword((prev) => !prev)}
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </div>
             </div>
 
-            {/* Bouton Sign Up */}
             <button
               type="submit"
-              className="w-full bg-black text-white font-medium py-3 px-4 rounded-full hover:bg-gray-800 transition-colors duration-300 tracking-wider"
+              disabled={isSubmitting}
+              className={`w-full h-[60px] mt-6 rounded-full text-white text-[20px] font-bold bg-gradient-to-r from-adawi-brown via-adawi-brown-light to-adawi-gold-light shadow-md transition duration-500 hover:bg-right flex items-center justify-center ${
+                isSubmitting ? "opacity-70 cursor-not-allowed" : ""
+              }`}
             >
-              S'inscrire
+              {isSubmitting ? (
+                <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                "Sign Up"
+              )}
             </button>
-          </form>
+          </Form>
 
-          {/* Lien de connexion */}
-          <p className="text-center mt-6 text-sm text-gray-600">
-            {`Déja membre? `}
-            <Link
-              to="/login"
-              className="text-gray-800 hover:text-black transition-colors underline"
-            >
-              Se Connecter
-            </Link>
-          </p>
+          <div className="text-center text-sm text-gray-400 mt-4">
+            <h3>Already have an account?</h3>
+            <a href="/login" className="hover:text-adawi-gold">
+               Login
+            </a>
+          </div>
         </div>
-      </section>
-
+      </div>
       <Footer />
-    </div>
+    </>
   );
 }
