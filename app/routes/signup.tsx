@@ -48,16 +48,16 @@ export default function Signup() {
             />
           </div>
 
-          <div className="text-center text-[28px] text-[#555] tracking-[0.5px] mb-[10px]">
-            SIGN UP
+          <div className="text-center text-[28px] text-adawi-brown tracking-[0.5px] mb-[10px]">
+            S'INSCRIRE
           </div>
 
           <Form method="post" className="space-y-4">
             <div className="border-b-2 border-gray-300 hover:border-adawi-gold transition duration-300">
               <input
                 type="text"
-                name="username"
-                placeholder="Username"
+                name="name"
+                placeholder="Nom"
                 required
                 className="w-full bg-transparent outline-none border-none text-[18px] text-[#555] py-5 px-2 tracking-wide"
               />
@@ -77,7 +77,7 @@ export default function Signup() {
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
-                placeholder="Password"
+                placeholder="Mot de passe"
                 required
                 className="w-full bg-transparent outline-none border-none text-[18px] text-[#555] py-5 px-2 pr-10 tracking-wide"
               />
@@ -99,15 +99,15 @@ export default function Signup() {
               {isSubmitting ? (
                 <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
-                "Sign Up"
+                "S'inscrire"
               )}
             </button>
           </Form>
 
           <div className="text-center text-sm text-gray-400 mt-4">
-            <h3>Already have an account?</h3>
+            <h3>Déja membre?</h3>
             <a href="/login" className="hover:text-adawi-gold">
-               Login
+               Connexion
             </a>
           </div>
         </div>

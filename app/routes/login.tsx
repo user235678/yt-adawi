@@ -46,7 +46,7 @@ export default function Login() {
 
           {/* Title */}
           <div className="text-center text-[26px] text-adawi-brown tracking-[0.5px] mb-[25px]">
-            LOGIN
+            CONNEXION
           </div>
 
           {/* Form */}
@@ -65,9 +65,10 @@ export default function Login() {
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
-                placeholder="Password"
+                placeholder="Mot de passe"
                 required
                 className="w-full bg-transparent outline-none border-none text-[18px] text-[#555] py-5 px-2 pr-10 tracking-wide"
+                
               />
               <div
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"
@@ -87,7 +88,7 @@ export default function Login() {
               {isSubmitting ? (
                 <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
-                "Sign Up"
+                "Connexion"
               )}
             </button>
           </Form>
@@ -95,11 +96,11 @@ export default function Login() {
           {/* Links */}
           <div className="text-center text-sm text-gray-400 mt-4">
             <a href="/forgot-password" className="hover:text-adawi-gold">
-              Forget Password?
-            </a>
+              Mot de passe oublié?
+            </a><br />
             &nbsp;&nbsp;
-            <a href="/signup" className="hover:text-adawi-gold">
-              Sign up
+            Nouveau membre? <a href="/signup" className="hover:text-adawi-gold">
+             S'inscrire
             </a>
           </div>
         </div>

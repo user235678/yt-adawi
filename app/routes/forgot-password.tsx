@@ -45,8 +45,8 @@ export default function ForgotPassword() {
           </div>
 
           {/* Title */}
-          <div className="text-center text-[24px] text-[#555] mb-6">
-            Forgot Password
+          <div className="text-center text-[24px] text-adawi-brown mb-6">
+            Entrer votre adresse email.
           </div>
 
           {submitted ? (
@@ -63,7 +63,7 @@ export default function ForgotPassword() {
                 <input
                   type="email"
                   name="email"
-                  placeholder="Your email"
+                  placeholder="Votre mail"
                   required
                   className="w-full bg-transparent outline-none border-none text-[18px] text-[#555] py-5 px-2 tracking-wide"
                 />
@@ -87,7 +87,7 @@ export default function ForgotPassword() {
 
           <div className="text-center text-sm text-gray-400 mt-4">
             <a href="/login" className="hover:text-adawi-gold">
-              Back to login
+              Retour a la connexion
             </a>
           </div>
         </div>

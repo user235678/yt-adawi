@@ -58,7 +58,7 @@ export default function ResetPassword() {
         </div>
 
         {/* Title */}
-        <div className="text-center text-[24px] text-[#555] mb-6">Create a New Password</div>
+        <div className="text-center text-[24px] text-adawi-brown mb-6">Creer un nouveau mot de passe</div>
 
         <Form className="w-full space-y-4" onSubmit={handleSubmit}>
           {/* Error Message */}
@@ -72,7 +72,7 @@ export default function ResetPassword() {
             <input
               type={showPassword ? "text" : "password"}
               name="password"
-              placeholder="New Password"
+              placeholder="Nouveau mot de passe"
               required
               onFocus={clearError}
               value={password}
@@ -89,7 +89,7 @@ export default function ResetPassword() {
             <input
               type={showConfirm ? "text" : "password"}
               name="confirm"
-              placeholder="Confirm Password"
+              placeholder="Confirmer le mot de passe"
               required
               onFocus={clearError}
               value={confirm}
@@ -112,7 +112,7 @@ export default function ResetPassword() {
             {isActuallySubmitting && (
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
             )}
-            {isActuallySubmitting ? "Resetting..." : "Reset Password"}
+            {isActuallySubmitting ? "Reinitialisation..." : "Reinitialiser"}
           </button>
         </Form>
       </div>
