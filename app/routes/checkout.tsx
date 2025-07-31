@@ -79,7 +79,7 @@ export default function Checkout() {
                     ) : (
                         `Ajoutez ${(100 - subtotal).toFixed(0)} fcfa de produits pour une livraison gratuite.`
                     )} */}
-                    Frais de livraison payé à la réception du produit
+                    Frais de livraison payé à la réception de la marchandise
                 </p>
 
                 {/* En-têtes du tableau */}

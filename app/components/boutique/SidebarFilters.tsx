@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import { X, SlidersHorizontal } from "lucide-react";
 import { ProductCategory, ProductSize, ProductColor } from "./ProductGrid";
 
 interface SidebarFiltersProps {
@@ -18,6 +19,8 @@ const SidebarFilters: React.FC<SidebarFiltersProps> = ({
   onSizeChange,
   onColorChange,
 }) => {
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
   const categoryOptions = [
     { id: "vedette", label: "Vedette" },
     { id: "nouveaute", label: "Nouveauté" },
@@ -42,7 +45,7 @@ const SidebarFilters: React.FC<SidebarFiltersProps> = ({
     { id: "vert", label: "Vert" },
   ];
 
-  return (
+  const renderFilters = () => (
     <div className="border-4 border-adawi-gold rounded-3xl p-4 space-y-6">
       {/* Catégorie */}
       <div>
@@ -68,7 +71,7 @@ const SidebarFilters: React.FC<SidebarFiltersProps> = ({
 
       {/* Taille */}
       <div>
-        <h3 className=" pl-9 font-semibold text-black mb-3">Taille</h3>
+        <h3 className="pl-9 font-semibold text-black mb-3">Taille</h3>
         <div className="space-y-2">
           {sizeOptions.map((option) => (
             <div key={option.id} className="flex justify-between items-center">
@@ -83,7 +86,6 @@ const SidebarFilters: React.FC<SidebarFiltersProps> = ({
                 checked={selectedSize === option.id}
                 onChange={() => onSizeChange(option.id as ProductSize)}
               />
-
             </div>
           ))}
           <div className="flex justify-between items-center">
@@ -94,7 +96,7 @@ const SidebarFilters: React.FC<SidebarFiltersProps> = ({
               type="radio"
               id="size-all"
               name="size"
-              className="w-4 h-4 text-adawi-gold  focus:ring-adawi-gold"
+              className="w-4 h-4 text-adawi-gold focus:ring-adawi-gold"
               checked={selectedSize === undefined}
               onChange={() => onSizeChange(undefined)}
             />
@@ -129,7 +131,7 @@ const SidebarFilters: React.FC<SidebarFiltersProps> = ({
               type="radio"
               id="color-all"
               name="color"
-              className="w-4 h-4 text-adawi-gold border-red focus:ring-adawi-gold"
+              className="w-4 h-4 text-adawi-gold focus:ring-adawi-gold"
               checked={selectedColor === undefined}
               onChange={() => onColorChange(undefined)}
             />
@@ -137,6 +139,48 @@ const SidebarFilters: React.FC<SidebarFiltersProps> = ({
         </div>
       </div>
     </div>
+  );
+
+  return (
+    <>
+      {/* BOUTON FILTRES MOBILE */}
+      <div className="md:hidden flex justify-end mb-4">
+        <button
+          onClick={() => setIsMobileOpen(true)}
+          className="bg-adawi-gold text-white px-4 py-2 rounded-full flex items-center gap-2"
+        >
+          <SlidersHorizontal size={18} /> Filtres
+        </button>
+      </div>
+
+      {/* SIDEBAR POUR DESKTOP */}
+      <div className="hidden md:block w-full md:w-64">
+        {renderFilters()}
+      </div>
+
+      {/* DRAWER POUR MOBILE */}
+      {isMobileOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black bg-opacity-50 flex justify-end md:hidden"
+          onClick={() => setIsMobileOpen(false)}
+        >
+          <div
+            className="bg-white w-80 h-full p-4 overflow-y-auto shadow-lg"
+            onClick={(e) => e.stopPropagation()} // ← empêche la fermeture quand on clique à l’intérieur du drawer
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold">Filtres</h2>
+              <button onClick={() => setIsMobileOpen(false)}>
+                <X size={25} 
+                className="text-black" />
+              </button>
+            </div>
+            {renderFilters()}
+          </div>
+        </div>
+      )}
+
+    </>
   );
 };
 

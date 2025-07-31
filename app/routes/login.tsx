@@ -79,7 +79,7 @@ export default function Login() {
             </div>
 
             <button
-              type="submit"
+              type="submit" 
               disabled={isSubmitting}
               className={`w-full h-[60px] mt-6 rounded-full text-white text-[20px] font-bold bg-gradient-to-r from-adawi-brown via-adawi-brown-light to-adawi-gold-light shadow-md transition duration-500 hover:bg-right flex items-center justify-center ${
                 isSubmitting ? "opacity-70 cursor-not-allowed" : ""
