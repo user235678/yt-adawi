@@ -45,6 +45,9 @@ const SidebarFilters: React.FC<SidebarFiltersProps> = ({
     { id: "vert", label: "Vert" },
   ];
 
+  const baseRadioStyle =
+    "w-4 h-4 appearance-none border border-gray-400 rounded-full checked:bg-adawi-gold checked:border-adawi-gold focus:ring-2 focus:ring-adawi-gold transition duration-150";
+
   const renderFilters = () => (
     <div className="border-4 border-adawi-gold rounded-3xl p-4 space-y-6">
       {/* Catégorie */}
@@ -60,7 +63,7 @@ const SidebarFilters: React.FC<SidebarFiltersProps> = ({
                 type="radio"
                 id={`category-${option.id}`}
                 name="category"
-                className="w-4 h-4"
+                className={baseRadioStyle}
                 checked={activeCategory === option.id}
                 onChange={() => onCategoryChange(option.id as ProductCategory)}
               />
@@ -82,7 +85,7 @@ const SidebarFilters: React.FC<SidebarFiltersProps> = ({
                 type="radio"
                 id={`size-${option.id}`}
                 name="size"
-                className="w-4 h-4 border-2 border-adawi-gold bg-white text-adawi-gold focus:ring-adawi-gold"
+                className={baseRadioStyle}
                 checked={selectedSize === option.id}
                 onChange={() => onSizeChange(option.id as ProductSize)}
               />
@@ -96,7 +99,7 @@ const SidebarFilters: React.FC<SidebarFiltersProps> = ({
               type="radio"
               id="size-all"
               name="size"
-              className="w-4 h-4 text-adawi-gold focus:ring-adawi-gold"
+              className={baseRadioStyle}
               checked={selectedSize === undefined}
               onChange={() => onSizeChange(undefined)}
             />
@@ -117,7 +120,7 @@ const SidebarFilters: React.FC<SidebarFiltersProps> = ({
                 type="radio"
                 id={`color-${option.id}`}
                 name="color"
-                className="w-4 h-4 text-adawi-gold focus:ring-adawi-gold"
+                className={baseRadioStyle}
                 checked={selectedColor === option.id}
                 onChange={() => onColorChange(option.id as ProductColor)}
               />
@@ -131,7 +134,7 @@ const SidebarFilters: React.FC<SidebarFiltersProps> = ({
               type="radio"
               id="color-all"
               name="color"
-              className="w-4 h-4 text-adawi-gold focus:ring-adawi-gold"
+              className={baseRadioStyle}
               checked={selectedColor === undefined}
               onChange={() => onColorChange(undefined)}
             />
@@ -166,20 +169,18 @@ const SidebarFilters: React.FC<SidebarFiltersProps> = ({
         >
           <div
             className="bg-white w-80 h-full p-4 overflow-y-auto shadow-lg"
-            onClick={(e) => e.stopPropagation()} // ← empêche la fermeture quand on clique à l’intérieur du drawer
+            onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Filtres</h2>
               <button onClick={() => setIsMobileOpen(false)}>
-                <X size={25} 
-                className="text-black" />
+                <X size={25} className="text-black" />
               </button>
             </div>
             {renderFilters()}
           </div>
         </div>
       )}
-
     </>
   );
 };
