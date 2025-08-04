@@ -151,7 +151,7 @@ export default function Boutique() {
             id: 9,
             name: "Veste Verte XL",
             price: "10 fcfa",
-            priceValue: 22000,
+            priceValue: 10,
             image: "/5.png",
             hoverImage: "/6.png", // Image de survol ajoutée
             image1: "/8.png", // Nouvelle image supplémentaire
