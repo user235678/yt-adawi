@@ -316,8 +316,24 @@ export default function Boutique() {
             image2: "/6.png", // Nouvelle image supplémentaire
             date: new Date("2025-07-20"),
             category: "montre",
-            size: "s",
-            color: "rouge"
+            sizes: "s,l,m,xl", // Tailles disponibles
+            colors: "rouge,marron,bleu", // Couleurs disponibles
+        },
+
+        // Exemple avec d'autres produits
+        {
+            id: 21,
+            name: "T-shirt Premium",
+            price: "15000 fcfa",
+            priceValue: 15000,
+            image: "/5.png",
+            hoverImage: "/6.png",
+            image1: "/8.png",
+            image2: "/9.png",
+            date: new Date("2025-08-05"),
+            category: "homme",
+            sizes: "s,m,l,xl", // XXL sera barré
+            colors: "noir,blanc,rouge", // Seules ces couleurs seront disponibles
         },
 
     ];

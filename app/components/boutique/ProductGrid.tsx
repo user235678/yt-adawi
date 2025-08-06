@@ -19,8 +19,10 @@ export interface Product {
   priceValue: number;
   date: Date;
   category: ProductCategory;
-  size: ProductSize;
-  color: ProductColor;
+  size?: ProductSize;  // Ancien format (gardé pour compatibilité)
+  sizes?: string;      // Nouveau format: "s,m,l,xl,xxl"
+  color?: ProductColor; // Ancien format (gardé pour compatibilité)
+  colors?: string;     // Nouveau format: "rouge,marron,noir"
 }
 
 interface ProductGridProps {
@@ -42,6 +44,7 @@ const ProductGrid = ({ products, selectedSize, selectedColor, onProductClick }: 
     };
     return colorMap[color] || "bg-gray-100 text-gray-800";
   };
+
   function isNewProduct(productDate: Date | string): boolean {
     const today = new Date();
     const date = new Date(productDate);
@@ -50,78 +53,22 @@ const ProductGrid = ({ products, selectedSize, selectedColor, onProductClick }: 
     return diffDays <= 30;
   }
 
-
-
   // Filtrer les produits selon la taille et la couleur sélectionnées
   const filteredProducts = products.filter(product => {
     // Si aucun filtre n'est sélectionné, afficher tous les produits
-    const sizeMatch = !selectedSize || product.size === selectedSize;
-    const colorMatch = !selectedColor || product.color === selectedColor;
+    const sizeMatch = !selectedSize || 
+                      product.size === selectedSize || 
+                      (product.sizes && product.sizes.split(',').map(s => s.trim()).includes(selectedSize));
+    
+    const colorMatch = !selectedColor || 
+                      product.color === selectedColor || 
+                      (product.colors && product.colors.split(',').map(c => c.trim().toLowerCase()).includes(selectedColor));
 
     return sizeMatch && colorMatch;
   });
 
   // CSS personnalisé pour les styles complexes
-  const customStyles = `
-    .product-grid-custom {
-      display: grid;
-      gap: 0.75rem;
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .product-card-custom {
-      transition: all 0.3s ease;
-    }
-
-    .product-card-custom:hover {
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    }
-
-    .product-image-hover-custom {
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    .product-card-custom:hover .product-image-main-custom {
-      opacity: 0;
-    }
-
-    .product-card-custom:hover .product-image-hover-custom {
-      opacity: 1;
-    }
-
-    @media (min-width: 640px) {
-      .product-grid-custom {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-      }
-    }
-
-    @media (min-width: 768px) {
-      .product-grid-custom {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1.25rem;
-      }
-    }
-
-    @media (min-width: 1024px) {
-      .product-grid-custom {
-        grid-template-columns: repeat(4, 1fr);
-      }
-    }
-
-    @media (min-width: 1280px) {
-      .product-grid-custom {
-        grid-template-columns: repeat(5, 1fr);
-      }
-    }
-
-    @media (max-width: 480px) {
-      .product-grid-custom {
-        gap: 0.5rem;
-      }
-    }
-  `;
+  const customStyles = `\n    .product-grid-custom {\n      display: grid;\n      gap: 0.75rem;\n      grid-template-columns: repeat(2, 1fr);\n    }\n\n    .product-card-custom {\n      transition: all 0.3s ease;\n    }\n\n    .product-card-custom:hover {\n      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);\n    }\n\n    .product-image-hover-custom {\n      opacity: 0;\n      transition: opacity 0.3s ease;\n    }\n\n    .product-card-custom:hover .product-image-main-custom {\n      opacity: 0;\n    }\n\n    .product-card-custom:hover .product-image-hover-custom {\n      opacity: 1;\n    }\n\n    @media (min-width: 640px) {\n      .product-grid-custom {\n        grid-template-columns: repeat(2, 1fr);\n        gap: 1rem;\n      }\n    }\n\n    @media (min-width: 768px) {\n      .product-grid-custom {\n        grid-template-columns: repeat(3, 1fr);\n        gap: 1.25rem;\n      }\n    }\n\n    @media (min-width: 1024px) {\n      .product-grid-custom {\n        grid-template-columns: repeat(4, 1fr);\n      }\n    }\n\n    @media (min-width: 1280px) {\n      .product-grid-custom {\n        grid-template-columns: repeat(5, 1fr);\n      }\n    }\n\n    @media (max-width: 480px) {\n      .product-grid-custom {\n        gap: 0.5rem;\n      }\n    }\n  `;
 
   // Si aucun produit ne correspond aux filtres
   if (filteredProducts.length === 0) {
@@ -139,7 +86,7 @@ const ProductGrid = ({ products, selectedSize, selectedColor, onProductClick }: 
   }
 
   return (
-    <>
+    <div>
       {/* Styles CSS personnalisés */}
       <style dangerouslySetInnerHTML={{ __html: customStyles }} />
 
@@ -159,7 +106,6 @@ const ProductGrid = ({ products, selectedSize, selectedColor, onProductClick }: 
             }}
             aria-label={`Voir les détails de ${product.name}`}
           >
-
             {/* Image du produit avec effet de survol */}
             <div className="relative w-full overflow-hidden mx-1 my-1.5 sm:mx-3 sm:my-2 xl:mx-2 xl:my-3 rounded">
               {/* LIGNES EN HAUT - masquées sur mobile */}
@@ -192,8 +138,6 @@ const ProductGrid = ({ products, selectedSize, selectedColor, onProductClick }: 
                   NEW
                 </span>
               )}
-
-
             </div>
 
             {/* Informations du produit - optimisées pour mobile */}
@@ -208,7 +152,7 @@ const ProductGrid = ({ products, selectedSize, selectedColor, onProductClick }: 
           </div>
         ))}
       </div>
-    </>
+    </div>
   );
 };
 

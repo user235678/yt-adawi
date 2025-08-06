@@ -27,7 +27,6 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
 
     if (isOpen) {
       document.addEventListener("keydown", handleEscape);
-      // Empêcher le scroll du body quand le modal est ouvert
       document.body.style.overflow = "hidden";
     }
 
@@ -37,20 +36,49 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
     };
   }, [isOpen, onClose]);
 
+  // Fonction pour parser les tailles disponibles
+  const getAvailableSizes = (product: Product): string[] => {
+    if (product.sizes) {
+      return product.sizes
+        .split(',')
+        .map(size => size.trim().toUpperCase())
+        .filter(size => size.length > 0);
+    }
+    // Fallback vers l'ancien système si sizes n'est pas défini
+    return product.size ? [product.size.toUpperCase()] : ['M'];
+  };
+
+  // Fonction pour parser les couleurs disponibles
+  const getAvailableColors = (product: Product): string[] => {
+    if (product.colors) {
+      return product.colors
+        .split(',')
+        .map(color => color.trim().toLowerCase())
+        .filter(color => color.length > 0);
+    }
+    // Fallback vers l'ancien système si colors n'est pas défini
+    return product.color ? [product.color.toLowerCase()] : ['noir'];
+  };
+
   // Reset des sélections quand le produit change
   useEffect(() => {
     if (product) {
       setSelectedImageIndex(0);
       setQuantity(1);
-      setSelectedSize(product.size || 'M');
-      setSelectedColor(product.color || 'noir');
+
+      const availableSizes = getAvailableSizes(product);
+      const availableColors = getAvailableColors(product);
+
+      // Sélectionner la première taille et couleur disponibles par défaut
+      setSelectedSize(availableSizes[0] || 'M');
+      setSelectedColor(availableColors[0] || 'noir');
     }
   }, [product]);
 
   // Fonction pour obtenir la couleur CSS basée sur la couleur du produit
   const getProductColorStyle = (color: string) => {
     const colorMap: Record<string, string> = {
-      blanc: "bg-gray-100 border-gray-300",
+      blanc: "bg-white border-red-600",
       noir: "bg-black border-black",
       rouge: "bg-red-500 border-red-500",
       vert: "bg-green-500 border-green-500",
@@ -58,6 +86,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
     };
     return colorMap[color] || "bg-gray-400 border-gray-400";
   };
+
   function isNewProduct(productDate: Date | string): boolean {
     const today = new Date();
     const date = new Date(productDate);
@@ -65,7 +94,6 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     return diffDays <= 30;
   }
-
 
   // Fonction pour augmenter la quantité
   const increaseQuantity = () => {
@@ -112,6 +140,12 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
 
   const currentImage = productImages[selectedImageIndex];
 
+  // Obtenir les tailles et couleurs disponibles pour ce produit
+  const availableSizes = getAvailableSizes(product);
+  const availableColors = getAvailableColors(product);
+  const allSizes = ['XXL', 'XL', 'L', 'M', 'S'];
+  const allColors = ['noir', 'blanc', 'rouge', 'vert', 'marron'];
+
   return (
     <div
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
@@ -138,21 +172,18 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Section images */}
             <div className="space-y-4">
-
               {/* Image principale */}
               <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
                 <img
                   src={currentImage}
                   alt={product.name}
                   className="w-full h-full object-cover"
-
                 />
                 {isNewProduct(product.date) && (
                   <span className="absolute top-2 left-2 z-20 bg-adawi-gold-light text-red-500 text-[10px] sm:text-xs font-semibold px-2 py-1 rounded shadow-md uppercase">
                     NEW
                   </span>
                 )}
-
               </div>
 
               {/* Carrousel de miniatures avec les 4 images */}
@@ -175,7 +206,6 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                     {selectedImageIndex === index && (
                       <div className="absolute inset-0 bg-adawi-gold/10"></div>
                     )}
-
                   </button>
                 ))}
               </div>
@@ -191,44 +221,92 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                 <p className="text-2xl font-bold text-black">{product.price}</p>
               </div>
 
-              {/* Sélection de taille */}
+              {/* Sélection de taille avec disponibilité */}
               <div>
                 <h4 className="text-sm font-medium text-black mb-3">Taille:</h4>
                 <div className="flex gap-2">
-                  {['XXL', 'XL', 'L', 'M', 'S'].map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      className={`px-4 py-2 border text-sm font-medium transition-colors duration-200 ${selectedSize === size
-                          ? 'border-black bg-black text-white'
-                          : 'border-gray-300 text-black hover:border-gray-400'
-                        }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
+                  {allSizes.map((size) => {
+                    const isAvailable = availableSizes.includes(size);
+                    return (
+                      <button
+                        key={size}
+                        onClick={() => isAvailable && setSelectedSize(size)}
+                        disabled={!isAvailable}
+                        className={`relative px-4 py-2 border text-sm font-medium transition-all duration-200 ${selectedSize === size && isAvailable
+                            ? 'border-black bg-black text-white'
+                            : isAvailable
+                              ? 'border-gray-300 text-black hover:border-gray-400'
+                              : 'border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50'
+                          }`}
+                      >
+                        {/* Texte de la taille */}
+                        <span className={!isAvailable ? 'line-through decoration-2 decoration-black' : ''}>
+                          {size}
+                        </span>
+                        {/* Ligne diagonale pour les tailles non disponibles */}
+                        {!isAvailable && (
+                          <>
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                              <div className="w-full h-0.5 bg-black transform rotate-12 opacity-80"></div>
+                            </div>
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                              <div className="w-full h-0.5 bg-red-600 transform rotate-12"></div>
+                            </div>
+                          </>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
+                {availableSizes.length > 0 && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    Tailles disponibles: {availableSizes.join(', ')}
+                  </p>
+                )}
               </div>
 
-              {/* Sélection de couleur */}
+              {/* Sélection de couleur avec disponibilité */}
               <div>
                 <h4 className="text-sm font-medium text-black mb-3">
                   Couleur: {selectedColor.charAt(0).toUpperCase() + selectedColor.slice(1)}
                 </h4>
                 <div className="flex gap-2">
-                  {['noir', 'blanc', 'rouge', 'vert', 'marron'].map((color) => (
-                    <button
-                      key={color}
-                      onClick={() => setSelectedColor(color)}
-                      className={`w-8 h-8 rounded border-2 transition-all duration-200 ${getProductColorStyle(color)
-                        } ${selectedColor === color
-                          ? 'ring-2 ring-adawi-gold ring-offset-2'
-                          : 'hover:ring-1 hover:ring-gray-300 hover:ring-offset-1'
-                        }`}
-                      aria-label={`Sélectionner la couleur ${color}`}
-                    />
-                  ))}
+                  {allColors.map((color) => {
+                    const isAvailable = availableColors.includes(color);
+                    return (
+                      <button
+                        key={color}
+                        onClick={() => isAvailable && setSelectedColor(color)}
+                        disabled={!isAvailable}
+                        className={`relative w-8 h-8 rounded border-2 transition-all duration-200 ${getProductColorStyle(color)
+                          } ${selectedColor === color && isAvailable
+                            ? 'ring-2 ring-adawi-gold ring-offset-2'
+                            : isAvailable
+                              ? 'hover:ring-1 hover:ring-gray-300 hover:ring-offset-1'
+                              : 'opacity-50 cursor-not-allowed'
+                          }`}
+                        aria-label={`Sélectionner la couleur ${color}`}
+                      >
+                        {/* Ligne diagonale pour les couleurs non disponibles */}
+                        {!isAvailable && (
+                          <>
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                              <div className="w-full h-0.5 bg-black transform rotate-45 opacity-90"></div>
+                            </div>
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                              <div className="w-full h-0.5 bg-red-600 transform rotate-45"></div>
+                            </div>
+                          </>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
+                {availableColors.length > 0 && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    Couleurs disponibles: {availableColors.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(', ')}
+                  </p>
+                )}
               </div>
 
               {/* Quantité avec fonctionnalité */}
@@ -286,8 +364,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                     </svg>
                   </summary>
                   <div className="pt-2 pb-4 text-sm text-gray-700">
-                    <p>Découvrez ce magnifique {product.name.toLowerCase()} de notre collection {product.category}.
-                      Confectionné avec soin et attention aux détails, ce produit allie style et confort.</p>
+                    <p>Découvrez ce magnifique {product.name.toLowerCase()} de taille {selectedSize} et de couleur {selectedColor} de notre collection {product.category}. Confectionné avec soin et attention aux détails, ce produit allie style et confort.</p>
                   </div>
                 </details>
 
