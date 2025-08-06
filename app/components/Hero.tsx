@@ -1,5 +1,5 @@
 import React from "react";
-
+import { Link } from "@remix-run/react";
 interface HeroProps {
   mainImage?: string;
   secondaryImage?: string;
@@ -11,7 +11,7 @@ interface HeroProps {
 const Hero: React.FC<HeroProps> = ({
   mainImage = "/men.png",
   secondaryImage = "/men.png",
-  title = ["L'élégance est une attitude. Trouvez la",<br></br>," vôtre ici"],
+  title = ["L'élégance est une attitude. Trouvez la", <br></br>, " vôtre ici"],
   features = ["Matériaux durables", "Fabriqué en France", "Livraison rapide"],
   buttonText = "Voir la collection"
 }) => {
@@ -36,9 +36,10 @@ const Hero: React.FC<HeroProps> = ({
             ))}
           </ul>
 
-          <button className="bg-adawi-gold hover:bg-adawi-gold/300 text-black px-8 py-3 rounded-full font-medium transition-colors">
+          <Link className="bg-adawi-gold hover:bg-adawi-gold/300 text-black px-8 py-3 rounded-full font-medium transition-colors"
+            to={"/boutique"}>
             {buttonText}
-          </button>
+          </Link>
         </div>
 
         {/* Right Images - cachées sur petit écran */}
