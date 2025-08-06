@@ -214,7 +214,7 @@ export default function Checkout() {
                             onClick={handleCheckout}
                             className="w-full bg-black text-white font-medium py-4 px-6 text-base rounded-full hover:bg-gray-800 transition-colors duration-200 tracking-wider"
                         >
-                            CHECKOUT
+                            COMMANDER
                         </button>
 
                         {/* Lien continuer les achats */}
