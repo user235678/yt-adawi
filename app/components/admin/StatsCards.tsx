@@ -1,0 +1,104 @@
+import { TrendingUp, TrendingDown, Users, Eye, RotateCcw } from "lucide-react";
+
+export default function StatsCards() {
+  const stats = [
+    {
+      title: "Ventes Totales",
+      value: "2,847,500",
+      unit: "FCFA",
+      change: "+15.6%",
+      changeValue: "+347k cette semaine",
+      trend: "up",
+      icon: TrendingUp,
+      bgColor: "bg-gray-800",
+      textColor: "text-white"
+    },
+    {
+      title: "Visiteurs",
+      value: "8,420",
+      subtitle: "Temps moyen: 4:30m",
+      change: "+12.7%",
+      changeValue: "+1.2k cette semaine",
+      trend: "up",
+      icon: Eye,
+      bgColor: "bg-white",
+      textColor: "text-gray-900"
+    },
+    {
+      title: "Remboursements",
+      value: "156",
+      subtitle: "2 Disputés",
+      change: "-12.7%",
+      changeValue: "-21",
+      trend: "down",
+      icon: RotateCcw,
+      bgColor: "bg-white",
+      textColor: "text-gray-900"
+    }
+  ];
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+      {stats.map((stat, index) => {
+        const Icon = stat.icon;
+        const isPositive = stat.trend === "up";
+
+        return (
+          <div
+            key={index}
+            className={`${stat.bgColor} rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200`}
+          >
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <div className={`p-1.5 sm:p-2 rounded-lg ${stat.bgColor === 'bg-gray-800' ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${stat.bgColor === 'bg-gray-800' ? 'text-white' : 'text-gray-600'}`} />
+              </div>
+              <button className={`${stat.textColor} hover:opacity-70`}>
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="mb-2">
+              <h3 className={`text-xs sm:text-sm font-medium ${stat.textColor} opacity-70 mb-1`}>
+                {stat.title}
+              </h3>
+              {stat.subtitle && (
+                <p className={`text-xs ${stat.textColor} opacity-50 mb-2`}>
+                  {stat.subtitle}
+                </p>
+              )}
+            </div>
+
+            <div className="mb-3 sm:mb-4">
+              <div className="flex items-baseline">
+                <span className={`text-xl sm:text-2xl font-bold ${stat.textColor}`}>
+                  {stat.value}
+                </span>
+                {stat.unit && (
+                  <span className={`text-xs sm:text-sm ${stat.textColor} opacity-70 ml-1`}>
+                    {stat.unit}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              <div className={`flex items-center ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                {isPositive ? (
+                  <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                ) : (
+                  <TrendingDown className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                )}
+                <span className="text-xs sm:text-sm font-medium">{stat.change}</span>
+              </div>
+              <span className={`text-xs ${stat.textColor} opacity-50 ml-2 truncate`}>
+                {stat.changeValue}
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
