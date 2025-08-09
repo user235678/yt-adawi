@@ -282,7 +282,7 @@ export default function AdminProducts() {
           {/* Filter Button */}
           <button 
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            className="flex text-black items-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
           >
             <Filter className="w-5 h-5 mr-2" />
             Filtres

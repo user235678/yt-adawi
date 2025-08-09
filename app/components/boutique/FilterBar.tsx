@@ -13,7 +13,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ activeCategory, onCategoryChange 
     { id: "homme" as ProductCategory, label: "Homme" },
     { id: "femme" as ProductCategory, label: "Femme" },
     { id: "enfant" as ProductCategory, label: "Enfant" },
-    { id: "montre" as ProductCategory, label: "Montre" }
+    // { id: "montre" as ProductCategory, label: "Montre" }
   ];
 
   return (

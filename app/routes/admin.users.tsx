@@ -232,11 +232,11 @@ export default function AdminUsers() {
             </select>
           </div>
           
-          {/* Filter Button */}
+          {/* Filter Button
           <button className="flex items-center text-black px-4 py-2 border border-red-300 rounded-lg hover:bg-gray-50 transition-colors">
             <Filter className="w-5 h-5 mr-2" />
             Plus de filtres
-          </button>
+          </button> */}
         </div>
       </div>
 

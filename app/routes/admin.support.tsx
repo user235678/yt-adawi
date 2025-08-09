@@ -54,6 +54,8 @@ export default function AdminSupport() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
 
+
+
   // Données simulées des tickets
   const [tickets, setTickets] = useState<Ticket[]>([
     {
@@ -84,7 +86,7 @@ export default function AdminSupport() {
         name: "Ama Mensah",
         email: "ama.mensah@email.com",
         phone: "+228 91 23 45 67",
-        avatar: "https://placehold.co/40x40/8B4513/FFFFFF?text=AM"
+        avatar: "/5.png"
       },
       date: "2024-01-18",
       status: "En cours",
@@ -222,6 +224,7 @@ export default function AdminSupport() {
       responses: []
     }
   ]);
+  
 
   // Filtrage des tickets
   const filteredTickets = tickets.filter(ticket => {
@@ -262,7 +265,7 @@ export default function AdminSupport() {
       date: new Date().toISOString().split('T')[0],
       isAdmin: true,
       author: "Support Adawi",
-      authorAvatar: "https://placehold.co/40x40/DAA520/FFFFFF?text=SA"
+      authorAvatar: "/5.png"
     };
 
     setTickets(tickets.map(ticket => 
@@ -442,7 +445,7 @@ export default function AdminSupport() {
           {/* Filter Button */}
           <button 
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            className="flex items-center text-black px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
           >
             <Filter className="w-5 h-5 mr-2" />
             Filtres
@@ -629,7 +632,7 @@ export default function AdminSupport() {
         </p>
         
         <div className="flex items-center space-x-2">
-          <button className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+          <button className="px-3 text-black py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
             Précédent
           </button>
           <button className="px-3 py-2 text-sm bg-adawi-gold text-white rounded-lg">

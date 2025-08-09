@@ -4,7 +4,7 @@ export default function TopCategories() {
   const categories = [
     { name: "Vêtements Homme", value: 2840, color: "#1f2937", percentage: 45 },
     { name: "Vêtements Femme", value: 1920, color: "#6b7280", percentage: 30 },
-    { name: "Montres", value: 1280, color: "#9ca3af", percentage: 20 },
+    // { name: "Montres", value: 1280, color: "#9ca3af", percentage: 20 },
     { name: "Enfants", value: 320, color: "#d1d5db", percentage: 5 },
   ];
 

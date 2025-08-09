@@ -27,7 +27,6 @@ const SidebarFilters: React.FC<SidebarFiltersProps> = ({
     { id: "homme", label: "Homme" },
     { id: "femme", label: "Femme" },
     { id: "enfant", label: "Enfant" },
-    { id: "montre", label: "Montre" },
   ];
 
   const sizeOptions = [

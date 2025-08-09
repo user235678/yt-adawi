@@ -16,7 +16,6 @@ export const meta: MetaFunction = () => {
 
 export default function AdminDashboard() {
   return (
-    
     <div className="space-y-6">
       {/* Welcome Section */}
       

@@ -48,6 +48,7 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
           <div className="flex items-center space-x-2 sm:space-x-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 transition-colors">
             <div className="w-7 h-7 sm:w-8 sm:h-8 bg-adawi-gold rounded-full flex items-center justify-center">
               <span className="text-white font-semibold text-xs sm:text-sm">AP</span>
+              
             </div>
             <div className="hidden sm:block text-right">
               <p className="text-sm font-medium text-gray-900">Admin Principal</p>
