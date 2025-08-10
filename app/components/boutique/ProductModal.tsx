@@ -14,10 +14,11 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [animationDirection, setAnimationDirection] = useState<"next" | "prev" | null>(null);
 
   const { dispatch } = useCart();
 
-  // Fermer le modal avec la touche Échap
+  // Fermer avec Échap
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -36,7 +37,6 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
     };
   }, [isOpen, onClose]);
 
-  // Fonction pour parser les tailles disponibles
   const getAvailableSizes = (product: Product): string[] => {
     if (product.sizes) {
       return product.sizes
@@ -44,11 +44,9 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
         .map(size => size.trim().toUpperCase())
         .filter(size => size.length > 0);
     }
-    // Fallback vers l'ancien système si sizes n'est pas défini
     return product.size ? [product.size.toUpperCase()] : ['M'];
   };
 
-  // Fonction pour parser les couleurs disponibles
   const getAvailableColors = (product: Product): string[] => {
     if (product.colors) {
       return product.colors
@@ -56,26 +54,18 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
         .map(color => color.trim().toLowerCase())
         .filter(color => color.length > 0);
     }
-    // Fallback vers l'ancien système si colors n'est pas défini
     return product.color ? [product.color.toLowerCase()] : ['noir'];
   };
 
-  // Reset des sélections quand le produit change
   useEffect(() => {
     if (product) {
       setSelectedImageIndex(0);
       setQuantity(1);
-
-      const availableSizes = getAvailableSizes(product);
-      const availableColors = getAvailableColors(product);
-
-      // Sélectionner la première taille et couleur disponibles par défaut
-      setSelectedSize(availableSizes[0] || 'M');
-      setSelectedColor(availableColors[0] || 'noir');
+      setSelectedSize(getAvailableSizes(product)[0] || 'M');
+      setSelectedColor(getAvailableColors(product)[0] || 'noir');
     }
   }, [product]);
 
-  // Fonction pour obtenir la couleur CSS basée sur la couleur du produit
   const getProductColorStyle = (color: string) => {
     const colorMap: Record<string, string> = {
       blanc: "bg-white border-red-600",
@@ -90,94 +80,115 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
   function isNewProduct(productDate: Date | string): boolean {
     const today = new Date();
     const date = new Date(productDate);
-    const diffTime = today.getTime() - date.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays <= 30;
+    return Math.floor((today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)) <= 30;
   }
 
-  // Fonction pour augmenter la quantité
-  const increaseQuantity = () => {
-    setQuantity(prev => prev + 1);
-  };
+  const increaseQuantity = () => setQuantity(prev => prev + 1);
+  const decreaseQuantity = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
 
-  // Fonction pour diminuer la quantité (minimum 1)
-  const decreaseQuantity = () => {
-    setQuantity(prev => (prev > 1 ? prev - 1 : 1));
-  };
-
-  // Fonction pour ajouter au panier
   const handleAddToCart = () => {
     if (!product) return;
-
     setIsAddingToCart(true);
-
     dispatch({
       type: 'ADD_ITEM',
-      payload: {
-        product,
-        quantity,
-        size: selectedSize,
-        color: selectedColor,
-      }
+      payload: { product, quantity, size: selectedSize, color: selectedColor }
     });
-
-    // Animation de feedback
     setTimeout(() => {
       setIsAddingToCart(false);
-      onClose(); // Fermer le modal après ajout
+      onClose();
     }, 500);
   };
 
-  if (!isOpen || !product) return null;
-
-  // Créer un tableau d'images pour le carrousel avec les nouvelles images
+  // Tableau d'images
   const productImages = [
-    product.image,                // Image principale
-    product.hoverImage || product.image, // Image de survol
-    product.image1 || product.image,     // Nouvelle image 1
-    product.image2 || product.image      // Nouvelle image 2
-  ];
+    product?.image,
+    product?.hoverImage || product?.image,
+    product?.image1 || product?.image,
+    product?.image2 || product?.image
+  ].filter(Boolean) as string[];
 
   const currentImage = productImages[selectedImageIndex];
 
-  // Obtenir les tailles et couleurs disponibles pour ce produit
-  const availableSizes = getAvailableSizes(product);
-  const availableColors = getAvailableColors(product);
+  const availableSizes = product ? getAvailableSizes(product) : [];
+  const availableColors = product ? getAvailableColors(product) : [];
   const allSizes = ['XXL', 'XL', 'L', 'M', 'S'];
   const allColors = ['noir', 'blanc', 'rouge', 'vert', 'marron'];
 
+  // Fonction pour changer d'image avec animation
+  const changeImage = (direction: "next" | "prev") => {
+    setAnimationDirection(direction);
+    setTimeout(() => {
+      setSelectedImageIndex((prev) =>
+        direction === "next"
+          ? prev === productImages.length - 1 ? 0 : prev + 1
+          : prev === 0 ? productImages.length - 1 : prev - 1
+      );
+      setAnimationDirection(null);
+    }, 200);
+  };
+
+  // Swipe mobile
+  useEffect(() => {
+    if (!isOpen) return;
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartX = e.changedTouches[0].screenX;
+    };
+    const handleTouchEnd = (e: TouchEvent) => {
+      touchEndX = e.changedTouches[0].screenX;
+      if (Math.abs(touchEndX - touchStartX) > 50) {
+        touchEndX < touchStartX ? changeImage("next") : changeImage("prev");
+      }
+    };
+
+    const modal = document.getElementById("product-modal-images");
+    modal?.addEventListener("touchstart", handleTouchStart);
+    modal?.addEventListener("touchend", handleTouchEnd);
+
+    return () => {
+      modal?.removeEventListener("touchstart", handleTouchStart);
+      modal?.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [isOpen, productImages.length]);
+
+  // Flèches PC
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") changeImage("next");
+      if (e.key === "ArrowLeft") changeImage("prev");
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, productImages.length]);
+
+  if (!isOpen || !product) return null;
+
   return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header du modal */}
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
         <div className="flex justify-between items-center p-6 border-b">
           <h2 className="text-2xl font-bold text-black">Détails du produit</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-black transition-colors duration-200 text-2xl font-bold w-8 h-8 flex items-center justify-center"
-            aria-label="Fermer le modal"
-          >
-            ×
-          </button>
+          <button onClick={onClose} className="text-gray-500 hover:text-black transition-colors duration-200 text-2xl font-bold w-8 h-8 flex items-center justify-center">×</button>
         </div>
 
-        {/* Contenu du modal */}
+        {/* Contenu */}
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Section images */}
-            <div className="space-y-4">
-              {/* Image principale */}
+            {/* Images */}
+            <div id="product-modal-images" className="space-y-4">
               <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
                 <img
+                  key={selectedImageIndex}
                   src={currentImage}
                   alt={product.name}
-                  className="w-full h-full object-cover"
+                  className={`w-full h-full object-cover transition-all duration-200 ease-out
+                    ${animationDirection === "next" ? "translate-x-10 opacity-0" : ""}
+                    ${animationDirection === "prev" ? "-translate-x-10 opacity-0" : ""}
+                  `}
                 />
                 {isNewProduct(product.date) && (
                   <span className="absolute top-2 left-2 z-20 bg-adawi-gold-light text-red-500 text-[10px] sm:text-xs font-semibold px-2 py-1 rounded shadow-md uppercase">
@@ -186,32 +197,23 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                 )}
               </div>
 
-              {/* Carrousel de miniatures avec les 4 images */}
+              {/* Miniatures */}
               <div className="flex gap-3 justify-center">
                 {productImages.map((image, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImageIndex(index)}
-                    className={`relative w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 ${selectedImageIndex === index
-                        ? 'border-adawi-gold shadow-md'
-                        : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                    className={`relative w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 ${selectedImageIndex === index ? 'border-adawi-gold shadow-md' : 'border-gray-200 hover:border-gray-300'}`}
                   >
-                    <img
-                      src={image}
-                      alt={`${product.name} - vue ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                    {/* Overlay pour l'image sélectionnée */}
-                    {selectedImageIndex === index && (
-                      <div className="absolute inset-0 bg-adawi-gold/10"></div>
-                    )}
+                    <img src={image} alt={`${product.name} vue ${index + 1}`} className="w-full h-full object-cover" />
+                    {selectedImageIndex === index && <div className="absolute inset-0 bg-adawi-gold/10"></div>}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Informations du produit */}
+            {/* Infos produit */}
+            {/* ... ici tu gardes le reste de ton code inchangé pour tailles, couleurs, quantité, bouton panier, etc. */}
             <div className="space-y-6">
               <div>
                 <p className="text-sm text-gray-500 uppercase tracking-wide mb-2">
@@ -233,10 +235,10 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                         onClick={() => isAvailable && setSelectedSize(size)}
                         disabled={!isAvailable}
                         className={`relative px-4 py-2 border text-sm font-medium transition-all duration-200 ${selectedSize === size && isAvailable
-                            ? 'border-black bg-black text-white'
-                            : isAvailable
-                              ? 'border-gray-300 text-black hover:border-gray-400'
-                              : 'border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50'
+                          ? 'border-black bg-black text-white'
+                          : isAvailable
+                            ? 'border-gray-300 text-black hover:border-gray-400'
+                            : 'border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50'
                           }`}
                       >
                         {/* Texte de la taille */}
@@ -313,8 +315,8 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
               <div className="flex items-center gap-4">
                 <button
                   className={`w-10 h-10 border flex items-center justify-center text-lg font-medium transition-colors ${quantity > 1
-                      ? 'border-gray-300 hover:bg-gray-50 text-black'
-                      : 'border-gray-200 text-gray-400 cursor-not-allowed'
+                    ? 'border-gray-300 hover:bg-gray-50 text-black'
+                    : 'border-gray-200 text-gray-400 cursor-not-allowed'
                     }`}
                   onClick={decreaseQuantity}
                   disabled={quantity <= 1}
@@ -337,8 +339,8 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                 onClick={handleAddToCart}
                 disabled={isAddingToCart}
                 className={`w-full py-4 px-6 rounded-full font-medium text-lg transition-all duration-200 ${isAddingToCart
-                    ? 'bg-adawi-gold text-white cursor-not-allowed'
-                    : 'bg-black text-white hover:bg-gray-800'
+                  ? 'bg-adawi-gold text-white cursor-not-allowed'
+                  : 'bg-black text-white hover:bg-gray-800'
                   }`}
               >
                 {isAddingToCart ? (
