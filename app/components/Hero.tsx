@@ -54,7 +54,7 @@ const Hero: React.FC<HeroProps> = ({
             <img
               src={secondaryImage}
               alt="Collection mode"
-              className="absolute bottom-0 right-0 translate-x-2/4 translate-y-1/4 rounded-lg shadow-lg max-w-[180px] w-full h-auto object-cover"
+              className="absolute bottom-5 right-0 translate-x-2/4 translate-y-1/4 rounded-lg shadow-lg max-w-[180px] w-full h-auto object-cover"
             />
           </div>
         </div>
