@@ -1,5 +1,6 @@
-import { MetaFunction, ActionFunction } from "@remix-run/node";
-import { Form, useNavigation } from "@remix-run/react";
+// app/routes/signup.tsx
+import { MetaFunction, ActionFunction, json, redirect } from "@remix-run/node";
+import { Form, useNavigation, useActionData } from "@remix-run/react";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import TopBanner from "~/components/TopBanner";
@@ -8,29 +9,58 @@ import CompactHeader from "~/components/CompactHeader";
 
 export const meta: MetaFunction = () => [{ title: "The Providers - Sign Up" }];
 
-// Fonction appelée à la soumission du formulaire
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
-  const username = formData.get("username");
+  const full_name = formData.get("name");
   const email = formData.get("email");
   const password = formData.get("password");
 
-  console.log({ username, email, password }); // Pour test
+  const payload = {
+    email,
+    full_name,
+    role: "client",
+    is_banned: false,
+    is_active: true,
+    is_deleted: false,
+    password,
+  };
 
-  // Tu peux ensuite connecter MongoDB ici si tu veux
+  try {
+    const res = await fetch(
+      "https://showroom-backend-2x3g.onrender.com/auth/register",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }
+    );
 
-  return null;
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      // On renvoie exactement le message du backend s'il existe
+      return json(
+        { error: data.message || "Une erreur est survenue lors de l'inscription" },
+        { status: res.status }
+      );
+    }
+
+    return redirect("/login?success=1");
+  } catch (err: any) {
+    return json({ error: err.message || "Erreur serveur" }, { status: 500 });
+  }
 };
 
 export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
+  const actionData = useActionData<{ error?: string }>();
 
   return (
     <>
       <TopBanner />
-      <CompactHeader/>
+      <CompactHeader />
       <div
         className="min-h-screen flex items-center justify-center bg-cover bg-center px-4"
         style={{
@@ -51,6 +81,10 @@ export default function Signup() {
           <div className="text-center text-[28px] text-adawi-brown tracking-[0.5px] mb-[10px]">
             S'INSCRIRE
           </div>
+
+          {actionData?.error && (
+            <p className="text-red-500 text-center mb-4">{actionData.error}</p>
+          )}
 
           <Form method="post" className="space-y-4">
             <div className="border-b-2 border-gray-300 hover:border-adawi-gold transition duration-300">
@@ -105,9 +139,9 @@ export default function Signup() {
           </Form>
 
           <div className="text-center text-sm text-gray-400 mt-4">
-            <h3>Déja membre?</h3>
+            <h3>Déjà membre ?</h3>
             <a href="/login" className="hover:text-adawi-gold">
-               Connexion
+              Connexion
             </a>
           </div>
         </div>
