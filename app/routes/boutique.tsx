@@ -9,6 +9,7 @@ import ProductGrid, { Product, ProductCategory, ProductSize, ProductColor } from
 import SortButton from "~/components/boutique/SortButton";
 import ProductModal from "~/components/boutique/ProductModal";
 import { Outlet } from "@remix-run/react";
+import { ToastProvider } from "~/contexts/ToastContext";
 
 export const meta: MetaFunction = () => {
     return [
@@ -326,9 +327,12 @@ export default function Boutique() {
     console.log("Produits après catégorie:", filteredByCategory.length);
 
     return (
+        
         <div className="min-h-screen bg-white">
+            <ToastProvider>
             <TopBanner />
             <Header />
+            
 
             <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
                 {/* Barre de filtres centrée */}
@@ -383,6 +387,7 @@ export default function Boutique() {
             <Outlet />
 
             <Footer />
+            </ToastProvider>
         </div>
     );
 }

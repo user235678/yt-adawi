@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Product } from "./ProductGrid";
 import { useCart } from "~/contexts/CartContext";
-
+import { useToast } from "~/contexts/ToastContext";
 interface ProductModalProps {
   product: Product | null;
   isOpen: boolean;
@@ -17,6 +17,9 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
   const [animationDirection, setAnimationDirection] = useState<"next" | "prev" | null>(null);
 
   const { dispatch } = useCart();
+  const { showToast } = useToast();
+
+  
 
   // Fermer avec Échap
   useEffect(() => {
@@ -95,7 +98,8 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
     });
     setTimeout(() => {
       setIsAddingToCart(false);
-      onClose();
+      showToast(`${quantity} ${product.name} ajouté au panier ✅`);
+      onClose(); // ferme la modal normalement
     }, 500);
   };
 
