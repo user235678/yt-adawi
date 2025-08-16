@@ -98,7 +98,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
     });
     setTimeout(() => {
       setIsAddingToCart(false);
-      showToast(`${quantity} ${product.name} ajouté au panier ✅`);
+      showToast(`${quantity} ${product.name} ajouté(e)s au panier ✅`);
       onClose(); // ferme la modal normalement
     }, 500);
   };

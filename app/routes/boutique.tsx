@@ -10,6 +10,7 @@ import SortButton from "~/components/boutique/SortButton";
 import ProductModal from "~/components/boutique/ProductModal";
 import { Outlet } from "@remix-run/react";
 import { ToastProvider } from "~/contexts/ToastContext";
+import { getUserProfile } from "~/utils/auth.server";
 
 export const meta: MetaFunction = () => {
     return [
@@ -228,7 +229,7 @@ export default function Boutique() {
         },
         {
             id: 15,
-            name: "Pyjama Enfant S",
+            name: "Pyjama Enfant",
             price: "4000 fcfa",
             priceValue: 4000,
             image: "/5.png",

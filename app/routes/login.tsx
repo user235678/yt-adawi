@@ -1,56 +1,75 @@
-// app/routes/login.tsx
-import { MetaFunction, ActionFunction, json, redirect } from "@remix-run/node";
+import {
+  MetaFunction,
+  ActionFunction,
+  LoaderFunction,
+  json,
+  redirect
+} from "@remix-run/node";
 import { Form, useNavigation, useActionData } from "@remix-run/react";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import TopBanner from "~/components/TopBanner";
 import Footer from "~/components/Footer";
 import CompactHeader from "~/components/CompactHeader";
+import { API_BASE } from "~/utils/auth.server";
+import { commitToken, readToken } from "~/utils/session.server";
 
 export const meta: MetaFunction = () => [{ title: "The Providers - Login" }];
 
+/** Si déjà connecté, on redirige vers /boutique */
+export const loader: LoaderFunction = async ({ request }) => {
+  const token = await readToken(request);
+  if (token) return redirect("/user");
+  return null;
+};
+
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
-  const email = formData.get("email");
-  const password = formData.get("password");
+  const email = String(formData.get("email") || "");
+  const password = String(formData.get("password") || "");
 
-  const payload = { email, password };
+  if (!email || !password) {
+    return json({ error: "Veuillez remplir tous les champs." }, { status: 400 });
+  }
 
   try {
-    // URL réelle du backend (pas celle de la doc Swagger)
-    const res = await fetch("https://showroom-backend-2x3g.onrender.com/auth/login", {
+    const res = await fetch(`${API_BASE}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ email, password }),
     });
 
     if (!res.ok) {
-      let errorMsg = "Connexion échouée";
-
+      // Essaye d'extraire un message propre depuis l'API
+      let message = "Identifiants incorrects.";
       try {
-        const errorData = await res.json();
-        // On tente de récupérer un message clair
-        errorMsg =
-          errorData?.detail ||
-          errorData?.message ||
-          errorData?.error ||
-          errorData?.errors?.[0]?.msg ||
-          errorMsg;
-      } catch {
-        // Si la réponse n’est pas un JSON lisible
-        errorMsg = `Erreur ${res.status}`;
-      }
-
-      return json({ error: errorMsg }, { status: res.status });
+        const data = await res.json();
+        message = data?.detail || data?.message || message;
+      } catch { /* ignore */ }
+      return json({ error: message }, { status: res.status });
     }
 
     const data = await res.json();
-    console.log("Token reçu:", data.access_token);
+    // Compatibilité: FastAPI renvoie souvent { access_token, token_type }
+    const token: string =
+      data?.access_token || data?.token || data?.jwt || "";
 
-    // TODO: Stockage du token en cookie/session si besoin
-    return redirect("/boutique");
-  } catch (err: any) {
-    return json({ error: err.message || "Erreur serveur" }, { status: 500 });
+    if (!token) {
+      return json(
+        { error: "Réponse de l'API inattendue: token manquant." },
+        { status: 500 }
+      );
+    }
+
+    // Écrit le JWT dans un cookie HttpOnly
+    return redirect("/user", {
+      headers: await commitToken(token),
+    });
+  } catch (e: any) {
+    return json(
+      { error: e?.message || "Erreur serveur (login)." },
+      { status: 500 }
+    );
   }
 };
 
@@ -96,6 +115,7 @@ export default function Login() {
                 type="email"
                 name="email"
                 placeholder="Email"
+                disabled={isSubmitting} 
                 required
                 className="w-full bg-transparent outline-none border-none text-[18px] text-[#555] py-5 px-2 tracking-wide"
               />
@@ -113,6 +133,7 @@ export default function Login() {
               <div
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"
                 onClick={() => setShowPassword((prev) => !prev)}
+                aria-label="Afficher/masquer le mot de passe"
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </div>
