@@ -1,303 +1,488 @@
 import { useState, useRef } from "react";
-import { X, Upload, Plus, Image } from "lucide-react";
+import { X, Upload, Plus, Image, Trash2, Save } from "lucide-react";
+
+interface Category {
+  id: string;
+  name: string;
+}
 
 interface AddProductModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddProduct: (product: any) => void;
+  onAddProduct: (formData: FormData) => void;
+  categories: Category[];
+  isSubmitting: boolean;
+  error?: string;
 }
 
-export default function AddProductModal({ isOpen, onClose, onAddProduct }: AddProductModalProps) {
+export default function AddProductModal({ 
+  isOpen, 
+  onClose, 
+  onAddProduct,
+  categories,
+  isSubmitting,
+  error
+}: AddProductModalProps) {
   const [formData, setFormData] = useState({
     name: "",
-    category: "",
-    price: "",
-    stock: "",
     description: "",
-    sizes: [] as string[],
-    colors: [] as string[],
-    status: "Actif",
-    image: "", // Sera rempli avec l'URL de l'image
+    price: "",
+    cost_price: "",
+    category_id: "",
+    stock: "1",
+    low_stock_threshold: "",
+    sizes: "",
+    colors: "",
+    tags: "",
+    is_active: "true"
   });
 
-  // État pour la prévisualisation de l'image
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [selectedHoverImages, setSelectedHoverImages] = useState<File[]>([]);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
+  const [hoverImagePreviewUrls, setHoverImagePreviewUrls] = useState<string[]>([]);
 
-  const categories = ["Homme", "Femme", "Enfant", "Montre"];
-  const availableSizes = ["XS", "S", "M", "L", "XL", "XXL"];
-  const availableColors = ["Noir", "Blanc", "Rouge", "Bleu", "Vert", "Jaune"];
+  const mainImageInputRef = useRef<HTMLInputElement>(null);
+  const hoverImageInputRef = useRef<HTMLInputElement>(null);
+
+  if (!isOpen) return null;
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleMainImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    setSelectedImages(prev => [...prev, ...files]);
+
+    // Create preview URLs
+    const newPreviewUrls = files.map(file => URL.createObjectURL(file));
+    setImagePreviewUrls(prev => [...prev, ...newPreviewUrls]);
+  };
+
+  const handleHoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    setSelectedHoverImages(prev => [...prev, ...files]);
+
+    // Create preview URLs
+    const newPreviewUrls = files.map(file => URL.createObjectURL(file));
+    setHoverImagePreviewUrls(prev => [...prev, ...newPreviewUrls]);
+  };
+
+  const removeMainImage = (index: number) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+    
+    // Revoke the URL to avoid memory leaks
+    URL.revokeObjectURL(imagePreviewUrls[index]);
+    setImagePreviewUrls(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeHoverImage = (index: number) => {
+    setSelectedHoverImages(prev => prev.filter((_, i) => i !== index));
+    
+    // Revoke the URL to avoid memory leaks
+    URL.revokeObjectURL(hoverImagePreviewUrls[index]);
+    setHoverImagePreviewUrls(prev => prev.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Vérifier si une image a été sélectionnée
-    if (!imagePreview) {
-      alert("Veuillez sélectionner une image pour le produit");
+    // Validate required fields
+    if (!formData.name || !formData.description || !formData.price || !formData.category_id || !formData.stock) {
+      alert("Veuillez remplir tous les champs obligatoires");
       return;
     }
 
-    // Convertir le stock en nombre
-    const productToAdd = {
-      ...formData,
-      stock: parseInt(formData.stock),
-      image: imagePreview, // Utiliser l'URL de l'image prévisualisée
-    };
+    // Validate at least one image
+    if (selectedImages.length === 0) {
+      alert("Veuillez ajouter au moins une image principale");
+      return;
+    }
 
-    // Appeler la fonction de callback avec les données du produit
-    onAddProduct(productToAdd);
+    const submitFormData = new FormData();
 
-    // Réinitialiser le formulaire
+    // Add form fields
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value) {
+        submitFormData.append(key, value);
+      }
+    });
+
+    // Add images
+    selectedImages.forEach(image => {
+      submitFormData.append("images", image);
+    });
+
+    // Add hover images
+    selectedHoverImages.forEach(image => {
+      submitFormData.append("hover_images", image);
+    });
+
+    onAddProduct(submitFormData);
+  };
+
+  const resetForm = () => {
     setFormData({
       name: "",
-      category: "",
-      price: "",
-      stock: "",
       description: "",
-      sizes: [],
-      colors: [],
-      status: "Actif",
-      image: "",
+      price: "",
+      cost_price: "",
+      category_id: "",
+      stock: "1",
+      low_stock_threshold: "",
+      sizes: "",
+      colors: "",
+      tags: "",
+      is_active: "true"
     });
-    setImagePreview(null);
+    setSelectedImages([]);
+    setSelectedHoverImages([]);
+
+    // Revoke all URLs to avoid memory leaks
+    imagePreviewUrls.forEach(url => URL.revokeObjectURL(url));
+    hoverImagePreviewUrls.forEach(url => URL.revokeObjectURL(url));
+
+    setImagePreviewUrls([]);
+    setHoverImagePreviewUrls([]);
   };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Créer une URL pour la prévisualisation
-      const imageUrl = URL.createObjectURL(file);
-      setImagePreview(imageUrl);
-
-      // Dans une application réelle, vous téléchargeriez l'image sur un serveur
-      // et utiliseriez l'URL retournée. Pour cet exemple, nous utilisons l'URL locale.
-      setFormData(prev => ({ ...prev, image: imageUrl }));
-    }
-  };
-
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
-  };
-
-  const toggleSize = (size: string) => {
-    setFormData(prev => ({
-      ...prev,
-      sizes: prev.sizes.includes(size)
-        ? prev.sizes.filter(s => s !== size)
-        : [...prev.sizes, size]
-    }));
-  };
-
-  const toggleColor = (color: string) => {
-    setFormData(prev => ({
-      ...prev,
-      colors: prev.colors.includes(color)
-        ? prev.colors.filter(c => c !== color)
-        : [...prev.colors, color]
-    }));
-  };
-
-  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Ajouter un nouveau produit</h2>
-          <button
-            onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </button>
+      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold text-gray-900">Ajouter un produit</h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600"
+              disabled={isSubmitting}
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Images */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Image du produit *
-            </label>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleImageChange}
-              accept="image/*"
-              className="hidden"
-            />
+          {/* Error message */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-red-800 text-sm">{error}</p>
+            </div>
+          )}
 
-            {imagePreview ? (
-              <div className="relative">
-                <img 
-                  src={imagePreview} 
-                  alt="Prévisualisation" 
-                  className="w-full h-64 object-contain border border-gray-200 rounded-lg"
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Left column - Basic info */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900">Informations de base</h3>
+              
+              {/* Product name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nom du produit *
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
+                  required
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description *
+                </label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
+                  required
+                />
+              </div>
+
+              {/* Price and Cost */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Prix de vente (EUR) *
+                  </label>
+                  <input
+                    type="number"
+                    name="price"
+                    value={formData.price}
+                    onChange={handleInputChange}
+                    step="0.01"
+                    min="0"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Prix de revient (EUR)
+                  </label>
+                  <input
+                    type="number"
+                    name="cost_price"
+                    value={formData.cost_price}
+                    onChange={handleInputChange}
+                    step="0.01"
+                    min="0"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Category */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Catégorie *
+                </label>
+                <select
+                  name="category_id"
+                  value={formData.category_id}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
+                  required
+                >
+                  <option value="">Sélectionner une catégorie</option>
+                  {categories.map(category => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Stock */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Stock *
+                  </label>
+                  <input
+                    type="number"
+                    name="stock"
+                    value={formData.stock}
+                    onChange={handleInputChange}
+                    min="0"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Seuil d'alerte stock
+                  </label>
+                  <input
+                    type="number"
+                    name="low_stock_threshold"
+                    value={formData.low_stock_threshold}
+                    onChange={handleInputChange}
+                    min="0"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Status */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Statut
+                </label>
+                <select
+                  name="is_active"
+                  value={formData.is_active}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
+                >
+                  <option value="true">Actif</option>
+                  <option value="false">Inactif</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Right column - Variants and Images */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900">Variantes et Images</h3>
+              
+              {/* Sizes */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tailles (séparées par des virgules)
+                </label>
+                <input
+                  type="text"
+                  name="sizes"
+                  value={formData.sizes}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
+                  placeholder="S,M,L,XL"
+                />
+              </div>
+
+              {/* Colors */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Couleurs (séparées par des virgules)
+                </label>
+                <input
+                  type="text"
+                  name="colors"
+                  value={formData.colors}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
+                  placeholder="Rouge,Bleu,Noir"
+                />
+              </div>
+
+              {/* Tags */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tags (séparés par des virgules)
+                </label>
+                <input
+                  type="text"
+                  name="tags"
+                  value={formData.tags}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
+                  placeholder="été,casual,tendance"
+                />
+              </div>
+
+              {/* Main Images */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Images principales *
+                </label>
+                <input
+                  type="file"
+                  ref={mainImageInputRef}
+                  onChange={handleMainImageChange}
+                  accept="image/*"
+                  multiple
+                  className="hidden"
                 />
                 <button
                   type="button"
-                  onClick={() => {
-                    setImagePreview(null);
-                    setFormData(prev => ({ ...prev, image: "" }));
-                  }}
-                  className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                  onClick={() => mainImageInputRef.current?.click()}
+                  className="w-full flex items-center justify-center px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-adawi-gold transition-colors"
                 >
-                  <X className="w-4 h-4" />
+                  <Upload className="w-5 h-5 mr-2 text-gray-400" />
+                  <span className="text-gray-600">Ajouter des images</span>
                 </button>
+
+                {/* Image previews */}
+                {imagePreviewUrls.length > 0 && (
+                  <div className="mt-3 grid grid-cols-3 gap-2">
+                    {imagePreviewUrls.map((url, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={url}
+                          alt={`Preview ${index + 1}`}
+                          className="w-full h-24 object-cover rounded-lg"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeMainImage(index)}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            ) : (
-              <div 
-                onClick={triggerFileInput}
-                className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-adawi-gold transition-colors cursor-pointer"
-              >
-                <Image className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm text-gray-600">
-                  Cliquez pour sélectionner une image
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  PNG, JPG jusqu'à 10MB
-                </p>
+
+              {/* Hover Images */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Images de survol (optionnel)
+                </label>
+                <input
+                  type="file"
+                  ref={hoverImageInputRef}
+                  onChange={handleHoverImageChange}
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => hoverImageInputRef.current?.click()}
+                  className="w-full flex items-center justify-center px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-adawi-gold transition-colors"
+                >
+                  <Image className="w-5 h-5 mr-2 text-gray-400" />
+                  <span className="text-gray-600">Ajouter des images de survol</span>
+                </button>
+
+                {/* Hover image previews */}
+                {hoverImagePreviewUrls.length > 0 && (
+                  <div className="mt-3 grid grid-cols-3 gap-2">
+                    {hoverImagePreviewUrls.map((url, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={url}
+                          alt={`Hover Preview ${index + 1}`}
+                          className="w-full h-24 object-cover rounded-lg"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeHoverImage(index)}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-
-          {/* Basic Info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nom du produit *
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
-                placeholder="Ex: T-shirt Premium"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Catégorie *
-              </label>
-              <select
-                required
-                value={formData.category}
-                onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
-              >
-                <option value="">Sélectionner une catégorie</option>
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Prix (FCFA) *
-              </label>
-              <input
-                type="number"
-                required
-                value={formData.price}
-                onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
-                placeholder="15000"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Stock initial *
-              </label>
-              <input
-                type="number"
-                required
-                value={formData.stock}
-                onChange={(e) => setFormData(prev => ({ ...prev, stock: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
-                placeholder="25"
-              />
             </div>
           </div>
 
-          {/* Description */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description
-            </label>
-            <textarea
-              rows={4}
-              value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
-              placeholder="Description détaillée du produit..."
-            />
-          </div>
-
-          {/* Sizes */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Tailles disponibles
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {availableSizes.map(size => (
-                <button
-                  key={size}
-                  type="button"
-                  onClick={() => toggleSize(size)}
-                  className={`px-3 py-2 text-sm border rounded-lg transition-colors ${ 
-                    formData.sizes.includes(size)
-                      ? 'bg-adawi-gold text-white border-adawi-gold'
-                      : 'bg-white text-gray-700 border-gray-300 hover:border-adawi-gold'
-                  }`}
-                >
-                  {size}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Colors */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Couleurs disponibles
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {availableColors.map(color => (
-                <button
-                  key={color}
-                  type="button"
-                  onClick={() => toggleColor(color)}
-                  className={`px-3 py-2 text-sm border rounded-lg transition-colors ${ 
-                    formData.colors.includes(color)
-                      ? 'bg-adawi-gold text-white border-adawi-gold'
-                      : 'bg-white text-gray-700 border-gray-300 hover:border-adawi-gold'
-                  }`}
-                >
-                  {color}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center justify-end space-x-4 pt-4 border-t border-gray-200">
+          {/* Submit buttons */}
+          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
             <button
               type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              onClick={() => {
+                resetForm();
+                onClose();
+              }}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+              disabled={isSubmitting}
             >
               Annuler
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-adawi-gold text-white rounded-lg hover:bg-adawi-gold/90 transition-colors"
+              className="px-4 py-2 bg-adawi-gold text-white rounded-lg hover:bg-adawi-gold/90 transition-colors flex items-center space-x-2"
+              disabled={isSubmitting}
             >
-              Ajouter le produit
+              {isSubmitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Création...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  <span>Créer le produit</span>
+                </>
+              )}
             </button>
           </div>
         </form>

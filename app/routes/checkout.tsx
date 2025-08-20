@@ -1,5 +1,5 @@
 import type { MetaFunction } from "@remix-run/node";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "@remix-run/react";
 import TopBanner from "~/components/TopBanner";
 import Header from "~/components/CompactHeader";
@@ -17,13 +17,30 @@ export default function Checkout() {
     const { state, dispatch } = useCart();
     const [orderNote, setOrderNote] = useState('');
 
-    const subtotal = state.total;
-    // const shippingFee = subtotal >= 100 ? 0 : 10; // Livraison gratuite à partir de 100€
-    // const taxRate = 0.18; // 18% de taxes
-    // const taxes = subtotal * taxRate;
-    const finalTotal = subtotal ;
+    // Calcul du total directement à partir des items avec vérifications de sécurité
+    const subtotal = useMemo(() => {
+        if (!state?.items || !Array.isArray(state.items)) {
+            return 0;
+        }
+
+        return state.items.reduce((total, item) => {
+            if (!item || !item.product) return total;
+
+            const priceString = item.product.price || '0';
+            const itemPrice = parseFloat(priceString.toString().replace(/[^0-9.]/g, '')) || 0;
+            const quantity = parseInt(item.quantity?.toString() || '0') || 0;
+
+            return total + (itemPrice * quantity);
+        }, 0);
+    }, [state?.items]);
+
+    const finalTotal = subtotal;
 
     const updateQuantity = (id: string, newQuantity: number) => {
+        if (newQuantity <= 0) {
+            removeItem(id);
+            return;
+        }
         dispatch({ type: 'UPDATE_QUANTITY', payload: { id, quantity: newQuantity } });
     };
 
@@ -32,12 +49,17 @@ export default function Checkout() {
     };
 
     const handleCheckout = () => {
-        // Logique de checkout à implémenter
-        console.log('Proceeding to checkout...', { items: state.items, orderNote, total: finalTotal });
-        alert('Fonctionnalité de paiement à implémenter');
+        console.log('Proceeding to checkout...', { 
+            items: state.items, 
+            orderNote, 
+            total: finalTotal,
+            itemCount: state.items?.length || 0
+        });
+        alert(`Commande de ${finalTotal.toFixed(2)} fcfa avec ${state.items?.length || 0} article(s) - Fonctionnalité de paiement à implémenter`);
     };
 
-    if (state.items.length === 0) {
+    // Vérifications de sécurité pour l'état du panier
+    if (!state || !state.items || !Array.isArray(state.items) || state.items.length === 0) {
         return (
             <div className="min-h-screen bg-white">
                 <TopBanner />
@@ -67,20 +89,18 @@ export default function Checkout() {
         <div className="min-h-screen bg-white">
             <TopBanner />
             <Header />
-            
+
             <div className="max-w-6xl mx-auto px-6 py-12">
-                {/* Titre */}
-                <h1 className="text-3xl font-bold text-center text-black mb-2 tracking-wider">CART</h1>
-                
-                {/* Message de livraison gratuite */}
-                <p className="text-center text-gray-600 mb-12">
-                    {/* {subtotal >= 100 ? (
-                        "Vous êtes éligible pour une livraison gratuite."
-                    ) : (
-                        `Ajoutez ${(100 - subtotal).toFixed(0)} fcfa de produits pour une livraison gratuite.`
-                    )} */}
-                    Frais de livraison payé à la réception de la marchandise
-                </p>
+                {/* Titre avec compteur d'articles */}
+                <div className="text-center mb-12">
+                    <h1 className="text-3xl font-bold text-black mb-2 tracking-wider">CART</h1>
+                    <p className="text-gray-600 mb-4">
+                        {state.items.length} article{state.items.length > 1 ? 's' : ''} dans votre panier
+                    </p>
+                    <p className="text-gray-600">
+                        Frais de livraison payé à la réception de la marchandise
+                    </p>
+                </div>
 
                 {/* En-têtes du tableau */}
                 <div className="hidden md:grid md:grid-cols-12 gap-4 pb-4 border-b border-gray-200 mb-8">
@@ -98,32 +118,46 @@ export default function Checkout() {
                 {/* Articles du panier */}
                 <div className="space-y-8 mb-12">
                     {state.items.map((item) => {
-                        const itemPrice = parseFloat(item.product.price.replace(/[^0-9.]/g, ''));
-                        const itemTotal = itemPrice * item.quantity;
+                        // Vérifications de sécurité pour chaque item
+                        if (!item || !item.product) {
+                            return null;
+                        }
+
+                        const priceString = item.product.price || '0';
+                        const itemPrice = parseFloat(priceString.toString().replace(/[^0-9.]/g, '')) || 0;
+                        const quantity = parseInt(item.quantity?.toString() || '1') || 1;
+                        const itemTotal = itemPrice * quantity;
+
+                        // Génération d'un ID de fallback si nécessaire
+                        const itemId = item.id || `${item.product.id || Date.now()}-${Math.random()}`;
 
                         return (
-                            <div key={item.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center py-6 border-b border-gray-100">
+                            <div key={itemId} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center py-6 border-b border-gray-100">
                                 {/* Produit */}
                                 <div className="md:col-span-6 flex items-center space-x-4">
                                     <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                                         <img
-                                            src={item.product.image}
-                                            alt={item.product.name}
+                                            src={item.product.image || '/placeholder-product.png'}
+                                            alt={item.product.name || 'Produit'}
                                             className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                                const target = e.target as HTMLImageElement;
+                                                target.src = '/placeholder-product.png';
+                                            }}
                                         />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-                                            {item.product.category}
+                                            {item.product.category || 'Produit'}
                                         </p>
                                         <h3 className="text-base font-medium text-black mb-1 truncate">
-                                            {item.product.name}
+                                            {item.product.name || 'Produit sans nom'}
                                         </h3>
                                         <p className="text-sm text-gray-600 mb-2">
                                             {itemPrice.toFixed(2)} fcfa
                                         </p>
                                         <p className="text-xs text-gray-500">
-                                            {item.selectedSize.toUpperCase()} / {item.selectedColor.toUpperCase()}
+                                            {(item.selectedSize || item.size || 'M').toUpperCase()} / {(item.selectedColor || item.color || 'NOIR').toUpperCase()}
                                         </p>
                                     </div>
                                 </div>
@@ -131,18 +165,22 @@ export default function Checkout() {
                                 {/* Quantité */}
                                 <div className="md:col-span-3 flex items-center justify-center space-x-3">
                                     <button
-                                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                        className="w-8 h-8 border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
-                                        disabled={item.quantity <= 1}
+                                        onClick={() => updateQuantity(itemId, quantity - 1)}
+                                        className={`w-8 h-8 border flex items-center justify-center text-lg font-medium transition-colors ${
+                                            quantity <= 1 
+                                                ? 'border-gray-200 text-gray-400 cursor-not-allowed' 
+                                                : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                                        }`}
+                                        disabled={quantity <= 1}
                                     >
                                         −
                                     </button>
                                     <span className="text-base font-medium text-black min-w-[2rem] text-center">
-                                        {item.quantity}
+                                        {quantity}
                                     </span>
                                     <button
-                                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                        className="w-8 h-8 border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
+                                        onClick={() => updateQuantity(itemId, quantity + 1)}
+                                        className="w-8 h-8 border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors text-lg font-medium"
                                     >
                                         +
                                     </button>
@@ -154,7 +192,7 @@ export default function Checkout() {
                                         {itemTotal.toFixed(2)} fcfa
                                     </p>
                                     <button
-                                        onClick={() => removeItem(item.id)}
+                                        onClick={() => removeItem(itemId)}
                                         className="text-sm text-gray-500 hover:text-red-600 underline transition-colors"
                                     >
                                         Supprimer
@@ -186,13 +224,6 @@ export default function Checkout() {
                                 <span className="text-gray-600">Subtotal:</span>
                                 <span className="font-medium text-black">{subtotal.toFixed(2)} fcfa</span>
                             </div>
-                            {/* <div className="flex justify-between text-base">
-                                <span className="text-gray-600">Livraison:</span>
-                                <span className="font-medium text-black">
-                                    {shippingFee === 0 ? 'Free' : `${shippingFee.toFixed(2)} fcfa`}
-                                    
-                                </span>
-                            </div> */}
                             <div className="flex justify-between text-base">
                                 <span className="text-gray-600">Taxes:</span>
                                 <span className="font-medium text-black">0 fcfa</span>
@@ -214,7 +245,7 @@ export default function Checkout() {
                             onClick={handleCheckout}
                             className="w-full bg-black text-white font-medium py-4 px-6 text-base rounded-full hover:bg-gray-800 transition-colors duration-200 tracking-wider"
                         >
-                            COMMANDER
+                            COMMANDER ({finalTotal.toFixed(2)} fcfa)
                         </button>
 
                         {/* Lien continuer les achats */}

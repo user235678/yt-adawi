@@ -6,7 +6,7 @@ import {
   redirect
 } from "@remix-run/node";
 import { Form, useNavigation, useActionData } from "@remix-run/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import TopBanner from "~/components/TopBanner";
 import Footer from "~/components/Footer";
@@ -50,9 +50,11 @@ export const action: ActionFunction = async ({ request }) => {
     }
 
     const data = await res.json();
-    // Compatibilité: FastAPI renvoie souvent { access_token, token_type }
-    const token: string =
-      data?.access_token || data?.token || data?.jwt || "";
+    console.log("📦 Réponse de connexion:", data);
+
+    // Récupérer le token et le session_id
+    const token: string = data?.access_token || data?.token || data?.jwt || "";
+    const sessionId: string = data?.session_id || "";
 
     if (!token) {
       return json(
@@ -61,9 +63,19 @@ export const action: ActionFunction = async ({ request }) => {
       );
     }
 
-    // Écrit le JWT dans un cookie HttpOnly
-    return redirect("/user", {
-      headers: await commitToken(token),
+    console.log("✅ Token reçu:", !!token);
+    console.log("✅ Session ID reçu:", !!sessionId);
+
+    // Créer un objet avec les informations de session
+    const sessionData = {
+      access_token: token,
+      session_id: sessionId,
+      token_type: data?.token_type || "bearer"
+    };
+
+    // Écrit les données de session dans un cookie HttpOnly et redirige vers boutique
+    return redirect("/boutique", {
+      headers: await commitToken(JSON.stringify(sessionData)),
     });
   } catch (e: any) {
     return json(
@@ -78,6 +90,44 @@ export default function Login() {
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
   const actionData = useActionData<{ error?: string }>();
+
+  // Récupérer les paramètres d'erreur de l'URL
+  const [urlParams, setUrlParams] = useState<URLSearchParams | null>(null);
+
+  useEffect(() => {
+    setUrlParams(new URLSearchParams(window.location.search));
+  }, []);
+
+  // Messages d'erreur basés sur les paramètres URL
+  const getErrorMessage = () => {
+    if (actionData?.error) return actionData.error;
+
+    if (urlParams) {
+      const errorType = urlParams.get("error");
+      switch (errorType) {
+        case "timeout":
+          return "Votre session a expiré. Veuillez vous reconnecter.";
+        case "network":
+          return "Problème de connexion réseau. Veuillez réessayer.";
+        case "unknown":
+          return "Une erreur est survenue. Veuillez vous reconnecter.";
+        default:
+          return null;
+      }
+    }
+
+    return null;
+  };
+
+  const errorMessage = getErrorMessage();
+
+  // Marquer qu'une connexion vient d'avoir lieu côté client
+  useEffect(() => {
+    if (navigation.state === "loading" && navigation.formAction === "/login") {
+      // Marquer qu'une connexion réussie vient d'avoir lieu
+      sessionStorage.setItem("justLoggedIn", "true");
+    }
+  }, [navigation.state, navigation.formAction]);
 
   return (
     <>
@@ -104,8 +154,10 @@ export default function Login() {
             CONNEXION
           </div>
 
-          {actionData?.error && (
-            <p className="text-red-500 text-center mb-4">{actionData.error}</p>
+          {errorMessage && (
+            <div className="w-full mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600 text-sm text-center">{errorMessage}</p>
+            </div>
           )}
 
           <Form method="post" className="w-full space-y-4">
@@ -115,7 +167,7 @@ export default function Login() {
                 type="email"
                 name="email"
                 placeholder="Email"
-                disabled={isSubmitting} 
+                disabled={isSubmitting}
                 required
                 className="w-full bg-transparent outline-none border-none text-[18px] text-[#555] py-5 px-2 tracking-wide"
               />

@@ -1,0 +1,47 @@
+import { json, type LoaderFunction } from "@remix-run/node";
+import { readToken } from "~/utils/session.server";
+
+export const loader: LoaderFunction = async ({ request }) => {
+    try {
+        const token = await readToken(request);
+
+        if (!token) {
+            return json({ success: false, error: "Non authentifié" }, { status: 401 });
+        }
+
+        // Récupérer les catégories depuis l'API backend
+        const response = await fetch("https://showroom-backend-2x3g.onrender.com/products/categories/", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            console.error("❌ Erreur API categories:", response.status, errorData);
+
+            return json({ 
+                success: false, 
+                error: errorData.detail || `Erreur ${response.status}` 
+            }, { status: response.status });
+        }
+
+        const categories = await response.json();
+        
+        console.log("✅ Catégories récupérées:", categories.length || 0);
+
+        return json({ 
+            success: true, 
+            categories: categories || [] 
+        });
+
+    } catch (error) {
+        console.error("❌ Erreur lors de la récupération des catégories:", error);
+        return json({ 
+            success: false, 
+            error: "Erreur de connexion au serveur" 
+        }, { status: 500 });
+    }
+};

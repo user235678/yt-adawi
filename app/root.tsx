@@ -34,9 +34,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon1.ico"></link>  
       </head>
       <body>
-        <CartProvider>
-          {children}
-        </CartProvider>
+        {children}
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -45,5 +43,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <CartProvider>
+      <Outlet />
+    </CartProvider>
+  );
 }

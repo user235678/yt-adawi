@@ -8,6 +8,7 @@ import {
   BarChart3,
   Settings,
   HelpCircle,
+  Box,
   Mail,
   LogOut,
   X
@@ -27,6 +28,7 @@ export default function AdminSidebar({ onClose }: AdminSidebarProps) {
     { id: "orders", label: "Commandes", icon: ShoppingCart, path: "/admin/orders" },
     { id: "support", label: "Support", icon: MessageSquare, path: "/admin/support", badge: "2" },
     { id: "rapports", label: "Rapports", icon: BarChart3, path: "/admin/rapports" },
+    { id: "categories", label: "Categories", icon: Box, path: "/admin/categories" },
     { id: "settings", label: "Paramètres", icon: Settings, path: "/admin/settings" },
   ];
 

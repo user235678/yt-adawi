@@ -1,47 +1,75 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 
+interface Toast {
+  id: string;
+  message: string;
+  type: "success" | "error" | "info";
+  duration?: number;
+}
+
 interface ToastContextType {
-  showToast: (message: string) => void;
+  toasts: Toast[];
+  showToast: (message: string, type?: "success" | "error" | "info", duration?: number) => void;
+  removeToast: (id: string) => void;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 export function ToastProvider({ children }: { children: ReactNode }) {
-  const [message, setMessage] = useState("");
-  const [isVisible, setIsVisible] = useState(false);
+  const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const showToast = (msg: string) => {
-    setMessage(msg);
-    setIsVisible(true);
+  const showToast = (message: string, type: "success" | "error" | "info" = "info", duration = 3000) => {
+    const id = `toast-${Date.now()}-${Math.random()}`;
+    const newToast: Toast = { id, message, type, duration };
+
+    setToasts(prev => [...prev, newToast]);
+
+    // Auto-remove after duration
     setTimeout(() => {
-      setIsVisible(false);
-      setTimeout(() => setMessage(""), 300); // attendre la fin de l'animation
-    }, 3000);
+      removeToast(id);
+    }, duration);
+  };
+
+  const removeToast = (id: string) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
   };
 
   return (
-    <ToastContext.Provider value={{ showToast }}>
+    <ToastContext.Provider value={{ toasts, showToast, removeToast }}>
       {children}
-
-      {/* Toast animé */}
-      {message && (
-        <div
-          className={`fixed top-4 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full z-[9999] transition-all duration-300 ease-out
-            ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-5"}
-            bg-white text-black
-          `}
-        >
-          {message}
-        </div>
-      )}
+      {/* Toast container */}
+      <div className="fixed top-4 right-4 z-50 space-y-2">
+        {toasts.map(toast => (
+          <div
+            key={toast.id}
+            className={`px-4 py-3 rounded-lg shadow-lg max-w-sm transition-all duration-300 ${
+              toast.type === "success"
+                ? "bg-green-500 text-white"
+                : toast.type === "error"
+                ? "bg-red-500 text-white"
+                : "bg-blue-500 text-white"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">{toast.message}</span>
+              <button
+                onClick={() => removeToast(toast.id)}
+                className="ml-3 text-white hover:text-gray-200"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
     </ToastContext.Provider>
   );
 }
 
 export function useToast() {
   const context = useContext(ToastContext);
-  if (!context) {
-    throw new Error("useToast doit être utilisé dans ToastProvider");
+  if (context === undefined) {
+    throw new Error("useToast must be used within a ToastProvider");
   }
   return context;
 }

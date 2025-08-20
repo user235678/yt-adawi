@@ -1,58 +1,153 @@
 // routes/profile.tsx
 import { LoaderFunction, json, redirect } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useNavigation } from "@remix-run/react";
 import { readToken } from "~/utils/session.server";
 import { Form } from "@remix-run/react";
-import { useState, useEffect } from "react";
 import TopBanner from "~/components/TopBanner";
 import CompactHeader from "~/components/CompactHeader";
 import Footer from "~/components/Footer";
-import SuccessNotification from "~/components/SuccessNotification";
+
+// Fonction utilitaire pour faire des requêtes avec timeout
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = 10000) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error;
+  }
+}
 
 export const loader: LoaderFunction = async ({ request }) => {
   const token = await readToken(request);
-  if (!token) return redirect("/login");
+  
+  // Si pas de token, redirection immédiate vers login
+  if (!token) {
+    console.log("Pas de token trouvé, redirection vers login");
+    return redirect("/login");
+  }
 
-  const res = await fetch("https://showroom-backend-2x3g.onrender.com/auth/me", {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  try {
+    console.log("Vérification du token utilisateur...");
+    
+    // Requête avec timeout de 10 secondes
+    const res = await fetchWithTimeout(
+      "https://showroom-backend-2x3g.onrender.com/auth/me", 
+      {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+      },
+      10000 // 10 secondes de timeout
+    );
 
-  if (!res.ok) return redirect("/login");
+    if (!res.ok) {
+      console.log(`Erreur API: ${res.status} ${res.statusText}`);
+      
+      // Si 401 (non autorisé) ou 403 (interdit), token expiré
+      if (res.status === 401 || res.status === 403) {
+        console.log("Token expiré ou invalide, redirection vers login");
+        return redirect("/login");
+      }
+      
+      // Pour les autres erreurs, on essaie de récupérer le message
+      let errorMessage = "Erreur lors de la récupération des données utilisateur";
+      try {
+        const errorData = await res.json();
+        errorMessage = errorData.message || errorData.detail || errorMessage;
+      } catch (e) {
+        // Ignore les erreurs de parsing JSON
+      }
+      
+      return json({ error: errorMessage }, { status: res.status });
+    }
 
-  const user = await res.json();
-  return json(user);
+    const user = await res.json();
+    console.log("Données utilisateur récupérées avec succès");
+    return json({ user, error: null });
+
+  } catch (error: any) {
+    console.error("Erreur lors de la vérification du token:", error);
+    
+    // Gestion des différents types d'erreurs
+    if (error.name === 'AbortError') {
+      console.log("Timeout de la requête, redirection vers login");
+      return redirect("/login?error=timeout");
+    }
+    
+    if (error.message?.includes('fetch')) {
+      console.log("Erreur réseau, redirection vers login");
+      return redirect("/login?error=network");
+    }
+    
+    // Pour toute autre erreur, redirection vers login
+    console.log("Erreur inconnue, redirection vers login");
+    return redirect("/login?error=unknown");
+  }
 };
 
 export default function ProfilePage() {
-  const user = useLoaderData<typeof loader>();
-  const [showNotification, setShowNotification] = useState(false);
+  const data = useLoaderData<typeof loader>();
+  const navigation = useNavigation();
+  
+  // Si on a une erreur mais pas d'utilisateur, afficher l'erreur
+  if (data.error && !data.user) {
+    return (
+      <div className="min-h-screen bg-adawi-beige flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Erreur de chargement</h2>
+            <p className="text-gray-600 mb-6">{data.error}</p>
+            <div className="space-y-3">
+              <a 
+                href="/login" 
+                className="block w-full bg-adawi-gold text-white py-2 px-4 rounded-lg hover:bg-adawi-gold/90 transition-colors"
+              >
+                Se reconnecter
+              </a>
+              <a 
+                href="/" 
+                className="block w-full bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                Retour à l'accueil
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  useEffect(() => {
-    // Vérifier si c'est la première visite de cette session
-    const hasShownWelcome = sessionStorage.getItem('hasShownWelcomeMessage');
-    
-    if (!hasShownWelcome) {
-      setShowNotification(true);
-      // Marquer que le message a été affiché pour cette session
-      sessionStorage.setItem('hasShownWelcomeMessage', 'true');
-    }
-  }, []);
+  const user = data.user;
 
-  const handleNotificationClose = () => {
-    setShowNotification(false);
-  };
+  // Indicateur de chargement pendant la navigation
+  if (navigation.state === "loading") {
+    return (
+      <div className="min-h-screen bg-adawi-beige flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-adawi-gold border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-adawi-brown font-medium">Chargement de votre profil...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-adawi-beige">
-      {/* Notification de connexion */}
-      {showNotification && (
-        <SuccessNotification
-          message={`Vous êtes connecté en tant que ${user.full_name}`}
-          duration={5000}
-          onClose={handleNotificationClose}
-        />
-      )}
-
       <TopBanner />
       <CompactHeader />
 
@@ -171,13 +266,13 @@ export default function ProfilePage() {
             {/* Actions Section */}
             <div className="mt-8 pt-8 border-t border-gray-200">
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button className="px-6 py-3 bg-adawi-beige text-adawi-brown rounded-lg hover:bg-adawi-beige-dark transition-colors duration-200 flex items-center justify-center">
+                {/* <button className="px-6 py-3 bg-adawi-beige text-adawi-brown rounded-lg hover:bg-adawi-beige-dark transition-colors duration-200 flex items-center justify-center">
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
                       d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                   Modifier le profil
-                </button>
+                </button> */}
 
                 <Form method="post" action="/logout">
                   <button 

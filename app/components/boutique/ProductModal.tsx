@@ -1,14 +1,45 @@
 import { useEffect, useState } from "react";
 import type { Product } from "./ProductGrid";
-import { useCart } from "~/contexts/CartContext";
 import { useToast } from "~/contexts/ToastContext";
+
+// Interface pour les produits API originaux
+interface ApiProduct {
+    id: string;
+    name: string;
+    description: string;
+    price: number;
+    cost_price?: number;
+    currency: string;
+    category_id: string;
+    sizes: string[];
+    colors: string[];
+    stock: number;
+    low_stock_threshold?: number;
+    images: string[];
+    hover_images?: string[];
+    tags: string[];
+    seller_id: string;
+    created_at: string;
+    updated_at: string;
+    is_active: boolean;
+    category?: {
+        id: string;
+        name: string;
+        description: string;
+        parent_id: string;
+    };
+    profit?: number;
+    margin_percent?: number;
+}
+
 interface ProductModalProps {
   product: Product | null;
   isOpen: boolean;
   onClose: () => void;
+  apiProducts?: ApiProduct[]; // Nouveau prop pour les produits API originaux
 }
 
-export default function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
+export default function ProductModal({ product, isOpen, onClose, apiProducts = [] }: ProductModalProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('');
@@ -16,10 +47,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [animationDirection, setAnimationDirection] = useState<"next" | "prev" | null>(null);
 
-  const { dispatch } = useCart();
   const { showToast } = useToast();
-
-  
 
   // Fermer avec Échap
   useEffect(() => {
@@ -89,18 +117,74 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
   const increaseQuantity = () => setQuantity(prev => prev + 1);
   const decreaseQuantity = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
 
-  const handleAddToCart = () => {
+  // ✅ Fonction corrigée pour utiliser les cookies HTTP-only comme AddToCartModal
+  const handleAddToCart = async () => {
     if (!product) return;
+
     setIsAddingToCart(true);
-    dispatch({
-      type: 'ADD_ITEM',
-      payload: { product, quantity, size: selectedSize, color: selectedColor }
-    });
-    setTimeout(() => {
-      setIsAddingToCart(false);
+
+    try {
+      // ✅ Trouver le produit API original pour obtenir les vraies données
+      const apiProduct = apiProducts.find(p => p.id === product.id);
+
+      // ✅ Préparer les données exactement comme AddToCartModal
+      const cartData = {
+        product_id: product.id, // ✅ Utiliser l'ID original (string)
+        quantity: quantity,
+        size: selectedSize || "",
+        color: selectedColor || "",
+        images: [product.image].filter(Boolean), // ✅ Simplifier les images
+        price: product.priceValue,
+        name: product.name
+      };
+
+      console.log('Données envoyées à l\'API:', cartData);
+
+      // ✅ Appel à l'API avec credentials pour les cookies HTTP-only
+      const response = await fetch('/api/cart/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // ✅ Important pour les cookies HTTP-only
+        body: JSON.stringify(cartData)
+      });
+
+      // ✅ Log de la réponse brute pour le débogage
+      const responseText = await response.text();
+      console.log('Réponse brute de l\'API:', responseText);
+
+      if (!response.ok) {
+        throw new Error(`Erreur ${response.status}: ${responseText}`);
+      }
+
+      const result = JSON.parse(responseText);
+      console.log('Réponse parsée de l\'API:', result);
+
+      // Attendre un peu pour l'animation
+      await new Promise(resolve => setTimeout(resolve, 300));
+
       showToast(`${quantity} ${product.name} ajouté(e)s au panier ✅`);
-      onClose(); // ferme la modal normalement
-    }, 500);
+
+      // ✅ Déclencher un événement pour mettre à jour le compteur du panier
+      window.dispatchEvent(new CustomEvent('cartUpdated', { 
+        detail: { 
+          total: result.total || 0,
+          itemCount: result.items?.length || 0
+        } 
+      }));
+
+      onClose();
+    } catch (error) {
+      console.error('Erreur lors de l\'ajout au panier:', error);
+      showToast(
+        error instanceof Error 
+          ? `Erreur: ${error.message}` 
+          : 'Erreur lors de l\'ajout au panier'
+      );
+    } finally {
+      setIsAddingToCart(false);
+    }
   };
 
   // Tableau d'images
@@ -111,7 +195,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
     product?.image2 || product?.image
   ].filter(Boolean) as string[];
 
-  const currentImage = productImages[selectedImageIndex];
+  const currentImage = productImages[selectedImageIndex] || '/placeholder-product.png';
 
   const availableSizes = product ? getAvailableSizes(product) : [];
   const availableColors = product ? getAvailableColors(product) : [];
@@ -120,10 +204,12 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
 
   // Fonction pour changer d'image avec animation
   const changeImage = (direction: "next" | "prev") => {
+    if (productImages.length <= 1) return;
+
     setAnimationDirection(direction);
     setTimeout(() => {
-      setSelectedImageIndex((prev) =>
-        direction === "next"
+      setSelectedImageIndex((prev) => 
+        direction === "next" 
           ? prev === productImages.length - 1 ? 0 : prev + 1
           : prev === 0 ? productImages.length - 1 : prev - 1
       );
@@ -133,7 +219,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
 
   // Swipe mobile
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || productImages.length <= 1) return;
     let touchStartX = 0;
     let touchEndX = 0;
 
@@ -159,7 +245,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
 
   // Flèches PC
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || productImages.length <= 1) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowRight") changeImage("next");
       if (e.key === "ArrowLeft") changeImage("prev");
@@ -176,7 +262,12 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b">
           <h2 className="text-2xl font-bold text-black">Détails du produit</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-black transition-colors duration-200 text-2xl font-bold w-8 h-8 flex items-center justify-center">×</button>
+          <button 
+            onClick={onClose} 
+            className="text-gray-500 hover:text-black transition-colors duration-200 text-2xl font-bold w-8 h-8 flex items-center justify-center"
+          >
+            ×
+          </button>
         </div>
 
         {/* Contenu */}
@@ -192,42 +283,79 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                   className={`w-full h-full object-cover transition-all duration-200 ease-out
                     ${animationDirection === "next" ? "translate-x-10 opacity-0" : ""}
                     ${animationDirection === "prev" ? "-translate-x-10 opacity-0" : ""}
-                  `}
+                  `} 
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = '/placeholder-product.png';
+                  }}
                 />
                 {isNewProduct(product.date) && (
                   <span className="absolute top-2 left-2 z-20 bg-adawi-gold-light text-red-500 text-[10px] sm:text-xs font-semibold px-2 py-1 rounded shadow-md uppercase">
                     NEW
                   </span>
                 )}
+
+                {/* Flèches de navigation */}
+                {productImages.length > 1 && (
+                  <>
+                    <button
+                      onClick={() => changeImage("prev")}
+                      className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-2 transition-all"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => changeImage("next")}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-2 transition-all"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </>
+                )}
               </div>
 
               {/* Miniatures */}
-              <div className="flex gap-3 justify-center">
-                {productImages.map((image, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedImageIndex(index)}
-                    className={`relative w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 ${selectedImageIndex === index ? 'border-adawi-gold shadow-md' : 'border-gray-200 hover:border-gray-300'}`}
-                  >
-                    <img src={image} alt={`${product.name} vue ${index + 1}`} className="w-full h-full object-cover" />
-                    {selectedImageIndex === index && <div className="absolute inset-0 bg-adawi-gold/10"></div>}
-                  </button>
-                ))}
-              </div>
+              {productImages.length > 1 && (
+                <div className="flex gap-3 justify-center">
+                  {productImages.map((image, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedImageIndex(index)}
+                      className={`relative w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 ${ 
+                        selectedImageIndex === index ? 'border-adawi-gold shadow-md' : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <img 
+                        src={image} 
+                        alt={`${product.name} vue ${index + 1}`} 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder-product.png';
+                        }}
+                      />
+                      {selectedImageIndex === index && <div className="absolute inset-0 bg-adawi-gold/10"></div>}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Infos produit */}
-            {/* ... ici tu gardes le reste de ton code inchangé pour tailles, couleurs, quantité, bouton panier, etc. */}
             <div className="space-y-6">
               <div>
                 <p className="text-sm text-gray-500 uppercase tracking-wide mb-2">
-                  {product.category.charAt(0).toUpperCase() + product.category.slice(1)}
+                  {product.category?.charAt(0).toUpperCase() + product.category?.slice(1) || 'Produit'}
                 </p>
                 <h3 className="text-3xl font-bold text-black mb-4">{product.name}</h3>
                 <p className="text-2xl font-bold text-black">{product.price}</p>
               </div>
 
-              {/* Sélection de taille avec disponibilité */}
+              {/* Sélection de taille */}
               <div>
                 <h4 className="text-sm font-medium text-black mb-3">Taille:</h4>
                 <div className="flex gap-2">
@@ -238,28 +366,17 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                         key={size}
                         onClick={() => isAvailable && setSelectedSize(size)}
                         disabled={!isAvailable}
-                        className={`relative px-4 py-2 border text-sm font-medium transition-all duration-200 ${selectedSize === size && isAvailable
-                          ? 'border-black bg-black text-white'
-                          : isAvailable
-                            ? 'border-gray-300 text-black hover:border-gray-400'
-                            : 'border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50'
-                          }`}
+                        className={`relative px-4 py-2 border text-sm font-medium transition-all duration-200 ${ 
+                          selectedSize === size && isAvailable
+                            ? 'border-black bg-black text-white'
+                            : isAvailable
+                              ? 'border-gray-300 text-black hover:border-gray-400'
+                              : 'border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50'
+                        }`}
                       >
-                        {/* Texte de la taille */}
-                        <span className={!isAvailable ? 'line-through decoration-2 decoration-black' : ''}>
+                        <span className={!isAvailable ? 'line-through decoration-2 decoration-red-500' : ''}>
                           {size}
                         </span>
-                        {/* Ligne diagonale pour les tailles non disponibles */}
-                        {!isAvailable && (
-                          <>
-                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                              <div className="w-full h-0.5 bg-black transform rotate-12 opacity-80"></div>
-                            </div>
-                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                              <div className="w-full h-0.5 bg-red-600 transform rotate-12"></div>
-                            </div>
-                          </>
-                        )}
                       </button>
                     );
                   })}
@@ -271,7 +388,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                 )}
               </div>
 
-              {/* Sélection de couleur avec disponibilité */}
+              {/* Sélection de couleur */}
               <div>
                 <h4 className="text-sm font-medium text-black mb-3">
                   Couleur: {selectedColor.charAt(0).toUpperCase() + selectedColor.slice(1)}
@@ -284,25 +401,21 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                         key={color}
                         onClick={() => isAvailable && setSelectedColor(color)}
                         disabled={!isAvailable}
-                        className={`relative w-8 h-8 rounded border-2 transition-all duration-200 ${getProductColorStyle(color)
-                          } ${selectedColor === color && isAvailable
+                        className={`relative w-8 h-8 rounded border-2 transition-all duration-200 ${ 
+                          getProductColorStyle(color)
+                        } ${ 
+                          selectedColor === color && isAvailable
                             ? 'ring-2 ring-adawi-gold ring-offset-2'
                             : isAvailable
                               ? 'hover:ring-1 hover:ring-gray-300 hover:ring-offset-1'
                               : 'opacity-50 cursor-not-allowed'
-                          }`}
+                        }`}
                         aria-label={`Sélectionner la couleur ${color}`}
                       >
-                        {/* Ligne diagonale pour les couleurs non disponibles */}
                         {!isAvailable && (
-                          <>
-                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                              <div className="w-full h-0.5 bg-black transform rotate-45 opacity-90"></div>
-                            </div>
-                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                              <div className="w-full h-0.5 bg-red-600 transform rotate-45"></div>
-                            </div>
-                          </>
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div className="w-full h-0.5 bg-red-600 transform rotate-45"></div>
+                          </div>
                         )}
                       </button>
                     );
@@ -315,13 +428,14 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                 )}
               </div>
 
-              {/* Quantité avec fonctionnalité */}
+              {/* Quantité */}
               <div className="flex items-center gap-4">
                 <button
-                  className={`w-10 h-10 border flex items-center justify-center text-lg font-medium transition-colors ${quantity > 1
-                    ? 'border-gray-300 hover:bg-gray-50 text-black'
-                    : 'border-gray-200 text-gray-400 cursor-not-allowed'
-                    }`}
+                  className={`w-10 h-10 border flex items-center justify-center text-lg font-medium transition-colors ${ 
+                    quantity > 1
+                      ? 'border-gray-300 hover:bg-gray-50 text-black'
+                      : 'border-gray-200 text-gray-400 cursor-not-allowed'
+                  }`}
                   onClick={decreaseQuantity}
                   disabled={quantity <= 1}
                   aria-label="Diminuer la quantité"
@@ -338,14 +452,15 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                 </button>
               </div>
 
-              {/* Bouton d'ajout au panier mis à jour */}
+              {/* Bouton d'ajout au panier */}
               <button
                 onClick={handleAddToCart}
                 disabled={isAddingToCart}
-                className={`w-full py-4 px-6 rounded-full font-medium text-lg transition-all duration-200 ${isAddingToCart
-                  ? 'bg-adawi-gold text-white cursor-not-allowed'
-                  : 'bg-black text-white hover:bg-gray-800'
-                  }`}
+                className={`w-full py-4 px-6 rounded-full font-medium text-lg transition-all duration-200 ${ 
+                  isAddingToCart
+                    ? 'bg-adawi-gold text-white cursor-not-allowed'
+                    : 'bg-black text-white hover:bg-gray-800'
+                }`}
               >
                 {isAddingToCart ? (
                   <span className="flex items-center justify-center">
