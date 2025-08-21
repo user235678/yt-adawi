@@ -1,7 +1,11 @@
 import { useState } from "react";
-import type { MetaFunction } from "@remix-run/node";
-import { Plus, Search, Filter, Edit, Trash2, Eye, Mail, Phone, MoreVertical } from "lucide-react";
+import type { MetaFunction, LoaderFunction, ActionFunction } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import { useLoaderData, useSubmit, useActionData, useNavigation } from "@remix-run/react";
+import { Plus, Search, Filter, Edit, Trash2, Eye, Mail, Phone, MoreVertical, AlertCircle, CheckCircle } from "lucide-react";
 import AddUserModal from "~/components/admin/AddUserModal";
+import EditRoleModal from "~/components/admin/EditRoleModal";
+import { readToken } from "~/utils/session.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -10,118 +14,297 @@ export const meta: MetaFunction = () => {
   ];
 };
 
+// URL de l'API corrigée
+const API_BASE = "https://showroom-backend-2x3g.onrender.com";
+
+// Types pour les données de l'API
+interface User {
+  id: string;
+  email: string;
+  full_name: string;
+  role: string;
+  is_banned: boolean;
+  is_active: boolean;
+  is_deleted: boolean;
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string;
+}
+
+interface LoaderData {
+  users: User[];
+  error?: string;
+  debug?: any;
+  success?: string;
+}
+
+interface ActionData {
+  success?: boolean;
+  error?: string;
+}
+
+export const loader: LoaderFunction = async ({ request }) => {
+  console.log("🔍 Début du loader admin.users");
+
+  const tokenData = await readToken(request);
+  console.log("🔑 Token data récupéré:", !!tokenData);
+
+  if (!tokenData) {
+    console.log("❌ Pas de token trouvé");
+    throw new Response("Non autorisé", { status: 401 });
+  }
+
+  // Récupérer les paramètres de l'URL pour les messages de succès
+  const url = new URL(request.url);
+  const success = url.searchParams.get("success");
+
+  try {
+    // Parse le token
+    let token;
+    try {
+      const parsedToken = typeof tokenData === 'string' ? JSON.parse(tokenData) : tokenData;
+      token = parsedToken?.access_token || tokenData;
+      console.log("🔑 Token extrait:", token ? `${token.substring(0, 20)}...` : "null");
+    } catch (parseError) {
+      console.error("❌ Erreur parsing token:", parseError);
+      token = tokenData;
+    }
+
+    if (!token) {
+      console.log("❌ Token vide après extraction");
+      return json<LoaderData>({
+        users: [],
+        error: "Token invalide",
+        debug: { tokenData: typeof tokenData }
+      });
+    }
+
+    // Récupérer les utilisateurs
+    console.log("👥 Récupération des utilisateurs...");
+    console.log("🌐 URL utilisateurs:", `${API_BASE}/admin/users`);
+
+    const usersRes = await fetch(`${API_BASE}/admin/users`, {
+      headers: { 
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+    });
+
+    console.log("👥 Réponse utilisateurs:", usersRes.status, usersRes.statusText);
+
+    if (!usersRes.ok) {
+      let errorMessage = `Erreur ${usersRes.status}: ${usersRes.statusText}`;
+      let errorDetail = null;
+
+      try {
+        const errorData = await usersRes.json();
+        console.log("❌ Détail erreur utilisateurs:", errorData);
+        errorMessage = errorData.detail || errorData.message || errorMessage;
+        errorDetail = errorData;
+      } catch (e) {
+        console.log("❌ Impossible de parser l'erreur JSON");
+        const errorText = await usersRes.text();
+        console.log("❌ Erreur texte:", errorText);
+        errorDetail = errorText;
+      }
+
+      return json<LoaderData>({ 
+        users: [], 
+        error: errorMessage,
+        debug: {
+          status: usersRes.status,
+          statusText: usersRes.statusText,
+          errorDetail,
+          apiBase: API_BASE,
+          hasToken: !!token
+        }
+      });
+    }
+
+    const users = await usersRes.json();
+    console.log("✅ Utilisateurs récupérés:", users?.length || 0);
+
+    return json<LoaderData>({ 
+      users: users || [], 
+      error: undefined,
+      success: success || undefined,
+      debug: {
+        usersCount: users?.length || 0,
+        apiBase: API_BASE,
+        hasToken: !!token
+      }
+    });
+
+  } catch (error: any) {
+    console.error("💥 Erreur dans le loader:", error);
+    console.error("💥 Stack trace:", error.stack);
+
+    return json<LoaderData>({ 
+      users: [], 
+      error: `Erreur de connexion: ${error.message}`,
+      debug: {
+        errorType: error.constructor.name,
+        errorMessage: error.message,
+        apiBase: API_BASE,
+        stack: error.stack
+      }
+    });
+  }
+};
+
+export const action: ActionFunction = async ({ request }) => {
+  const tokenData = await readToken(request);
+  
+  if (!tokenData) {
+    throw new Response("Non autorisé", { status: 401 });
+  }
+
+  const formData = await request.formData();
+  const userId = String(formData.get("userId") || "");
+  const role = String(formData.get("role") || "");
+
+  if (!userId || !role) {
+    return json<ActionData>({ 
+      error: "Paramètres manquants" 
+    }, { status: 400 });
+  }
+
+  try {
+    // Parse le token
+    let token;
+    try {
+      const parsedToken = typeof tokenData === 'string' ? JSON.parse(tokenData) : tokenData;
+      token = parsedToken?.access_token || tokenData;
+    } catch (e) {
+      token = tokenData;
+    }
+
+    // Appeler l'API pour mettre à jour le rôle
+    const response = await fetch(`${API_BASE}/admin/users/${userId}/role`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ role })
+    });
+
+    if (!response.ok) {
+      let errorMessage = `Erreur ${response.status}: ${response.statusText}`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.detail || errorData.message || errorMessage;
+      } catch (e) {
+        // Ignore les erreurs de parsing JSON
+      }
+      
+      return json<ActionData>({ error: errorMessage }, { status: response.status });
+    }
+
+    return json<ActionData>({ success: true });
+
+  } catch (error: any) {
+    console.error("Erreur lors de la mise à jour du rôle:", error);
+    return json<ActionData>({ 
+      error: "Erreur de connexion au serveur" 
+    }, { status: 500 });
+  }
+};
+
 export default function AdminUsers() {
+  const { users, error, debug, success } = useLoaderData<LoaderData>();
+  const actionData = useActionData<ActionData>();
+  const navigation = useNavigation();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditRoleModalOpen, setIsEditRoleModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("all");
+  const submit = useSubmit();
 
-  // Données simulées des utilisateurs
-  const users = [
-    {
-      id: 1,
-      name: "Kofi Asante",
-      email: "kofi.asante@email.com",
-      phone: "+228 90 12 34 56",
-      role: "Client",
-      status: "Actif",
-      avatar: "https://placehold.co/40x40/DAA520/FFFFFF?text=KA",
-      joinDate: "2024-01-15",
-      lastLogin: "2024-01-20",
-      orders: 12,
-      totalSpent: "450000"
-    },
-    {
-      id: 2,
-      name: "Ama Mensah",
-      email: "ama.mensah@email.com",
-      phone: "+228 91 23 45 67",
-      role: "Client",
-      status: "Actif",
-      avatar: "https://placehold.co/40x40/8B4513/FFFFFF?text=AM",
-      joinDate: "2024-01-10",
-      lastLogin: "2024-01-19",
-      orders: 8,
-      totalSpent: "320000"
-    },
-    {
-      id: 3,
-      name: "Kwame Nkrumah",
-      email: "kwame.nkrumah@email.com",
-      phone: "+228 92 34 56 78",
-      role: "Vendeur",
-      status: "Actif",
-      avatar: "https://placehold.co/40x40/DAA520/FFFFFF?text=KN",
-      joinDate: "2023-12-20",
-      lastLogin: "2024-01-20",
-      orders: 0,
-      totalSpent: "0"
-    },
-    {
-      id: 4,
-      name: "Akosua Osei",
-      email: "akosua.osei@email.com",
-      phone: "+228 93 45 67 89",
-      role: "Client",
-      status: "Inactif",
-      avatar: "https://placehold.co/40x40/8B4513/FFFFFF?text=AO",
-      joinDate: "2023-11-15",
-      lastLogin: "2023-12-10",
-      orders: 3,
-      totalSpent: "125000"
-    },
-    {
-      id: 5,
-      name: "Yaw Boateng",
-      email: "yaw.boateng@email.com",
-      phone: "+228 94 56 78 90",
-      role: "Admin",
-      status: "Actif",
-      avatar: "https://placehold.co/40x40/DAA520/FFFFFF?text=YB",
-      joinDate: "2023-10-01",
-      lastLogin: "2024-01-20",
-      orders: 0,
-      totalSpent: "0"
-    },
-    {
-      id: 6,
-      name: "Efua Adjei",
-      email: "efua.adjei@email.com",
-      phone: "+228 95 67 89 01",
-      role: "Client",
-      status: "Actif",
-      avatar: "https://placehold.co/40x40/8B4513/FFFFFF?text=EA",
-      joinDate: "2024-01-05",
-      lastLogin: "2024-01-18",
-      orders: 15,
-      totalSpent: "680000"
-    }
-  ];
+  const isSubmitting = navigation.state === "submitting";
 
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.phone.includes(searchTerm);
+    const matchesSearch = user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = filterRole === "all" || user.role.toLowerCase() === filterRole.toLowerCase();
     return matchesSearch && matchesRole;
   });
 
+  const handleEditRole = (user: User) => {
+    setSelectedUser(user);
+    setIsEditRoleModalOpen(true);
+  };
+
+  const updateUserRole = async (userId: string, role: string) => {
+    // Utiliser Remix Form pour soumettre via l'action
+    submit(
+      { userId, role },
+      { method: "post" }
+    );
+  };
+
+  // Fermer le modal après succès
+  if (actionData?.success && isEditRoleModalOpen) {
+    setIsEditRoleModalOpen(false);
+    setSelectedUser(null);
+  }
+
   const getRoleColor = (role: string) => {
-    switch (role) {
-      case "Admin":
+    switch (role.toLowerCase()) {
+      case "admin":
         return "bg-red-100 text-red-800";
-      case "Vendeur":
+      case "seller":
+      case "vendeur":
         return "bg-blue-100 text-blue-800";
-      case "Client":
+      case "client":
+      case "customer":
         return "bg-green-100 text-green-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
   };
 
-  const getStatusColor = (status: string) => {
-    return status === "Actif" 
-      ? "bg-green-100 text-green-800" 
-      : "bg-red-100 text-red-800";
+  const getRoleLabel = (role: string) => {
+    switch (role.toLowerCase()) {
+      case "admin": return "Admin";
+      case "seller": return "Vendeur";
+      case "client": return "Client";
+      case "customer": return "Client";
+      default: return role;
+    }
+  };
+
+  const getStatusColor = (user: User) => {
+    if (user.is_banned) return "bg-red-100 text-red-800";
+    if (!user.is_active) return "bg-yellow-100 text-yellow-800";
+    return "bg-green-100 text-green-800";
+  };
+
+  const getStatusLabel = (user: User) => {
+    if (user.is_banned) return "Banni";
+    if (!user.is_active) return "Inactif";
+    return "Actif";
+  };
+
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('fr-FR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+    } catch (e) {
+      return dateString;
+    }
+  };
+
+  const generateAvatar = (name: string) => {
+    const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    const colors = ['DAA520', '8B4513', 'CD853F', 'D2691E', 'B8860B'];
+    const color = colors[name.length % colors.length];
+    return `https://placehold.co/40x40/${color}/FFFFFF?text=${initials}`;
   };
 
   return (
@@ -132,7 +315,7 @@ export default function AdminUsers() {
           <h1 className="text-2xl font-bold text-adawi-brown">Gestion des Utilisateurs</h1>
           <p className="text-gray-600">Gérez vos clients, vendeurs et administrateurs</p>
         </div>
-        
+
         <button
           onClick={() => setIsAddModalOpen(true)}
           className="flex items-center px-4 py-2 bg-adawi-gold text-white rounded-lg hover:bg-adawi-gold/90 transition-colors"
@@ -141,6 +324,48 @@ export default function AdminUsers() {
           Ajouter un utilisateur
         </button>
       </div>
+
+      {/* Debug Info (en développement) */}
+      {debug && process.env.NODE_ENV === 'development' && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+          <h4 className="font-medium text-blue-800 mb-2">Debug Info:</h4>
+          <pre className="text-xs text-blue-700 overflow-auto">
+            {JSON.stringify(debug, null, 2)}
+          </pre>
+        </div>
+      )}
+
+      {/* Success Message */}
+      {(success || actionData?.success) && (
+        <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+          <div className="flex items-center space-x-2">
+            <CheckCircle className="w-5 h-5 text-green-500" />
+            <p className="text-green-700 font-medium">
+              {success || "Le rôle de l'utilisateur a été mis à jour avec succès"}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Error Message */}
+      {(error || actionData?.error) && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+          <div className="flex items-center space-x-2">
+            <AlertCircle className="w-5 h-5 text-red-500" />
+            <div>
+              <p className="text-red-700 font-medium">{error || actionData?.error}</p>
+              {debug && (
+                <details className="mt-2">
+                  <summary className="text-red-600 text-sm cursor-pointer">Détails techniques</summary>
+                  <pre className="text-xs text-red-600 mt-2 overflow-auto bg-red-100 p-2 rounded">
+                    {JSON.stringify(debug, null, 2)}
+                  </pre>
+                </details>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -166,7 +391,9 @@ export default function AdminUsers() {
               </svg>
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">{users.filter(u => u.role === "Client").length}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {users.filter(u => u.role.toLowerCase() === "client" || u.role.toLowerCase() === "customer").length}
+              </p>
               <p className="text-sm text-gray-600">Clients</p>
             </div>
           </div>
@@ -180,7 +407,9 @@ export default function AdminUsers() {
               </svg>
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">{users.filter(u => u.role === "Vendeur").length}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {users.filter(u => u.role.toLowerCase() === "seller" || u.role.toLowerCase() === "vendeur").length}
+              </p>
               <p className="text-sm text-gray-600">Vendeurs</p>
             </div>
           </div>
@@ -194,7 +423,9 @@ export default function AdminUsers() {
               </svg>
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">{users.filter(u => u.role === "Admin").length}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {users.filter(u => u.role.toLowerCase() === "admin").length}
+              </p>
               <p className="text-sm text-gray-600">Administrateurs</p>
             </div>
           </div>
@@ -210,14 +441,14 @@ export default function AdminUsers() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder="Rechercher par nom, email ou téléphone..."
+                placeholder="Rechercher par nom ou email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
               />
             </div>
           </div>
-          
+
           {/* Role Filter */}
           <div className="sm:w-48">
             <select
@@ -227,131 +458,156 @@ export default function AdminUsers() {
             >
               <option value="all">Tous les rôles</option>
               <option value="client">Clients</option>
-              <option value="vendeur">Vendeurs</option>
+              <option value="seller">Vendeurs</option>
               <option value="admin">Administrateurs</option>
             </select>
           </div>
-          
-          {/* Filter Button
-          <button className="flex items-center text-black px-4 py-2 border border-red-300 rounded-lg hover:bg-gray-50 transition-colors">
-            <Filter className="w-5 h-5 mr-2" />
-            Plus de filtres
-          </button> */}
         </div>
       </div>
+
+      {/* Empty State */}
+      {!error && users.length === 0 && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+          <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+          </svg>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Aucun utilisateur trouvé
+          </h3>
+          <p className="text-gray-600 mb-6">
+            Commencez par ajouter votre premier utilisateur.
+          </p>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="inline-flex items-center px-6 py-3 bg-adawi-gold text-white rounded-lg hover:bg-adawi-gold-light transition-colors"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Ajouter un utilisateur
+          </button>
+        </div>
+      )}
 
       {/* Users Table */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Utilisateur</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Contact</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Rôle</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Statut</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Commandes</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Total dépensé</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Dernière connexion</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50">
-                  <td className="py-4 px-4">
-                    <div className="flex items-center">
-                      <img
-                        src={user.avatar}
-                        alt={user.name}
-                        className="w-10 h-10 rounded-full mr-3"
-                      />
-                      <div>
-                        <p className="font-medium text-gray-900">{user.name}</p>
-                        <p className="text-sm text-gray-500">ID: {user.id}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center text-sm text-gray-900">
-                        <Mail className="w-4 h-4 mr-2 text-gray-400" />
-                        {user.email}
-                      </div>
-                      <div className="flex items-center text-sm text-gray-500">
-                        <Phone className="w-4 h-4 mr-2 text-gray-400" />
-                        {user.phone}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getRoleColor(user.role)}`}>
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="py-4 px-4">
-                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(user.status)}`}>
-                      {user.status}
-                    </span>
-                  </td>
-                  <td className="py-4 px-4 text-gray-900">
-                    {user.orders} commandes
-                  </td>
-                  <td className="py-4 px-4 text-gray-900">
-                    {parseInt(user.totalSpent).toLocaleString()} FCFA
-                  </td>
-                  <td className="py-4 px-4 text-sm text-gray-500">
-                    {new Date(user.lastLogin).toLocaleDateString('fr-FR')}
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="flex items-center space-x-2">
-                      <button className="p-2 text-gray-400 hover:text-blue-600 transition-colors" title="Voir détails">
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button className="p-2 text-gray-400 hover:text-green-600 transition-colors" title="Modifier">
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button className="p-2 text-gray-400 hover:text-red-600 transition-colors" title="Supprimer">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                      <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors" title="Plus d'options">
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
+      {!error && users.length > 0 && (
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900">Utilisateur</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900">Contact</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900">Rôle</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900">Statut</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900">Date d'inscription</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900">Dernière mise à jour</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {filteredUsers.map((user) => (
+                  <tr key={user.id} className="hover:bg-gray-50">
+                    <td className="py-4 px-4">
+                      <div className="flex items-center">
+                        <img
+                          src={generateAvatar(user.full_name)}
+                          alt={user.full_name}
+                          className="w-10 h-10 rounded-full mr-3"
+                        />
+                        <div>
+                          <p className="font-medium text-gray-900">{user.full_name}</p>
+                          <p className="text-sm text-gray-500">ID: {user.id.slice(-8)}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center text-sm text-gray-900">
+                          <Mail className="w-4 h-4 mr-2 text-gray-400" />
+                          {user.email}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getRoleColor(user.role)}`}>
+                        {getRoleLabel(user.role)}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(user)}`}>
+                        {getStatusLabel(user)}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4 text-sm text-gray-500">
+                      {formatDate(user.created_at)}
+                    </td>
+                    <td className="py-4 px-4 text-sm text-gray-500">
+                      {formatDate(user.updated_at)}
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="flex items-center space-x-2">
+                        <button className="p-2 text-gray-400 hover:text-blue-600 transition-colors" title="Voir détails">
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button 
+                          className="p-2 text-gray-400 hover:text-green-600 transition-colors" 
+                          title="Modifier le rôle"
+                          onClick={() => handleEditRole(user)}
+                          disabled={isSubmitting}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button className="p-2 text-gray-400 hover:text-red-600 transition-colors" title="Supprimer">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                        <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors" title="Plus d'options">
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-700">
-          Affichage de <span className="font-medium">1</span> à <span className="font-medium">{filteredUsers.length}</span> sur <span className="font-medium">{users.length}</span> utilisateurs
-        </p>
-        
-        <div className="flex items-center space-x-2">
-          <button className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-            Précédent
-          </button>
-          <button className="px-3 py-2 text-sm bg-adawi-gold text-white rounded-lg">
-            1
-          </button>
-          <button className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-            2
-          </button>
-          <button className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-            Suivant
-          </button>
+      {!error && filteredUsers.length > 0 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-gray-700">
+            Affichage de <span className="font-medium">1</span> à <span className="font-medium">{filteredUsers.length}</span> sur <span className="font-medium">{users.length}</span> utilisateurs
+          </p>
+          
+          <div className="flex items-center space-x-2">
+            <button className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+              Précédent
+            </button>
+            <button className="px-3 py-2 text-sm bg-adawi-gold text-white rounded-lg">
+              1
+            </button>
+            <button className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+              2
+            </button>
+            <button className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+              Suivant
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Add User Modal */}
       <AddUserModal 
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
+      />
+
+      {/* Edit Role Modal */}
+      <EditRoleModal
+        isOpen={isEditRoleModalOpen}
+        onClose={() => setIsEditRoleModalOpen(false)}
+        user={selectedUser}
+        onUpdateRole={updateUserRole}
       />
     </div>
   );

@@ -99,12 +99,14 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
 
   const getProductColorStyle = (color: string) => {
     const colorMap: Record<string, string> = {
-      blanc: "bg-white border-red-600",
-      noir: "bg-black border-black",
-      rouge: "bg-red-500 border-red-500",
-      vert: "bg-green-500 border-green-500",
-      marron: "bg-amber-700 border-amber-700"
-    };
+  blanc: "bg-white border-red-600",
+  noir: "bg-black border-black",
+  rouge: "bg-red-500 border-red-500",
+  vert: "bg-green-500 border-green-500",
+  marron: "bg-amber-700 border-amber-700",
+  bleu: "bg-blue-500 border-blue-500", 
+};
+
     return colorMap[color] || "bg-gray-400 border-gray-400";
   };
 
@@ -199,8 +201,8 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
 
   const availableSizes = product ? getAvailableSizes(product) : [];
   const availableColors = product ? getAvailableColors(product) : [];
-  const allSizes = ['XXL', 'XL', 'L', 'M', 'S'];
-  const allColors = ['noir', 'blanc', 'rouge', 'vert', 'marron'];
+  const allSizes = ['XXL', 'XL', 'L', 'M', 'S','XS'];
+  const allColors = ['noir', 'blanc', 'rouge', 'vert', 'marron','bleu'];
 
   // Fonction pour changer d'image avec animation
   const changeImage = (direction: "next" | "prev") => {

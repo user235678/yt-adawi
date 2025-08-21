@@ -19,7 +19,7 @@ export const meta: MetaFunction = () => [{ title: "The Providers - Login" }];
 /** Si déjà connecté, on redirige vers /boutique */
 export const loader: LoaderFunction = async ({ request }) => {
   const token = await readToken(request);
-  if (token) return redirect("/user");
+  if (token) return redirect("/boutique");
   return null;
 };
 

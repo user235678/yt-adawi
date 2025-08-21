@@ -298,7 +298,7 @@ export default function Contact() {
             <section className="bg-white">
                 <div className="w-full h-[300px] sm:h-[400px] relative rounded-lg shadow-md overflow-hidden">
                     <iframe
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3812.0768282401923!2d1.2077794748024113!3d6.125413693861329!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x10215f618ff4057f%3A0x283893dcd5d0ac3b!2sInstitut%20africain%20d'informatique%20(IAI-%20Togo)!5e1!3m2!1sfr!2stg!4v1753272772713!5m2!1sfr!2stg"
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d865.077403022854!2d1.1895910107109433!3d6.204954871781036!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1023e188533ea905%3A0x469c30b5ad8af216!2sHognekaba!5e1!3m2!1sen!2stg!4v1755793854401!5m2!1sen!2stg"
                         width="100%"
                         height="100%"
                         style={{ border: 0 }}

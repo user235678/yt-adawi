@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "@remix-run/react";
 import { useCart } from "~/contexts/CartContext";
+import { useUser } from "~/hooks/useUser"; // Hook pour récupérer l'utilisateur
 
 const CompactHeader: React.FC = () => {
     const location = useLocation();
@@ -21,6 +22,7 @@ const CompactHeader: React.FC = () => {
     const logoRef = useRef<HTMLAnchorElement>(null);
 
     const { state } = useCart();
+    const { user } = useUser(); // Récupérer l'utilisateur connecté
 
     const navItems = [
         { name: "Maison", to: "/" },
@@ -29,6 +31,23 @@ const CompactHeader: React.FC = () => {
         { name: "A-propos", to: "/a-propos" },
         { name: "Contact", to: "/contact" },
     ];
+
+    // Fonction pour déterminer la route du dashboard selon le rôle
+    const getDashboardRoute = () => {
+        if (!user) return "/login";
+
+        switch (user.role?.toLowerCase()) {
+            case 'admin':
+                return "/admin/dashboard";
+            case 'vendeur':
+            case 'seller':
+                return "/seller/dashboard";
+            case 'client':
+            case 'customer':
+            default:
+                return "/client/user";
+        }
+    };
 
     // Vérifier si on est côté client
     useEffect(() => {
@@ -176,7 +195,7 @@ const CompactHeader: React.FC = () => {
                     {/* Navigation Desktop - Visible uniquement en mode non-compact */}
                     <nav 
                         ref={navRef}
-                        className={`items-center space-x-4 lg:space-x-6 transition-all duration-300 ${
+                        className={`items-center space-x-4 lg:space-x-6 transition-all duration-300 ${ 
                             shouldShowCompactMode() || isTransitioning 
                                 ? 'hidden opacity-0' 
                                 : 'hidden lg:flex opacity-100'
@@ -186,7 +205,7 @@ const CompactHeader: React.FC = () => {
                             <Link
                                 key={item.to}
                                 to={item.to}
-                                className={`text-sm lg:text-lg font-medium transition-all duration-200 px-2 py-1 rounded whitespace-nowrap ${
+                                className={`text-sm lg:text-lg font-medium transition-all duration-200 px-2 py-1 rounded whitespace-nowrap ${ 
                                     currentPath === item.to
                                         ? "text-black underline decoration-adawi-gold decoration-2 underline-offset-4"
                                         : "text-black hover:text-adawi-gold hover:bg-adawi-beige/50"
@@ -200,7 +219,7 @@ const CompactHeader: React.FC = () => {
                     {/* Actions Desktop - Visible uniquement en mode non-compact */}
                     <div 
                         ref={actionsRef}
-                        className={`items-center space-x-2 lg:space-x-3 transition-all duration-300 ${
+                        className={`items-center space-x-2 lg:space-x-3 transition-all duration-300 ${ 
                             shouldShowCompactMode() || isTransitioning 
                                 ? 'hidden opacity-0' 
                                 : 'hidden lg:flex opacity-100'
@@ -232,9 +251,9 @@ const CompactHeader: React.FC = () => {
                         </form>
 
                         <Link
-                            to="/login"
+                            to={getDashboardRoute()}
                             className="text-adawi-brown hover:text-adawi-gold transition-all duration-200 p-1.5 rounded-full hover:bg-adawi-beige/50 inline-flex items-center justify-center group"
-                            aria-label="Compte utilisateur"
+                            aria-label="Mon espace"
                         >
                             <svg className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -260,7 +279,7 @@ const CompactHeader: React.FC = () => {
                     </div>
 
                     {/* Actions Compactes - Visible en mode compact ou sur mobile */}
-                    <div className={`flex items-center space-x-2 relative transition-all duration-300 ${
+                    <div className={`flex items-center space-x-2 relative transition-all duration-300 ${ 
                         !isClient 
                             ? 'lg:hidden opacity-100' // Fallback SSR
                             : shouldShowCompactMode() 
@@ -295,17 +314,17 @@ const CompactHeader: React.FC = () => {
                         >
                             <div className="w-5 h-5 flex flex-col justify-center items-center">
                                 <span
-                                    className={`block w-5 h-0.5 bg-current transition-all duration-300 ease-in-out ${
+                                    className={`block w-5 h-0.5 bg-current transition-all duration-300 ease-in-out ${ 
                                         isMobileMenuOpen ? 'rotate-45 translate-y-1' : ''
                                     }`}
                                 />
                                 <span
-                                    className={`block w-5 h-0.5 bg-current transition-all duration-300 ease-in-out mt-1 ${
+                                    className={`block w-5 h-5 bg-current transition-all duration-300 ease-in-out mt-1 ${ 
                                         isMobileMenuOpen ? 'opacity-0 scale-0' : ''
                                     }`}
                                 />
                                 <span
-                                    className={`block w-5 h-0.5 bg-current transition-all duration-300 ease-in-out mt-1 ${
+                                    className={`block w-5 h-0.5 bg-current transition-all duration-300 ease-in-out mt-1 ${ 
                                         isMobileMenuOpen ? '-rotate-45 -translate-y-1' : ''
                                     }`}
                                 />
@@ -315,7 +334,7 @@ const CompactHeader: React.FC = () => {
                         {/* Menu Mobile Dropdown */}
                         <div
                             ref={menuRef}
-                            className={`absolute top-full right-0 mt-3 w-72 bg-white rounded-2xl shadow-2xl border border-adawi-gold/20 py-4 z-50 transition-all duration-300 ease-out transform origin-top-right ${
+                            className={`absolute top-full right-0 mt-3 w-72 bg-white rounded-2xl shadow-2xl border border-adawi-gold/20 py-4 z-50 transition-all duration-300 ease-out transform origin-top-right ${ 
                                 isMobileMenuOpen
                                     ? 'opacity-100 scale-100 translate-y-0'
                                     : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
@@ -354,7 +373,7 @@ const CompactHeader: React.FC = () => {
                                     <Link
                                         key={item.to}
                                         to={item.to}
-                                        className={`block px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 transform hover:scale-[1.02] ${
+                                        className={`block px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 transform hover:scale-[1.02] ${ 
                                             currentPath === item.to
                                                 ? "text-adawi-brown bg-adawi-gold-light border-l-4 border-adawi-gold"
                                                 : "text-adawi-brown hover:bg-adawi-beige hover:text-adawi-gold"
@@ -376,7 +395,7 @@ const CompactHeader: React.FC = () => {
                             {/* Actions Mobile */}
                             <div className="px-2 space-y-1">
                                 <Link
-                                    to="/login"
+                                    to={getDashboardRoute()}
                                     className="flex items-center w-full px-4 py-3 text-sm text-adawi-brown hover:bg-adawi-beige hover:text-adawi-gold rounded-xl transition-all duration-200 transform hover:scale-[1.02] group"
                                     role="menuitem"
                                     onClick={() => setIsMobileMenuOpen(false)}
@@ -385,7 +404,7 @@ const CompactHeader: React.FC = () => {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                                             d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                     </svg>
-                                    Mon Compte
+                                    Mon Espace
                                 </Link>
                             </div>
                         </div>

@@ -24,18 +24,18 @@ export const loader: LoaderFunction = async ({ request }) => {
             },
         });
 
-        // if (!response.ok) {
-        //     return redirect('/checkout');
-        // }
+        if (!response.ok) {
+            return redirect('/checkout');
+        }
 
-        // const cartData = await response.json();
-        // if (!cartData.items || cartData.items.length === 0) {
-        //     return redirect('/checkout');
-        // }
+        const cartData = await response.json();
+        if (!cartData.items || cartData.items.length === 0) {
+            return redirect('/checkout');
+        }
 
         return json({ ok: true });
     } catch (error) {
-        // return redirect('/checkout');
+        return redirect('/checkout');
     }
 };
 
@@ -80,13 +80,6 @@ export default function Informations() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [apiError, setApiError] = useState<string | null>(null);
     const [apiSuccess, setApiSuccess] = useState<ApiResponse | null>(null);
-
-    useEffect(() => {
-        const previousPage = document.referrer;
-        if (!previousPage.includes('/checkout')) {
-            navigate('/checkout');
-        }
-    }, [navigate]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value });

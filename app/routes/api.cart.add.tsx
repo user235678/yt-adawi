@@ -14,7 +14,6 @@ export const action: ActionFunction = async ({ request }) => {
         if (!sessionData?.access_token) {
             console.log("❌ Pas de token d'authentification");
             return json({ 
-                success: false, 
                 error: "Vous devez être connecté pour ajouter des produits au panier" 
             }, { status: 401 });
         }
