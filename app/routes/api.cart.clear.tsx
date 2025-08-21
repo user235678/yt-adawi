@@ -14,40 +14,32 @@ export const action: ActionFunction = async ({ request }) => {
       return json({ success: false, error: 'Session non trouvée' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { product_id } = body;
+    console.log('🗑️ Vidage du panier:', { session_id: sessionData.session_id });
 
-    if (!product_id) {
-      return json({ success: false, error: 'Product ID manquant' }, { status: 400 });
-    }
-
-    console.log('🗑️ Suppression produit:', { product_id, session_id: sessionData.session_id });
-
-    // ✅ Correction: product_id dans l'URL et session-id dans les headers
-    const apiUrl = `${process.env.API_BASE_URL || 'https://showroom-backend-2x3g.onrender.com'}/cart/remove/${product_id}`;
+    // Appel à l'API backend pour vider le panier
+    const apiUrl = `${process.env.API_BASE_URL || 'https://showroom-backend-2x3g.onrender.com'}/cart/clear`;
 
     const response = await fetch(apiUrl, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${sessionData.access_token}`,
-        'session-id': sessionData.session_id, // ✅ session-id dans les headers
+        'session-id': sessionData.session_id,
       },
-      // ✅ Pas de body pour DELETE avec product_id dans l'URL
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ Erreur API remove:', errorText);
+      console.error('❌ Erreur API clear:', errorText);
       return json({ success: false, error: `Erreur API: ${response.status}` }, { status: response.status });
     }
 
     const result = await response.json();
-    console.log('✅ Produit supprimé:', result);
+    console.log('✅ Panier vidé:', result);
 
     return json({ success: true, data: result });
   } catch (error) {
-    console.error('❌ Erreur remove:', error);
+    console.error('❌ Erreur clear:', error);
     return json({ success: false, error: error instanceof Error ? error.message : 'Erreur inconnue' }, { status: 500 });
   }
 };
