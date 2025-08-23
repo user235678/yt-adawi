@@ -1,114 +1,129 @@
-import { useState } from "react";
-import { X, CheckCircle, XCircle, Clock, Package, Truck, AlertCircle } from "lucide-react";
-import type { Order } from "~/routes/admin.orders";
+import React, { useEffect, useState } from "react";
 
 interface UpdateStatusModalProps {
   isOpen: boolean;
+  orderId: string | null;      // ID de la commande
+  token: string;               // token JWT passé par le parent
+  currentStatus?: string;      // statut actuel pour pré-sélection
   onClose: () => void;
-  order: Order;
-  onUpdateStatus: (orderId: number, newStatus: string) => void;
+  onUpdated?: (updatedOrder: any) => void; // callback après succès
 }
 
-export default function UpdateStatusModal({ 
-  isOpen, 
-  onClose, 
-  order, 
-  onUpdateStatus 
-}: UpdateStatusModalProps) {
-  const [selectedStatus, setSelectedStatus] = useState(order.status);
+const API_BASE = "https://showroom-backend-2x3g.onrender.com";
+
+// Statuts acceptés par l'API: en_cours, expediee, livree, annulee
+const STATUSES = [
+  { value: "en_cours",  label: "En cours" },
+  { value: "expediee",  label: "Expédiée" },
+  { value: "livree",    label: "Livrée" },
+  { value: "annulee",   label: "Annulée" },
+];
+
+const UpdateStatusModal: React.FC<UpdateStatusModalProps> = ({
+  isOpen,
+  orderId,
+  token,
+  currentStatus = "en_cours",
+  onClose,
+  onUpdated,
+}) => {
+  const [status, setStatus] = useState<string>(currentStatus);
+  const [comment, setComment] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setStatus(currentStatus);
+      setComment("");
+      setErr(null);
+    }
+  }, [isOpen, currentStatus]);
 
   if (!isOpen) return null;
 
-  const statusOptions = [
-    { value: "En attente", label: "En attente", icon: <Clock className="w-5 h-5" />, color: "bg-gray-100 text-gray-800" },
-    { value: "En préparation", label: "En préparation", icon: <Package className="w-5 h-5" />, color: "bg-yellow-100 text-yellow-800" },
-    { value: "En cours de livraison", label: "En cours de livraison", icon: <Truck className="w-5 h-5" />, color: "bg-blue-100 text-blue-800" },
-    { value: "Livré", label: "Livré", icon: <CheckCircle className="w-5 h-5" />, color: "bg-green-100 text-green-800" },
-    { value: "Annulé", label: "Annulé", icon: <XCircle className="w-5 h-5" />, color: "bg-red-100 text-red-800" }
-  ];
+  const submit = async () => {
+    if (!orderId || !token) {
+      setErr("Paramètres manquants.");
+      return;
+    }
+    setLoading(true);
+    setErr(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onUpdateStatus(order.id, selectedStatus);
+    try {
+      const qs = new URLSearchParams({ status });
+      if (comment.trim()) qs.append("comment", comment.trim());
+
+      const res = await fetch(`${API_BASE}/orders/${orderId}/status?${qs.toString()}`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        const msg = await res.text().catch(() => "");
+        throw new Error(msg || "Impossible de mettre à jour le statut");
+      }
+
+      const updated = await res.json();
+      onUpdated?.(updated);
+      onClose();
+    } catch (e: any) {
+      setErr(e?.message || "Erreur réseau");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-md w-full">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Mettre à jour le statut</h2>
-          <button
-            onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </button>
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
+      <div className="bg-white w-full max-w-md rounded-xl shadow-lg p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">Mettre à jour le statut</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">✕</button>
         </div>
 
-        {/* Content */}
-        <form onSubmit={handleSubmit}>
-          <div className="p-6">
-            <div className="mb-4">
-              <p className="text-gray-700 mb-2">
-                Commande: <span className="font-medium">{order.orderNumber}</span>
-              </p>
-              <p className="text-gray-700">
-                Client: <span className="font-medium">{order.customer.name}</span>
-              </p>
-            </div>
+        {err && <div className="mb-3 text-sm text-red-600">{err}</div>}
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Sélectionner le nouveau statut
-              </label>
-              
-              <div className="space-y-2">
-                {statusOptions.map((status) => (
-                  <label 
-                    key={status.value} 
-                    className={`flex items-center p-3 border rounded-lg cursor-pointer transition-all ${
-                      selectedStatus === status.value 
-                        ? 'border-adawi-gold bg-adawi-beige' 
-                        : 'border-gray-200 hover:bg-gray-50'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="status"
-                      value={status.value}
-                      checked={selectedStatus === status.value}
-                      onChange={() => setSelectedStatus(status.value)}
-                      className="sr-only"
-                    />
-                    <div className={`p-2 rounded-full mr-3 ${status.color}`}>
-                      {status.icon}
-                    </div>
-                    <span className="font-medium">{status.label}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-sm text-gray-700 mb-1">Nouveau statut</label>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2"
+            >
+              {STATUSES.map(s => (
+                <option key={s.value} value={s.value}>{s.label}</option>
+              ))}
+            </select>
           </div>
 
-          {/* Footer */}
-          <div className="flex justify-end p-6 border-t border-gray-200 space-x-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-            >
-              Annuler
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-adawi-gold text-white rounded-lg hover:bg-adawi-gold/90 transition-colors"
-            >
-              Mettre à jour
-            </button>
+          <div>
+            <label className="block text-sm text-gray-700 mb-1">Commentaire (optionnel)</label>
+            <textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 min-h-[90px]"
+              placeholder="Motif, note interne…"
+            />
           </div>
-        </form>
+        </div>
+
+        <div className="mt-5 flex justify-end gap-2">
+          <button onClick={onClose} className="px-4 py-2 rounded-lg border hover:bg-gray-50">
+            Annuler
+          </button>
+          <button
+            onClick={submit}
+            disabled={loading}
+            className="px-4 py-2 rounded-lg bg-adawi-gold text-white disabled:opacity-60"
+          >
+            {loading ? "Mise à jour…" : "Mettre à jour"}
+          </button>
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default UpdateStatusModal;

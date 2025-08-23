@@ -312,7 +312,7 @@ export default function ClientOrders() {
             font-size: 12px;
             font-weight: bold;
           }
-          .status-effectue { background: #d4edda; color: #155724; }    /* paiement ok = vert */
+          .status-payee { background: #d4edda; color: #155724; }    /* paiement ok = vert */
           .status-enattente { background: #fff3cd; color: #856404; }
           .status-en_cours, .status-processing { background: #cce7ff; color: #004085; }
           .status-livree { background: #d4edda; color: #155724; }   /* livraison ok = vert */

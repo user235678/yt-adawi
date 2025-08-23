@@ -6,7 +6,7 @@ interface UpdateTicketModalProps {
   isOpen: boolean;
   onClose: () => void;
   ticket: Ticket;
-  onUpdateTicket: (ticketId: number, updates: Partial<Ticket>) => void;
+  onUpdateTicket: (ticketId: string, updates: Partial<Ticket>) => void;
 }
 
 export default function UpdateTicketModal({ isOpen, onClose, ticket, onUpdateTicket }: UpdateTicketModalProps) {
@@ -14,9 +14,12 @@ export default function UpdateTicketModal({ isOpen, onClose, ticket, onUpdateTic
     status: ticket.status,
     priority: ticket.priority,
     category: ticket.category,
+    assigned_to: ticket.assigned_to || "",
     note: ""
   });
-  
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   if (!isOpen) return null;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -24,31 +27,25 @@ export default function UpdateTicketModal({ isOpen, onClose, ticket, onUpdateTic
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const updates: Partial<Ticket> = {
-      status: formData.status,
-      priority: formData.priority,
-      category: formData.category
-    };
-    
-    // Si une note est ajoutée, l'ajouter comme réponse
-    if (formData.note.trim()) {
-      const newResponse = {
-        id: Math.max(0, ...ticket.responses.map(r => r.id)) + 1,
-        message: `[Note interne] ${formData.note}`,
-        date: new Date().toISOString().split('T')[0],
-        isAdmin: true,
-        author: "Support Adawi",
-        authorAvatar: "https://placehold.co/40x40/DAA520/FFFFFF?text=SA"
+    setIsSubmitting(true);
+
+    try {
+      const updates: Partial<Ticket> = {
+        status: formData.status as Ticket['status'],
+        priority: formData.priority as Ticket['priority'],
+        category: formData.category as Ticket['category'],
+        assigned_to: formData.assigned_to || undefined
       };
-      
-      updates.responses = [...ticket.responses, newResponse];
+
+      await onUpdateTicket(ticket.id, updates);
+      onClose();
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour:", error);
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    onUpdateTicket(ticket.id, updates);
-    onClose();
   };
 
   return (
@@ -64,11 +61,12 @@ export default function UpdateTicketModal({ isOpen, onClose, ticket, onUpdateTic
           {/* Header */}
           <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
             <h3 className="text-lg font-medium text-gray-900">
-              Mettre à jour le ticket #{ticket.ticketNumber}
+              Mettre à jour le ticket #{ticket.id}
             </h3>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-500 focus:outline-none"
+              disabled={isSubmitting}
+              className="text-gray-400 hover:text-gray-500 focus:outline-none disabled:opacity-50"
             >
               <X className="w-6 h-6" />
             </button>
@@ -85,12 +83,13 @@ export default function UpdateTicketModal({ isOpen, onClose, ticket, onUpdateTic
                 name="status"
                 value={formData.status}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
+                disabled={isSubmitting}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none disabled:opacity-50"
               >
-                <option value="Ouvert">Ouvert</option>
-                <option value="En cours">En cours</option>
-                <option value="Résolu">Résolu</option>
-                <option value="Fermé">Fermé</option>
+                <option value="ouvert">Ouvert</option>
+                <option value="en_cours">En cours</option>
+                <option value="resolu">Résolu</option>
+                <option value="ferme">Fermé</option>
               </select>
             </div>
 
@@ -103,12 +102,12 @@ export default function UpdateTicketModal({ isOpen, onClose, ticket, onUpdateTic
                 name="priority"
                 value={formData.priority}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
+                disabled={isSubmitting}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none disabled:opacity-50"
               >
-                <option value="Basse">Basse</option>
-                <option value="Normale">Normale</option>
-                <option value="Élevée">Élevée</option>
-                <option value="Urgente">Urgente</option>
+                <option value="basse">Basse</option>
+                <option value="normale">Normale</option>
+                <option value="haute">Haute</option>
               </select>
             </div>
 
@@ -121,14 +120,32 @@ export default function UpdateTicketModal({ isOpen, onClose, ticket, onUpdateTic
                 name="category"
                 value={formData.category}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
+                disabled={isSubmitting}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none disabled:opacity-50"
               >
-                <option value="Livraison">Livraison</option>
-                <option value="Remboursement">Remboursement</option>
-                <option value="Produit">Produit</option>
-                <option value="Technique">Technique</option>
-                <option value="Paiement">Paiement</option>
+                <option value="commande">Commande</option>
+                <option value="produit">Produit</option>
+                <option value="paiement">Paiement</option>
+                <option value="livraison">Livraison</option>
+                <option value="technique">Technique</option>
+                <option value="autre">Autre</option>
               </select>
+            </div>
+
+            <div>
+              <label htmlFor="assigned_to" className="block text-sm font-medium text-gray-700 mb-2">
+                Assigné à (optionnel)
+              </label>
+              <input
+                type="text"
+                id="assigned_to"
+                name="assigned_to"
+                value={formData.assigned_to}
+                onChange={handleInputChange}
+                disabled={isSubmitting}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none disabled:opacity-50"
+                placeholder="ID de l'agent assigné"
+              />
             </div>
 
             <div>
@@ -141,7 +158,8 @@ export default function UpdateTicketModal({ isOpen, onClose, ticket, onUpdateTic
                 rows={3}
                 value={formData.note}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none resize-none"
+                disabled={isSubmitting}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none resize-none disabled:opacity-50"
                 placeholder="Ajouter une note interne (visible uniquement par l'équipe)"
               />
             </div>
@@ -150,15 +168,24 @@ export default function UpdateTicketModal({ isOpen, onClose, ticket, onUpdateTic
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                disabled={isSubmitting}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
               >
                 Annuler
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-adawi-gold text-white rounded-lg hover:bg-adawi-brown transition-colors"
+                disabled={isSubmitting}
+                className="px-4 py-2 bg-adawi-gold text-white rounded-lg hover:bg-adawi-brown transition-colors disabled:opacity-50 flex items-center space-x-2"
               >
-                Mettre à jour
+                {isSubmitting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Mise à jour...</span>
+                  </>
+                ) : (
+                  <span>Mettre à jour</span>
+                )}
               </button>
             </div>
           </form>

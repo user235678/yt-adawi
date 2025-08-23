@@ -6,7 +6,7 @@ import { Plus, Search, Filter, Edit, Trash2, Eye, Mail, Phone, MoreVertical, Ale
 import AddUserModal from "~/components/admin/AddUserModal";
 import EditRoleModal from "~/components/admin/EditRoleModal";
 import { readToken } from "~/utils/session.server";
-
+import ViewUserModal from "~/components/admin/ViewUserModal";
 export const meta: MetaFunction = () => {
   return [
     { title: "Utilisateurs - Adawi Admin" },
@@ -84,7 +84,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     console.log("🌐 URL utilisateurs:", `${API_BASE}/admin/users`);
 
     const usersRes = await fetch(`${API_BASE}/admin/users`, {
-      headers: { 
+      headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json"
       },
@@ -108,8 +108,8 @@ export const loader: LoaderFunction = async ({ request }) => {
         errorDetail = errorText;
       }
 
-      return json<LoaderData>({ 
-        users: [], 
+      return json<LoaderData>({
+        users: [],
         error: errorMessage,
         debug: {
           status: usersRes.status,
@@ -124,8 +124,8 @@ export const loader: LoaderFunction = async ({ request }) => {
     const users = await usersRes.json();
     console.log("✅ Utilisateurs récupérés:", users?.length || 0);
 
-    return json<LoaderData>({ 
-      users: users || [], 
+    return json<LoaderData>({
+      users: users || [],
       error: undefined,
       success: success || undefined,
       debug: {
@@ -139,8 +139,8 @@ export const loader: LoaderFunction = async ({ request }) => {
     console.error("💥 Erreur dans le loader:", error);
     console.error("💥 Stack trace:", error.stack);
 
-    return json<LoaderData>({ 
-      users: [], 
+    return json<LoaderData>({
+      users: [],
       error: `Erreur de connexion: ${error.message}`,
       debug: {
         errorType: error.constructor.name,
@@ -154,62 +154,135 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 export const action: ActionFunction = async ({ request }) => {
   const tokenData = await readToken(request);
-  
-  if (!tokenData) {
-    throw new Response("Non autorisé", { status: 401 });
-  }
+  if (!tokenData) throw new Response("Non autorisé", { status: 401 });
 
   const formData = await request.formData();
-  const userId = String(formData.get("userId") || "");
-  const role = String(formData.get("role") || "");
+  const intent = String(formData.get("intent") || ""); // 👈 pour savoir quoi faire
 
-  if (!userId || !role) {
-    return json<ActionData>({ 
-      error: "Paramètres manquants" 
-    }, { status: 400 });
-  }
+  // --- Cas 1 : Mise à jour du rôle ---
+  // --- Cas 3 : Supprimer un utilisateur ---
+  if (intent === "deleteUser") {
+    const userId = String(formData.get("userId") || "");
+    if (!userId) {
+      return json<ActionData>({ error: "ID utilisateur manquant" }, { status: 400 });
+    }
 
-  try {
-    // Parse le token
-    let token;
     try {
-      const parsedToken = typeof tokenData === 'string' ? JSON.parse(tokenData) : tokenData;
-      token = parsedToken?.access_token || tokenData;
-    } catch (e) {
-      token = tokenData;
-    }
-
-    // Appeler l'API pour mettre à jour le rôle
-    const response = await fetch(`${API_BASE}/admin/users/${userId}/role`, {
-      method: 'PATCH',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ role })
-    });
-
-    if (!response.ok) {
-      let errorMessage = `Erreur ${response.status}: ${response.statusText}`;
+      let token;
       try {
-        const errorData = await response.json();
-        errorMessage = errorData.detail || errorData.message || errorMessage;
-      } catch (e) {
-        // Ignore les erreurs de parsing JSON
+        const parsedToken = typeof tokenData === "string" ? JSON.parse(tokenData) : tokenData;
+        token = parsedToken?.access_token || tokenData;
+      } catch {
+        token = tokenData;
       }
-      
-      return json<ActionData>({ error: errorMessage }, { status: response.status });
+
+      const response = await fetch(`${API_BASE}/admin/users/${userId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (!response.ok) {
+        let errorMessage = `Erreur ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorData.message || errorMessage;
+        } catch { }
+        return json<ActionData>({ error: errorMessage }, { status: response.status });
+      }
+
+      return json<ActionData>({ success: true });
+    } catch (error: any) {
+      return json<ActionData>({ error: "Erreur de connexion au serveur" }, { status: 500 });
+    }
+  }
+
+  if (intent === "updateRole") {
+    const userId = String(formData.get("userId") || "");
+    const role = String(formData.get("role") || "");
+    if (!userId || !role) {
+      return json<ActionData>({ error: "Paramètres manquants" }, { status: 400 });
     }
 
-    return json<ActionData>({ success: true });
+    try {
+      let token;
+      try {
+        const parsedToken = typeof tokenData === 'string' ? JSON.parse(tokenData) : tokenData;
+        token = parsedToken?.access_token || tokenData;
+      } catch (e) {
+        token = tokenData;
+      }
 
-  } catch (error: any) {
-    console.error("Erreur lors de la mise à jour du rôle:", error);
-    return json<ActionData>({ 
-      error: "Erreur de connexion au serveur" 
-    }, { status: 500 });
+      const response = await fetch(`${API_BASE}/admin/users/${userId}/role`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ role })
+      });
+
+      if (!response.ok) {
+        let errorMessage = `Erreur ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorData.message || errorMessage;
+        } catch { }
+        return json<ActionData>({ error: errorMessage }, { status: response.status });
+      }
+
+      return json<ActionData>({ success: true });
+
+    } catch (error: any) {
+      return json<ActionData>({ error: "Erreur de connexion au serveur" }, { status: 500 });
+    }
   }
+
+  // --- Cas 2 : Bannir / Débannir ---
+  if (intent === "toggleBan") {
+    const userId = String(formData.get("userId") || "");
+    const ban = formData.get("ban") === "true"; // true ou false
+
+    try {
+      let token;
+      try {
+        const parsedToken = typeof tokenData === 'string' ? JSON.parse(tokenData) : tokenData;
+        token = parsedToken?.access_token || tokenData;
+      } catch {
+        token = tokenData;
+      }
+
+      const response = await fetch(`${API_BASE}/admin/users/${userId}/ban`, {
+        method: "PATCH",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ ban })
+      });
+
+      if (!response.ok) {
+        let errorMessage = `Erreur ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorData.message || errorMessage;
+        } catch { }
+        return json<ActionData>({ error: errorMessage }, { status: response.status });
+      }
+
+      return json<ActionData>({ success: true });
+
+    } catch (error: any) {
+      return json<ActionData>({ error: "Erreur de connexion au serveur" }, { status: 500 });
+    }
+  }
+
+  return json<ActionData>({ error: "Intent non reconnu" }, { status: 400 });
 };
+
+
 
 export default function AdminUsers() {
   const { users, error, debug, success } = useLoaderData<LoaderData>();
@@ -220,13 +293,15 @@ export default function AdminUsers() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("all");
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+
   const submit = useSubmit();
 
   const isSubmitting = navigation.state === "submitting";
 
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = filterRole === "all" || user.role.toLowerCase() === filterRole.toLowerCase();
     return matchesSearch && matchesRole;
   });
@@ -235,11 +310,15 @@ export default function AdminUsers() {
     setSelectedUser(user);
     setIsEditRoleModalOpen(true);
   };
+  const handleViewUser = (user: User) => {
+    setSelectedUser(user);
+    setIsViewModalOpen(true);
+  };
+
 
   const updateUserRole = async (userId: string, role: string) => {
-    // Utiliser Remix Form pour soumettre via l'action
     submit(
-      { userId, role },
+      { intent: "updateRole", userId, role }, // 👈 ajouter intent
       { method: "post" }
     );
   };
@@ -250,12 +329,14 @@ export default function AdminUsers() {
     setSelectedUser(null);
   }
 
+
   const getRoleColor = (role: string) => {
     switch (role.toLowerCase()) {
       case "admin":
         return "bg-red-100 text-red-800";
       case "seller":
       case "vendeur":
+      case "Vendeur":
         return "bg-blue-100 text-blue-800";
       case "client":
       case "customer":
@@ -341,7 +422,7 @@ export default function AdminUsers() {
           <div className="flex items-center space-x-2">
             <CheckCircle className="w-5 h-5 text-green-500" />
             <p className="text-green-700 font-medium">
-              {success || "Le rôle de l'utilisateur a été mis à jour avec succès"}
+              {success || "Utilisateur a été mis à jour avec succès"}
             </p>
           </div>
         </div>
@@ -545,25 +626,64 @@ export default function AdminUsers() {
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center space-x-2">
-                        <button className="p-2 text-gray-400 hover:text-blue-600 transition-colors" title="Voir détails">
+                        <button
+                          className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
+                          title="Voir détails"
+                          onClick={() => handleViewUser(user)}
+                        >
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button 
-                          className="p-2 text-gray-400 hover:text-green-600 transition-colors" 
+
+                        <button
+                          className="p-2 text-gray-400 hover:text-green-600 transition-colors"
                           title="Modifier le rôle"
                           onClick={() => handleEditRole(user)}
                           disabled={isSubmitting}
                         >
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button className="p-2 text-gray-400 hover:text-red-600 transition-colors" title="Supprimer">
+
+                        {/* ✅ Bouton Ban / Unban */}
+                        <button
+                          className={`p-2 transition-colors ${user.is_banned ? "text-green-600 hover:text-green-800" : "text-red-600 hover:text-red-800"}`}
+                          title={user.is_banned ? "Débannir l'utilisateur" : "Bannir l'utilisateur"}
+                          onClick={() =>
+                            submit(
+                              { intent: "toggleBan", userId: user.id, ban: (!user.is_banned).toString() },
+                              { method: "post" }
+                            )
+                          }
+                          disabled={isSubmitting}
+                        >
+                          {user.is_banned ? (
+                            <CheckCircle className="w-4 h-4" /> // ✅ Débannir
+                          ) : (
+                            <AlertCircle className="w-4 h-4" /> // 🚫 Bannir
+                          )}
+                        </button>
+
+                        <button
+                          className="p-2 text-gray-400 hover:text-red-600 transition-colors"
+                          title="Supprimer"
+                          onClick={() => {
+                            if (confirm(`Voulez-vous vraiment supprimer ${user.full_name} ?`)) {
+                              submit(
+                                { intent: "deleteUser", userId: user.id },
+                                { method: "post" }
+                              );
+                            }
+                          }}
+                          disabled={isSubmitting}
+                        >
                           <Trash2 className="w-4 h-4" />
                         </button>
-                        <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors" title="Plus d'options">
+
+                        {/* <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors" title="Plus d'options">
                           <MoreVertical className="w-4 h-4" />
-                        </button>
+                        </button> */}
                       </div>
                     </td>
+
                   </tr>
                 ))}
               </tbody>
@@ -578,7 +698,7 @@ export default function AdminUsers() {
           <p className="text-sm text-gray-700">
             Affichage de <span className="font-medium">1</span> à <span className="font-medium">{filteredUsers.length}</span> sur <span className="font-medium">{users.length}</span> utilisateurs
           </p>
-          
+
           <div className="flex items-center space-x-2">
             <button className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
               Précédent
@@ -597,7 +717,7 @@ export default function AdminUsers() {
       )}
 
       {/* Add User Modal */}
-      <AddUserModal 
+      <AddUserModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
       />
@@ -609,6 +729,12 @@ export default function AdminUsers() {
         user={selectedUser}
         onUpdateRole={updateUserRole}
       />
+      <ViewUserModal
+        isOpen={isViewModalOpen}
+        onClose={() => setIsViewModalOpen(false)}
+        user={selectedUser}
+      />
+
     </div>
   );
 }

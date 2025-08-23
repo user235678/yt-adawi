@@ -1,198 +1,152 @@
-import { X, Package, User, MapPin, CreditCard, Calendar, CheckCircle, XCircle, Clock, Truck, AlertCircle } from "lucide-react";
-import type { Order } from "~/routes/admin.orders";
+import React, { useEffect, useState } from "react";
+
+type OrderItem = {
+  product_id: string;
+  quantity: number;
+  size?: string;
+  color?: string;
+  price: number;
+  name: string;
+};
+
+type Order = {
+  id: string;
+  items: OrderItem[];
+  address?: {
+    street?: string;
+    city?: string;
+    postal_code?: string;
+    country?: string;
+    phone?: string;
+  };
+  total: number;
+  status: string;
+  payment_status: string;
+  payment_method?: string;
+  delivery_method?: string;
+  delivery_status?: string;
+  status_history?: any[];
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+};
 
 interface ViewOrderModalProps {
   isOpen: boolean;
+  orderId: string | null;   // <-- passe juste l'ID
+  token: string;            // <-- et le token depuis ton loader/parent
   onClose: () => void;
-  order: Order;
 }
 
-export default function ViewOrderModal({ isOpen, onClose, order }: ViewOrderModalProps) {
+const API_BASE = "https://showroom-backend-2x3g.onrender.com";
+
+const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ isOpen, orderId, token, onClose }) => {
+  const [order, setOrder] = useState<Order | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isOpen || !orderId || !token) return;
+
+    let cancelled = false;
+    const ctrl = new AbortController();
+
+    (async () => {
+      setLoading(true);
+      setErr(null);
+      setOrder(null);
+      try {
+        const res = await fetch(`${API_BASE}/orders/${orderId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: ctrl.signal,
+        });
+        if (!res.ok) {
+          const msg = await res.text().catch(() => "");
+          throw new Error(msg || "Erreur lors de la récupération de la commande");
+        }
+        const data: Order = await res.json();
+        if (!cancelled) setOrder(data);
+      } catch (e: any) {
+        if (!cancelled) setErr(e?.message || "Erreur réseau");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      ctrl.abort();
+    };
+  }, [isOpen, orderId, token]);
+
   if (!isOpen) return null;
 
-  // Fonction pour obtenir l'icône et la couleur du statut
-  const getStatusInfo = (status: string) => {
-    switch (status) {
-      case "Livré":
-        return { 
-          icon: <CheckCircle className="w-5 h-5" />, 
-          color: "bg-green-100 text-green-800" 
-        };
-      case "En cours de livraison":
-        return { 
-          icon: <Truck className="w-5 h-5" />, 
-          color: "bg-blue-100 text-blue-800" 
-        };
-      case "En préparation":
-        return { 
-          icon: <Package className="w-5 h-5" />, 
-          color: "bg-yellow-100 text-yellow-800" 
-        };
-      case "En attente":
-        return { 
-          icon: <Clock className="w-5 h-5" />, 
-          color: "bg-gray-100 text-gray-800" 
-        };
-      case "Annulé":
-        return { 
-          icon: <XCircle className="w-5 h-5" />, 
-          color: "bg-red-100 text-red-800" 
-        };
-      default:
-        return { 
-          icon: <AlertCircle className="w-5 h-5" />, 
-          color: "bg-gray-100 text-gray-800" 
-        };
-    }
-  };
-
-  const statusInfo = getStatusInfo(order.status);
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Détails de la commande</h2>
-          <button
-            onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </button>
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
+      <div className="bg-white w-full max-w-2xl rounded-xl shadow-lg p-6 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">Détails de la commande</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">✕</button>
         </div>
 
-        {/* Content */}
-        <div className="p-6">
-          {/* Order Header */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 pb-6 border-b border-gray-200">
-            <div className="flex items-center mb-4 md:mb-0">
-              <div className="p-3 bg-gray-100 rounded-lg mr-4">
-                <Package className="w-6 h-6 text-gray-600" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">{order.orderNumber}</h3>
-                <div className="flex items-center mt-1">
-                  <Calendar className="w-4 h-4 text-gray-400 mr-1" />
-                  <span className="text-sm text-gray-500">
-                    {new Date(order.date).toLocaleDateString('fr-FR')}
-                  </span>
-                </div>
+        {!token && <p className="text-red-600">Token manquant.</p>}
+        {loading && <p>Chargement…</p>}
+        {err && <p className="text-red-600">{err}</p>}
+
+        {!loading && !err && order && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div><span className="text-gray-500">ID :</span> <span className="font-medium">{order.id}</span></div>
+              <div><span className="text-gray-500">Utilisateur :</span> <span className="font-medium">{order.user_id}</span></div>
+              <div><span className="text-gray-500">Statut :</span> <span className="font-medium">{order.status}</span></div>
+              <div><span className="text-gray-500">Paiement :</span> <span className="font-medium">{order.payment_status}</span></div>
+              <div><span className="text-gray-500">Créée le :</span> <span className="font-medium">{new Date(order.created_at).toLocaleString("fr-FR")}</span></div>
+              <div><span className="text-gray-500">MAJ le :</span> <span className="font-medium">{new Date(order.updated_at).toLocaleString("fr-FR")}</span></div>
+              <div><span className="text-gray-500">Total :</span> <span className="font-medium">{order.total} FCFA</span></div>
+              <div><span className="text-gray-500">Méthode :</span> <span className="font-medium">{order.payment_method || "—"}</span></div>
+              <div><span className="text-gray-500">Livraison :</span> <span className="font-medium">{order.delivery_method || "—"}</span></div>
+              <div><span className="text-gray-500">Statut livraison :</span> <span className="font-medium">{order.delivery_status || "—"}</span></div>
+            </div>
+
+            <div>
+              <h3 className="font-medium mb-2">Adresse</h3>
+              <div className="rounded-lg border p-3 text-sm">
+                <div>{order.address?.street || "—"}</div>
+                <div>{order.address?.postal_code || "—"} {order.address?.city || ""}</div>
+                <div>{order.address?.country || "—"}</div>
+                <div>Tél : {order.address?.phone || "—"}</div>
               </div>
             </div>
-            
-            <div className="flex flex-col items-start md:items-end">
-              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusInfo.color}`}><div className="flex items-center"></div>
-                {statusInfo.icon}
-                <span className="ml-1">{order.status}</span>
-              </span>
-              <p className="mt-1 text-lg font-semibold text-gray-900">{order.total}</p>
+
+            <div>
+              <h3 className="font-medium mb-2">Articles</h3>
+              <div className="rounded-lg border divide-y">
+                {order.items?.length ? order.items.map((it, i) => (
+                  <div key={`${it.product_id}-${i}`} className="p-3 text-sm flex items-center justify-between">
+                    <div>
+                      <div className="font-medium">{it.name || it.product_id}</div>
+                      <div className="text-gray-500">
+                        Qté: {it.quantity}
+                        {it.size ? ` • Taille: ${it.size}` : ""}
+                        {it.color ? ` • Couleur: ${it.color}` : ""}
+                      </div>
+                    </div>
+                    <div className="font-medium">{it.price} FCFA</div>
+                  </div>
+                )) : (
+                  <div className="p-3 text-sm text-gray-500">Aucun article</div>
+                )}
+              </div>
             </div>
           </div>
+        )}
 
-          {/* Order Details Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            {/* Customer Information */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="flex items-center mb-3">
-                <User className="w-5 h-5 text-gray-500 mr-2" />
-                <h4 className="font-medium text-gray-900">Informations client</h4>
-              </div>
-              <div className="space-y-2 pl-7">
-                <p className="text-gray-900 font-medium">{order.customer.name}</p>
-                <p className="text-gray-600">{order.customer.email}</p>
-                <p className="text-gray-600">{order.customer.phone}</p>
-              </div>
-            </div>
-
-            {/* Shipping Address */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="flex items-center mb-3">
-                <MapPin className="w-5 h-5 text-gray-500 mr-2" />
-                <h4 className="font-medium text-gray-900">Adresse de livraison</h4>
-              </div>
-              <div className="space-y-1 pl-7">
-                <p className="text-gray-600">{order.shippingAddress.street}</p>
-                <p className="text-gray-600">{order.shippingAddress.city}, {order.shippingAddress.state}</p>
-                <p className="text-gray-600">{order.shippingAddress.zipCode}</p>
-                <p className="text-gray-600">{order.shippingAddress.country}</p>
-              </div>
-            </div>
-
-            {/* Payment Method */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="flex items-center mb-3">
-                <CreditCard className="w-5 h-5 text-gray-500 mr-2" />
-                <h4 className="font-medium text-gray-900">Méthode de paiement</h4>
-              </div>
-              <p className="text-gray-600 pl-7">{order.paymentMethod}</p>
-            </div>
-          </div>
-
-          {/* Order Items */}
-          <div className="mb-6">
-            <h4 className="font-medium text-gray-900 mb-4">Articles commandés</h4>
-            <div className="border border-gray-200 rounded-lg overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-900">Produit</th>
-                    <th className="text-center py-3 px-4 text-sm font-medium text-gray-900">Quantité</th>
-                    <th className="text-right py-3 px-4 text-sm font-medium text-gray-900">Prix</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {order.items.map((item) => (
-                    <tr key={item.id}>
-                      <td className="py-4 px-4">
-                        <div className="flex items-center">
-                          <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border border-gray-200 mr-4">
-                            <img
-                              src={item.image}
-                              alt={item.name}
-                              className="h-full w-full object-cover object-center"
-                            />
-                          </div>
-                          <div>
-                            <p className="font-medium text-gray-900">{item.name}</p>
-                            {item.size && item.color && (
-                              <p className="text-sm text-gray-500">
-                                Taille: {item.size}, Couleur: {item.color}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4 text-center text-gray-900">{item.quantity}</td>
-                      <td className="py-4 px-4 text-right text-gray-900">{item.price}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot className="bg-gray-50">
-                  <tr>
-                    <td colSpan={2} className="py-3 px-4 text-right font-medium text-gray-900">
-                      Total
-                    </td>
-                    <td className="py-3 px-4 text-right font-medium text-gray-900">
-                      {order.total}
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="flex justify-end p-6 border-t border-gray-200">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            Fermer
-          </button>
+        <div className="mt-6 flex justify-end">
+          <button onClick={onClose} className="px-4 py-2 rounded-lg border hover:bg-gray-50">Fermer</button>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default ViewOrderModal;

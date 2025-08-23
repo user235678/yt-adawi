@@ -1,8 +1,11 @@
-import { useState } from "react";
-import type { MetaFunction } from "@remix-run/node";
+import { useState, useEffect } from "react";
+import type { MetaFunction, LoaderFunctionArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import { useLoaderData } from "@remix-run/react";
 import { Search, Filter, Eye, MessageCircle, CheckCircle, XCircle, Clock, AlertCircle, X, User } from "lucide-react";
 import ViewTicketModal from "~/components/admin/ViewTicketModal";
 import UpdateTicketModal from "~/components/admin/UpdateTicketModal";
+import { readToken } from "~/utils/session.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -11,312 +14,166 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-// Définir une interface pour le type Ticket
+// Mise à jour de l'interface Ticket pour correspondre à l'API
 export interface Ticket {
-  id: number;
-  ticketNumber: string;
-  subject: string;
-  message: string;
-  customer: {
-    id: number;
-    name: string;
-    email: string;
-    phone: string;
-    avatar?: string;
-  };
-  date: string;
-  status: string;
-  priority: string;
-  category: string;
-  responses: Array<{
-    id: number;
-    message: string;
-    date: string;
-    isAdmin: boolean;
-    author: string;
-    authorAvatar?: string;
-  }>;
+  id: string;
+  title: string;
+  description: string;
+  category: "commande" | "produit" | "paiement" | "livraison" | "technique" | "autre";
+  priority: "normale" | "haute" | "basse";
+  order_id?: string;
+  customer_id: string;
+  customer_name: string;
+  status: "ouvert" | "en_cours" | "resolu" | "ferme";
+  assigned_to?: string;
+  assigned_to_name?: string;
+  created_at: string;
+  updated_at: string;
+  resolved_at?: string;
+  messages_count: number;
+  last_message_at?: string;
+}
+
+// Loader pour récupérer les tickets
+export async function loader({ request }: LoaderFunctionArgs) {
+  const token = await readToken(request);
+
+  if (!token) {
+    throw new Response("Non autorisé", { status: 401 });
+  }
+
+  try {
+    const url = new URL(request.url);
+    const searchParams = new URLSearchParams(url.search);
+
+    // Récupérer les paramètres de filtrage
+    const status = searchParams.get("status");
+    const category = searchParams.get("category");
+    const skip = searchParams.get("skip") || "0";
+    const limit = searchParams.get("limit") || "50";
+
+    // Construire l'URL de l'API avec les paramètres
+    const apiUrl = new URL("https://showroom-backend-2x3g.onrender.com/support/admin/tickets");
+    if (status) apiUrl.searchParams.append("status", status);
+    if (category) apiUrl.searchParams.append("category", category);
+    apiUrl.searchParams.append("skip", skip);
+    apiUrl.searchParams.append("limit", limit);
+
+    console.log("🎯 Appel API tickets:", apiUrl.toString());
+
+    const response = await fetch(apiUrl, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erreur API: ${response.status}`);
+    }
+
+    const tickets = await response.json();
+    console.log(`✅ ${tickets.length} tickets chargés`);
+
+    return json({ tickets, token });
+  } catch (error) {
+    console.error("❌ Erreur chargement tickets:", error);
+    return json({ tickets: [], token, error: "Erreur lors du chargement des tickets" });
+  }
 }
 
 export default function AdminSupport() {
+  const { tickets: initialTickets, token } = useLoaderData<typeof loader>();
+
   // États pour les modals
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
-  
+
   // État pour la recherche
   const [searchTerm, setSearchTerm] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
-  
+
   // État pour les filtres
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
 
+  // État pour les tickets
+  const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
 
+  // Fonction pour recharger les tickets
+  const loadTickets = async (filters?: { status?: string; category?: string }) => {
+    try {
+      const params = new URLSearchParams();
+      if (filters?.status) params.append("status", filters.status);
+      if (filters?.category) params.append("category", filters.category);
 
-  // Données simulées des tickets
-  const [tickets, setTickets] = useState<Ticket[]>([
-    {
-      id: 1,
-      ticketNumber: "TKT-001-2024",
-      subject: "Problème de livraison",
-      message: "Bonjour, ma commande CMD-001-2024 devait être livrée hier mais je n'ai toujours rien reçu. Pouvez-vous me donner des informations sur le statut de ma livraison ?",
-      customer: {
-        id: 101,
-        name: "Kofi Asante",
-        email: "kofi.asante@email.com",
-        phone: "+228 90 12 34 56",
-        avatar: "https://placehold.co/40x40/DAA520/FFFFFF?text=KA"
-      },
-      date: "2024-01-20",
-      status: "Ouvert",
-      priority: "Élevée",
-      category: "Livraison",
-      responses: []
-    },
-    {
-      id: 2,
-      ticketNumber: "TKT-002-2024",
-      subject: "Demande de remboursement",
-      message: "J'ai reçu un produit endommagé et je souhaite être remboursé. J'ai déjà envoyé des photos par email mais je n'ai pas eu de réponse.",
-      customer: {
-        id: 102,
-        name: "Ama Mensah",
-        email: "ama.mensah@email.com",
-        phone: "+228 91 23 45 67",
-        avatar: "/5.png"
-      },
-      date: "2024-01-18",
-      status: "En cours",
-      priority: "Normale",
-      category: "Remboursement",
-      responses: [
+      const response = await fetch(
+        `https://showroom-backend-2x3g.onrender.com/support/admin/tickets?${params}`,
         {
-          id: 101,
-          message: "Bonjour, pourriez-vous nous fournir le numéro de commande concerné ? Merci.",
-          date: "2024-01-18",
-          isAdmin: true,
-          author: "Support Adawi",
-          authorAvatar: "https://placehold.co/40x40/DAA520/FFFFFF?text=SA"
-        },
-        {
-          id: 102,
-          message: "Bien sûr, il s'agit de la commande CMD-002-2024.",
-          date: "2024-01-19",
-          isAdmin: false,
-          author: "Ama Mensah",
-          authorAvatar: "https://placehold.co/40x40/8B4513/FFFFFF?text=AM"
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      ]
-    },
-    {
-      id: 3,
-      ticketNumber: "TKT-003-2024",
-      subject: "Question sur la taille",
-      message: "Je souhaite acheter une robe mais je ne suis pas sûre de la taille à choisir. Je mesure 1m65 et je pèse 60kg. Quelle taille me conseillez-vous ?",
-      customer: {
-        id: 103,
-        name: "Efua Adjei",
-        email: "efua.adjei@email.com",
-        phone: "+228 95 67 89 01",
-        avatar: "https://placehold.co/40x40/8B4513/FFFFFF?text=EA"
-      },
-      date: "2024-01-15",
-      status: "Résolu",
-      priority: "Basse",
-      category: "Produit",
-      responses: [
-        {
-          id: 103,
-          message: "Bonjour, pour votre taille et votre poids, je vous recommande une taille M. N'hésitez pas à consulter notre guide des tailles pour plus de détails.",
-          date: "2024-01-16",
-          isAdmin: true,
-          author: "Support Adawi",
-          authorAvatar: "https://placehold.co/40x40/DAA520/FFFFFF?text=SA"
-        },
-        {
-          id: 104,
-          message: "Merci beaucoup pour votre réponse rapide ! Je vais commander la taille M.",
-          date: "2024-01-16",
-          isAdmin: false,
-          author: "Efua Adjei",
-          authorAvatar: "https://placehold.co/40x40/8B4513/FFFFFF?text=EA"
-        },
-        {
-          id: 105,
-          message: "Parfait ! N'hésitez pas si vous avez d'autres questions.",
-          date: "2024-01-17",
-          isAdmin: true,
-          author: "Support Adawi",
-          authorAvatar: "https://placehold.co/40x40/DAA520/FFFFFF?text=SA"
-        }
-      ]
-    },
-    {
-      id: 4,
-      ticketNumber: "TKT-004-2024",
-      subject: "Problème technique sur le site",
-      message: "Je n'arrive pas à finaliser ma commande. Quand je clique sur 'Payer', j'obtiens une erreur 404.",
-      customer: {
-        id: 104,
-        name: "Kwame Nkrumah",
-        email: "kwame.nkrumah@email.com",
-        phone: "+228 92 34 56 78",
-        avatar: "https://placehold.co/40x40/DAA520/FFFFFF?text=KN"
-      },
-      date: "2024-01-10",
-      status: "Fermé",
-      priority: "Urgente",
-      category: "Technique",
-      responses: [
-        {
-          id: 106,
-          message: "Bonjour, nous sommes désolés pour ce désagrément. Notre équipe technique est en train de résoudre ce problème. Pourriez-vous nous dire quel navigateur vous utilisez ?",
-          date: "2024-01-10",
-          isAdmin: true,
-          author: "Support Adawi",
-          authorAvatar: "https://placehold.co/40x40/DAA520/FFFFFF?text=SA"
-        },
-        {
-          id: 107,
-          message: "J'utilise Chrome sur Windows 10.",
-          date: "2024-01-11",
-          isAdmin: false,
-          author: "Kwame Nkrumah",
-          authorAvatar: "https://placehold.co/40x40/DAA520/FFFFFF?text=KN"
-        },
-        {
-          id: 108,
-          message: "Merci pour cette information. Le problème a été résolu. Pourriez-vous essayer à nouveau ?",
-          date: "2024-01-11",
-          isAdmin: true,
-          author: "Support Adawi",
-          authorAvatar: "https://placehold.co/40x40/DAA520/FFFFFF?text=SA"
-        },
-        {
-          id: 109,
-          message: "Ça fonctionne maintenant ! Merci beaucoup.",
-          date: "2024-01-12",
-          isAdmin: false,
-          author: "Kwame Nkrumah",
-          authorAvatar: "https://placehold.co/40x40/DAA520/FFFFFF?text=KN"
-        }
-      ]
-    },
-    {
-      id: 5,
-      ticketNumber: "TKT-005-2024",
-      subject: "Demande d'information sur les délais de livraison",
-      message: "Bonjour, j'aimerais savoir quels sont les délais de livraison pour une commande à Kpalimé ?",
-      customer: {
-        id: 105,
-        name: "Akosua Osei",
-        email: "akosua.osei@email.com",
-        phone: "+228 93 45 67 89",
-        avatar: "https://placehold.co/40x40/8B4513/FFFFFF?text=AO"
-      },
-      date: "2024-01-05",
-      status: "Ouvert",
-      priority: "Normale",
-      category: "Livraison",
-      responses: []
+      );
+
+      if (!response.ok) throw new Error("Erreur lors du chargement des tickets");
+
+      const newTickets = await response.json();
+      setTickets(newTickets);
+    } catch (error) {
+      console.error("Erreur lors du chargement des tickets:", error);
     }
-  ]);
-  
+  };
+
+  // Recharger les tickets quand les filtres changent
+  useEffect(() => {
+    const filters: { status?: string; category?: string } = {};
+    if (statusFilter !== "all") filters.status = statusFilter;
+    if (categoryFilter !== "all") filters.category = categoryFilter;
+    loadTickets(filters);
+  }, [statusFilter, categoryFilter]);
 
   // Filtrage des tickets
   const filteredTickets = tickets.filter(ticket => {
     // Filtre de recherche
     const matchesSearch = 
-      ticket.ticketNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ticket.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ticket.customer.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
+      ticket.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      ticket.description.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      ticket.customer_name.toLowerCase().includes(searchTerm.toLowerCase());
+
     // Filtre de statut
     const matchesStatus = statusFilter === "all" || ticket.status === statusFilter;
-    
+
     // Filtre de priorité
     const matchesPriority = priorityFilter === "all" || ticket.priority === priorityFilter;
-    
+
     // Filtre de catégorie
     const matchesCategory = categoryFilter === "all" || ticket.category === categoryFilter;
-    
+
     return matchesSearch && matchesStatus && matchesPriority && matchesCategory;
   });
-
-  // Fonctions pour gérer les tickets
-  const handleUpdateTicket = (ticketId: number, updates: Partial<Ticket>) => {
-    setTickets(tickets.map(ticket => 
-      ticket.id === ticketId ? { ...ticket, ...updates } : ticket
-    ));
-    setIsUpdateModalOpen(false);
-  };
-
-  const handleAddResponse = (ticketId: number, responseText: string) => {
-    const ticket = tickets.find(t => t.id === ticketId);
-    if (!ticket) return;
-
-    const newResponse = {
-      id: Math.max(0, ...ticket.responses.map(r => r.id)) + 1,
-      message: responseText,
-      date: new Date().toISOString().split('T')[0],
-      isAdmin: true,
-      author: "Support Adawi",
-      authorAvatar: "/5.png"
-    };
-
-    setTickets(tickets.map(ticket => 
-      ticket.id === ticketId 
-        ? { 
-            ...ticket, 
-            responses: [...ticket.responses, newResponse],
-            status: ticket.status === "Ouvert" ? "En cours" : ticket.status
-          } 
-        : ticket
-    ));
-
-    // Rafraîchir le ticket sélectionné si nécessaire
-    if (selectedTicket && selectedTicket.id === ticketId) {
-      const updatedTicket = tickets.find(t => t.id === ticketId);
-      if (updatedTicket) {
-        setSelectedTicket(updatedTicket);
-      }
-    }
-  };
-
-  // Fonctions pour ouvrir les modals
-  const openViewModal = (ticket: Ticket) => {
-    setSelectedTicket(ticket);
-    setIsViewModalOpen(true);
-  };
-
-  const openUpdateModal = (ticket: Ticket) => {
-    setSelectedTicket(ticket);
-    setIsUpdateModalOpen(true);
-  };
 
   // Fonction pour obtenir l'icône et la couleur du statut
   const getStatusInfo = (status: string) => {
     switch (status) {
-      case "Résolu":
+      case "resolu":
         return { 
           icon: <CheckCircle className="w-4 h-4" />, 
           color: "bg-green-100 text-green-800" 
         };
-      case "En cours":
+      case "en_cours":
         return { 
           icon: <MessageCircle className="w-4 h-4" />, 
           color: "bg-blue-100 text-blue-800" 
         };
-      case "Ouvert":
+      case "ouvert":
         return { 
           icon: <Clock className="w-4 h-4" />, 
           color: "bg-yellow-100 text-yellow-800" 
         };
-      case "Fermé":
+      case "ferme":
         return { 
           icon: <XCircle className="w-4 h-4" />, 
           color: "bg-gray-100 text-gray-800" 
@@ -332,13 +189,11 @@ export default function AdminSupport() {
   // Fonction pour obtenir la couleur de la priorité
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "Urgente":
+      case "haute":
         return "bg-red-100 text-red-800";
-      case "Élevée":
-        return "bg-orange-100 text-orange-800";
-      case "Normale":
+      case "normale":
         return "bg-blue-100 text-blue-800";
-      case "Basse":
+      case "basse":
         return "bg-green-100 text-green-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -349,6 +204,44 @@ export default function AdminSupport() {
   const clearSearch = () => {
     setSearchTerm("");
   };
+
+  // Fonctions pour gérer les tickets
+  const handleUpdateTicket = async (ticketId: string, updates: Partial<Ticket>) => {
+    try {
+      const response = await fetch(`https://showroom-backend-2x3g.onrender.com/support/admin/tickets/${ticketId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updates),
+      });
+
+      if (!response.ok) throw new Error("Erreur lors de la mise à jour du ticket");
+
+      const updatedTicket = await response.json();
+      setTickets(tickets.map(ticket => 
+        ticket.id === ticketId ? { ...ticket, ...updatedTicket } : ticket
+      ));
+      setIsUpdateModalOpen(false);
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du ticket:", error);
+    }
+  };
+
+  // Fonctions pour ouvrir les modals
+  const openViewModal = (ticket: Ticket) => {
+    setSelectedTicket(ticket);
+    setIsViewModalOpen(true);
+  };
+
+  const openUpdateModal = (ticket: Ticket) => {
+    setSelectedTicket(ticket);
+    setIsUpdateModalOpen(true);
+  };
+
+  // Fonction vide pour handleAddResponse (à adapter selon votre logique)
+  const handleAddResponse = () => {};
 
   return (
     <div className="space-y-6">
@@ -378,7 +271,7 @@ export default function AdminSupport() {
               <Clock className="w-6 h-6 text-yellow-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">{tickets.filter(t => t.status === "Ouvert").length}</p>
+              <p className="text-2xl font-bold text-gray-900">{tickets.filter(t => t.status === "ouvert").length}</p>
               <p className="text-sm text-gray-600">Tickets Ouverts</p>
             </div>
           </div>
@@ -390,7 +283,7 @@ export default function AdminSupport() {
               <MessageCircle className="w-6 h-6 text-blue-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">{tickets.filter(t => t.status === "En cours").length}</p>
+              <p className="text-2xl font-bold text-gray-900">{tickets.filter(t => t.status === "en_cours").length}</p>
               <p className="text-sm text-gray-600">En Traitement</p>
             </div>
           </div>
@@ -403,7 +296,7 @@ export default function AdminSupport() {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">
-                {tickets.filter(t => t.status === "Résolu" || t.status === "Fermé").length}
+                {tickets.filter(t => t.status === "resolu" || t.status === "ferme").length}
               </p>
               <p className="text-sm text-gray-600">Résolus/Fermés</p>
             </div>
@@ -414,14 +307,10 @@ export default function AdminSupport() {
       {/* Filters and Search */}
       <div className="bg-white rounded-lg border border-gray-200 p-4">
         <div className="flex flex-col sm:flex-row gap-4">
-          {/* Search - Améliorée et plus jolie */}
+          {/* Search */}
           <div className="flex-1">
-            <div className={`relative rounded-lg transition-all duration-200 ${
-              searchFocused ? 'ring-2 ring-adawi-gold shadow-sm' : 'hover:shadow-sm'
-            }`}>
-              <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors ${
-                searchFocused ? 'text-adawi-gold' : 'text-gray-400'
-              }`} />
+            <div className={`relative rounded-lg transition-all duration-200 ${searchFocused ? 'ring-2 ring-adawi-gold shadow-sm' : 'hover:shadow-sm'}`}>
+              <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors ${searchFocused ? 'text-adawi-gold' : 'text-gray-400'}`} />
               <input
                 type="text"
                 placeholder="Rechercher par numéro de ticket, sujet ou client..."
@@ -441,7 +330,7 @@ export default function AdminSupport() {
               )}
             </div>
           </div>
-          
+
           {/* Filter Button */}
           <button 
             onClick={() => setShowFilters(!showFilters)}
@@ -468,10 +357,10 @@ export default function AdminSupport() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
               >
                 <option value="all">Tous les statuts</option>
-                <option value="Ouvert">Ouvert</option>
-                <option value="En cours">En cours</option>
-                <option value="Résolu">Résolu</option>
-                <option value="Fermé">Fermé</option>
+                <option value="ouvert">Ouvert</option>
+                <option value="en_cours">En cours</option>
+                <option value="resolu">Résolu</option>
+                <option value="ferme">Fermé</option>
               </select>
             </div>
             <div>
@@ -484,10 +373,9 @@ export default function AdminSupport() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
               >
                 <option value="all">Toutes les priorités</option>
-                <option value="Urgente">Urgente</option>
-                <option value="Élevée">Élevée</option>
-                <option value="Normale">Normale</option>
-                <option value="Basse">Basse</option>
+                <option value="haute">Haute</option>
+                <option value="normale">Normale</option>
+                <option value="basse">Basse</option>
               </select>
             </div>
             <div>
@@ -500,11 +388,12 @@ export default function AdminSupport() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
               >
                 <option value="all">Toutes les catégories</option>
-                <option value="Livraison">Livraison</option>
-                <option value="Remboursement">Remboursement</option>
-                <option value="Produit">Produit</option>
-                <option value="Technique">Technique</option>
-                <option value="Paiement">Paiement</option>
+                <option value="commande">Commande</option>
+                <option value="produit">Produit</option>
+                <option value="paiement">Paiement</option>
+                <option value="livraison">Livraison</option>
+                <option value="technique">Technique</option>
+                <option value="autre">Autre</option>
               </select>
             </div>
           </div>
@@ -531,7 +420,7 @@ export default function AdminSupport() {
                 filteredTickets.map((ticket) => {
                   const statusInfo = getStatusInfo(ticket.status);
                   const priorityColor = getPriorityColor(ticket.priority);
-                  
+
                   return (
                     <tr key={ticket.id} className="hover:bg-gray-50">
                       <td className="py-4 px-4">
@@ -540,32 +429,24 @@ export default function AdminSupport() {
                             <MessageCircle className="w-5 h-5 text-gray-600" />
                           </div>
                           <div>
-                            <p className="font-medium text-gray-900">{ticket.ticketNumber}</p>
-                            <p className="text-sm text-gray-500 truncate max-w-[200px]">{ticket.subject}</p>
+                            <p className="font-medium text-gray-900">{ticket.title}</p>
+                            <p className="text-sm text-gray-500 truncate max-w-[200px]">{ticket.description}</p>
                           </div>
                         </div>
                       </td>
                       <td className="py-4 px-4">
                         <div className="flex items-center">
-                          {ticket.customer.avatar ? (
-                            <img 
-                              src={ticket.customer.avatar} 
-                              alt={ticket.customer.name}
-                              className="w-8 h-8 rounded-full mr-3"
-                            />
-                          ) : (
-                            <div className="p-2 bg-gray-100 rounded-full mr-3">
-                              <User className="w-4 h-4 text-gray-600" />
-                            </div>
-                          )}
+                          <div className="p-2 bg-gray-100 rounded-full mr-3">
+                            <User className="w-4 h-4 text-gray-600" />
+                          </div>
                           <div>
-                            <p className="font-medium text-gray-900">{ticket.customer.name}</p>
-                            <p className="text-sm text-gray-500">{ticket.customer.email}</p>
+                            <p className="font-medium text-gray-900">{ticket.customer_name}</p>
+                            <p className="text-sm text-gray-500">ID: {ticket.customer_id}</p>
                           </div>
                         </div>
                       </td>
                       <td className="py-4 px-4 text-gray-900">
-                        {new Date(ticket.date).toLocaleDateString('fr-FR')}
+                        {new Date(ticket.created_at).toLocaleDateString('fr-FR')}
                       </td>
                       <td className="py-4 px-4 text-gray-900">
                         {ticket.category}

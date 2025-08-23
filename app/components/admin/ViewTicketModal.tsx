@@ -6,8 +6,8 @@ interface ViewTicketModalProps {
   isOpen: boolean;
   onClose: () => void;
   ticket: Ticket;
-  onAddResponse: (ticketId: number, responseText: string) => void;
-  onUpdateTicket: (ticketId: number, updates: Partial<Ticket>) => void;
+  onAddResponse: (ticketId: string, responseText: string) => void;
+  onUpdateTicket: (ticketId: string, updates: Partial<Ticket>) => void;
 }
 
 export default function ViewTicketModal({ isOpen, onClose, ticket, onAddResponse, onUpdateTicket }: ViewTicketModalProps) {
@@ -23,29 +23,29 @@ export default function ViewTicketModal({ isOpen, onClose, ticket, onAddResponse
     }
   };
 
-  const handleStatusChange = (newStatus: string) => {
+  const handleStatusChange = (newStatus: Ticket['status']) => {
     onUpdateTicket(ticket.id, { status: newStatus });
   };
 
   // Fonction pour obtenir l'icône et la couleur du statut
   const getStatusInfo = (status: string) => {
     switch (status) {
-      case "Résolu":
+      case "resolu":
         return { 
           icon: <CheckCircle className="w-4 h-4" />, 
           color: "bg-green-100 text-green-800" 
         };
-      case "En cours":
+      case "en_cours":
         return { 
           icon: <MessageCircle className="w-4 h-4" />, 
           color: "bg-blue-100 text-blue-800" 
         };
-      case "Ouvert":
+      case "ouvert":
         return { 
           icon: <Clock className="w-4 h-4" />, 
           color: "bg-yellow-100 text-yellow-800" 
         };
-      case "Fermé":
+      case "ferme":
         return { 
           icon: <XCircle className="w-4 h-4" />, 
           color: "bg-gray-100 text-gray-800" 
@@ -61,13 +61,11 @@ export default function ViewTicketModal({ isOpen, onClose, ticket, onAddResponse
   // Fonction pour obtenir la couleur de la priorité
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "Urgente":
+      case "haute":
         return "bg-red-100 text-red-800";
-      case "Élevée":
-        return "bg-orange-100 text-orange-800";
-      case "Normale":
+      case "normale":
         return "bg-blue-100 text-blue-800";
-      case "Basse":
+      case "basse":
         return "bg-green-100 text-green-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -95,10 +93,10 @@ export default function ViewTicketModal({ isOpen, onClose, ticket, onAddResponse
               </div>
               <div>
                 <h3 className="text-lg font-medium text-gray-900">
-                  {ticket.ticketNumber} - {ticket.subject}
+                  #{ticket.id.slice(-8)} - {ticket.title}
                 </h3>
                 <p className="text-sm text-gray-500">
-                  Créé le {new Date(ticket.date).toLocaleDateString('fr-FR')}
+                  Créé le {new Date(ticket.created_at).toLocaleDateString('fr-FR')}
                 </p>
               </div>
             </div>
@@ -116,72 +114,29 @@ export default function ViewTicketModal({ isOpen, onClose, ticket, onAddResponse
               {/* Original Message */}
               <div className="bg-gray-50 p-4 rounded-lg">
                 <div className="flex items-center mb-3">
-                  {ticket.customer.avatar ? (
-                    <img
-                      src={ticket.customer.avatar}
-                      alt={ticket.customer.name}
-                      className="w-10 h-10 rounded-full mr-3"
-                    />
-                  ) : (
-                    <div className="p-2 bg-gray-200 rounded-full mr-3">
-                      <User className="w-6 h-6 text-gray-600" />
-                    </div>
-                  )}
+                  <div className="p-2 bg-gray-200 rounded-full mr-3">
+                    <User className="w-6 h-6 text-gray-600" />
+                  </div>
                   <div>
-                    <p className="font-medium text-gray-900">{ticket.customer.name}</p>
-                    <p className="text-sm text-gray-500">{new Date(ticket.date).toLocaleDateString('fr-FR')}</p>
+                    <p className="font-medium text-gray-900">{ticket.customer_name}</p>
+                    <p className="text-sm text-gray-500">{new Date(ticket.created_at).toLocaleDateString('fr-FR')}</p>
                   </div>
                 </div>
                 <div className="text-gray-800 whitespace-pre-wrap">
-                  {ticket.message}
+                  {ticket.description}
                 </div>
               </div>
 
-              {/* Conversation Thread */}
-              {ticket.responses.length > 0 && (
-                <div className="space-y-4">
-                  <h4 className="font-medium text-gray-900">Conversation</h4>
-                  {ticket.responses.map((response) => (
-                    <div
-                      key={response.id}
-                      className={`p-4 rounded-lg ${
-                        response.isAdmin ? 'bg-adawi-beige/30 ml-6' : 'bg-gray-50 mr-6'
-                      }`}
-                    >
-                      <div className="flex items-center mb-3">
-                        {response.authorAvatar ? (
-                          <img
-                            src={response.authorAvatar}
-                            alt={response.author}
-                            className="w-8 h-8 rounded-full mr-3"
-                          />
-                        ) : (
-                          <div className="p-1.5 bg-gray-200 rounded-full mr-3">
-                            <User className="w-5 h-5 text-gray-600" />
-                          </div>
-                        )}
-                        <div>
-                          <p className="font-medium text-gray-900">
-                            {response.author}
-                            {response.isAdmin && (
-                              <span className="ml-2 text-xs bg-adawi-gold/20 text-adawi-brown px-2 py-0.5 rounded-full">
-                                Support
-                              </span>
-                            )}
-                          </p>
-                          <p className="text-xs text-gray-500">{new Date(response.date).toLocaleDateString('fr-FR')}</p>
-                        </div>
-                      </div>
-                      <div className="text-gray-800 whitespace-pre-wrap">
-                        {response.message}
-                      </div>
-                    </div>
-                  ))}
+              {/* Messages placeholder - À implémenter selon votre API */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-gray-900">Messages ({ticket.messages_count})</h4>
+                <div className="text-sm text-gray-500 italic">
+                  Les messages détaillés seront affichés ici une fois l'API des messages implémentée.
                 </div>
-              )}
+              </div>
 
               {/* Reply Form */}
-              {ticket.status !== "Fermé" && ticket.status !== "Résolu" && (
+              {ticket.status !== "ferme" && ticket.status !== "resolu" && (
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <label htmlFor="response" className="block text-sm font-medium text-gray-700 mb-2">
@@ -219,29 +174,13 @@ export default function ViewTicketModal({ isOpen, onClose, ticket, onAddResponse
                 <h4 className="font-medium text-gray-900 mb-3">Informations Client</h4>
                 <div className="space-y-2">
                   <div className="flex items-center">
-                    {ticket.customer.avatar ? (
-                      <img
-                        src={ticket.customer.avatar}
-                        alt={ticket.customer.name}
-                        className="w-12 h-12 rounded-full mr-3"
-                      />
-                    ) : (
-                      <div className="p-2 bg-gray-100 rounded-full mr-3">
-                        <User className="w-8 h-8 text-gray-600" />
-                      </div>
-                    )}
-                    <div>
-                      <p className="font-medium text-gray-900">{ticket.customer.name}</p>
-                      <p className="text-sm text-gray-500">Client #{ticket.customer.id}</p>
+                    <div className="p-2 bg-gray-100 rounded-full mr-3">
+                      <User className="w-8 h-8 text-gray-600" />
                     </div>
-                  </div>
-                  <div className="pt-2">
-                    <p className="text-sm text-gray-500">Email</p>
-                    <p className="text-gray-900">{ticket.customer.email}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Téléphone</p>
-                    <p className="text-gray-900">{ticket.customer.phone}</p>
+                    <div>
+                      <p className="font-medium text-gray-900">{ticket.customer_name}</p>
+                      <p className="text-sm text-gray-500">Client #{ticket.customer_id.slice(-8)}</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -252,11 +191,11 @@ export default function ViewTicketModal({ isOpen, onClose, ticket, onAddResponse
                 <div className="space-y-3">
                   <div>
                     <p className="text-sm text-gray-500">Numéro</p>
-                    <p className="text-gray-900">{ticket.ticketNumber}</p>
+                    <p className="text-gray-900">#{ticket.id.slice(-8)}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Catégorie</p>
-                    <p className="text-gray-900">{ticket.category}</p>
+                    <p className="text-gray-900 capitalize">{ticket.category}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Priorité</p>
@@ -273,8 +212,20 @@ export default function ViewTicketModal({ isOpen, onClose, ticket, onAddResponse
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Date de création</p>
-                    <p className="text-gray-900">{new Date(ticket.date).toLocaleDateString('fr-FR')}</p>
+                    <p className="text-gray-900">{new Date(ticket.created_at).toLocaleDateString('fr-FR')}</p>
                   </div>
+                  {ticket.order_id && (
+                    <div>
+                      <p className="text-sm text-gray-500">Commande associée</p>
+                      <p className="text-gray-900">#{ticket.order_id.slice(-8)}</p>
+                    </div>
+                  )}
+                  {ticket.assigned_to && (
+                    <div>
+                      <p className="text-sm text-gray-500">Assigné à</p>
+                      <p className="text-gray-900">{ticket.assigned_to_name || ticket.assigned_to}</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -282,9 +233,9 @@ export default function ViewTicketModal({ isOpen, onClose, ticket, onAddResponse
               <div className="bg-white border border-gray-200 rounded-lg p-4">
                 <h4 className="font-medium text-gray-900 mb-3">Actions</h4>
                 <div className="space-y-2">
-                  {ticket.status !== "Résolu" && (
+                  {ticket.status !== "resolu" && (
                     <button
-                      onClick={() => handleStatusChange("Résolu")}
+                      onClick={() => handleStatusChange("resolu")}
                       className="w-full flex items-center justify-center px-4 py-2 border border-green-600 text-green-600 rounded-lg hover:bg-green-50 transition-colors"
                     >
                       <CheckCircle className="w-4 h-4 mr-2" />
@@ -292,9 +243,9 @@ export default function ViewTicketModal({ isOpen, onClose, ticket, onAddResponse
                     </button>
                   )}
 
-                  {ticket.status !== "En cours" && ticket.status !== "Résolu" && ticket.status !== "Fermé" && (
+                  {ticket.status !== "en_cours" && ticket.status !== "resolu" && ticket.status !== "ferme" && (
                     <button
-                      onClick={() => handleStatusChange("En cours")}
+                      onClick={() => handleStatusChange("en_cours")}
                       className="w-full flex items-center justify-center px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
                     >
                       <MessageCircle className="w-4 h-4 mr-2" />
@@ -302,9 +253,9 @@ export default function ViewTicketModal({ isOpen, onClose, ticket, onAddResponse
                     </button>
                   )}
 
-                  {ticket.status !== "Fermé" && (
+                  {ticket.status !== "ferme" && (
                     <button
-                      onClick={() => handleStatusChange("Fermé")}
+                      onClick={() => handleStatusChange("ferme")}
                       className="w-full flex items-center justify-center px-4 py-2 border border-gray-600 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
                     >
                       <XCircle className="w-4 h-4 mr-2" />
