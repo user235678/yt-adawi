@@ -208,19 +208,19 @@ export default function Login() {
 
           {/* Liens */}
           <div className="text-center text-sm text-gray-400 mt-4">
-            <a href="/forgot-password" className="hover:text-adawi-gold">
+            <a href="/forgot-password" className="text-adawi-gold underline hover:text-black">
               Mot de passe oublié?
             </a>
             <br />
             Nouveau membre?{" "}
-            <a href="/signup" className="hover:text-adawi-gold">
+            <a href="/signup" className="text-adawi-gold underline hover:text-black">
               S'inscrire
             </a>
 
           </div>
           <div className="text-center text-sm text-gray-400 mt-4">
-            <a href="/support" className="hover:text-adawi-gold">
-              Service Client
+            <a href="/support" className="text-adawi-gold underline hover:text-black">
+              Contacter le Service Client
             </a>
           </div>
         </div>

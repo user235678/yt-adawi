@@ -139,12 +139,12 @@ export default function Signup() {
 
           <div className="text-center text-sm text-gray-400 mt-4">
             <h3>Déjà membre ?</h3>
-            <a href="/login" className="hover:text-adawi-gold">
+            <a href="/login" className="text-adawi-gold hover:text-black underline">
               Connexion
             </a>
           </div>
           <div className="text-center text-sm text-gray-400 mt-4">
-            <a href="/support" className="hover:text-adawi-gold">
+            <a href="/support" className="text-adawi-gold underline hover:text-black">
               Service Client
             </a>
           </div>
