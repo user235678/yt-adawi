@@ -195,9 +195,8 @@ export default function Login() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`w-full h-[60px] mt-6 rounded-full text-white text-[20px] font-bold bg-gradient-to-r from-adawi-brown via-adawi-brown-light to-adawi-gold-light shadow-md transition duration-500 hover:bg-right flex items-center justify-center ${
-                isSubmitting ? "opacity-70 cursor-not-allowed" : ""
-              }`}
+              className={`w-full h-[60px] mt-6 rounded-full text-white text-[20px] font-bold bg-gradient-to-r from-adawi-brown via-adawi-brown-light to-adawi-gold-light shadow-md transition duration-500 hover:bg-right flex items-center justify-center ${isSubmitting ? "opacity-70 cursor-not-allowed" : ""
+                }`}
             >
               {isSubmitting ? (
                 <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin" />
@@ -216,6 +215,12 @@ export default function Login() {
             Nouveau membre?{" "}
             <a href="/signup" className="hover:text-adawi-gold">
               S'inscrire
+            </a>
+
+          </div>
+          <div className="text-center text-sm text-gray-400 mt-4">
+            <a href="/support" className="hover:text-adawi-gold">
+              Service Client
             </a>
           </div>
         </div>

@@ -11,7 +11,8 @@ import {
   Box,
   Mail,
   LogOut,
-  X
+  X,
+  TableOfContents
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -29,6 +30,7 @@ export default function AdminSidebar({ onClose }: AdminSidebarProps) {
     { id: "support", label: "Support", icon: MessageSquare, path: "/admin/support", badge: "2" },
     { id: "rapports", label: "Rapports", icon: BarChart3, path: "/admin/rapports" },
     { id: "categories", label: "Categories", icon: Box, path: "/admin/categories" },
+    { id: "Blogs", label: "Blog", icon: TableOfContents, path: "/admin/blog" },
     { id: "settings", label: "Paramètres", icon: Settings, path: "/admin/settings" },
   ];
 

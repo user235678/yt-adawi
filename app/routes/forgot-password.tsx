@@ -1,27 +1,51 @@
-import { MetaFunction, ActionFunction } from "@remix-run/node";
-import { Form, useNavigation } from "@remix-run/react";
-import { useState } from "react";
+import { MetaFunction, ActionFunction, json } from "@remix-run/node";
+import { Form, useNavigation, useActionData } from "@remix-run/react";
+import { useState, useEffect } from "react";
 import TopBanner from "~/components/TopBanner";
 import Footer from "~/components/Footer";
 import CompactHeader from "~/components/CompactHeader";
 
 export const meta: MetaFunction = () => [{ title: "Forgot Password - The Providers" }];
 
-// Action côté serveur : récupère l’email et affiche en console
+// Action côté serveur : envoie la requête à ton API
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const email = formData.get("email");
 
-  console.log("Mot de passe oublié pour :", email);
+  if (typeof email !== "string") {
+    return json({ error: "Email invalide" }, { status: 400 });
+  }
 
-  // Tu peux ici : générer un token, envoyer un mail, etc.
-  return null;
+  try {
+    const res = await fetch("https://showroom-backend-2x3g.onrender.com/auth/reset-password-request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      return json({ error: data.detail || "Erreur lors de la requête" }, { status: res.status });
+    }
+
+    const data = await res.json();
+    return json({ success: true, message: data });
+  } catch (err: any) {
+    return json({ error: "Impossible de contacter le serveur" }, { status: 500 });
+  }
 };
 
 export default function ForgotPassword() {
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
+  const actionData = useActionData<{ success?: boolean; error?: string }>();
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    if (actionData?.success) {
+      setSubmitted(true);
+    }
+  }, [actionData]);
 
   return (
     <>
@@ -54,11 +78,7 @@ export default function ForgotPassword() {
               Un lien a été envoyé à votre adresse email. Vérifiez votre boîte de réception et suivez les instructions.
             </div>
           ) : (
-            <Form
-              method="post"
-              className="w-full space-y-4"
-              onSubmit={() => setSubmitted(true)}
-            >
+            <Form method="post" className="w-full space-y-4">
               <div className="border-b-2 border-gray-300 hover:border-adawi-gold transition duration-300">
                 <input
                   type="email"
@@ -69,19 +89,23 @@ export default function ForgotPassword() {
                 />
               </div>
 
-              <button
-              type="submit"
-              disabled={isSubmitting}
-              className={`w-full h-[60px] mt-6 rounded-full text-white text-[20px] font-bold bg-gradient-to-r from-adawi-brown via-adawi-brown-light to-adawi-gold-light shadow-md transition duration-500 hover:bg-right flex items-center justify-center ${
-                isSubmitting ? "opacity-70 cursor-not-allowed" : ""
-              }`}
-            >
-              {isSubmitting ? (
-                <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                "Send Reset Link"
+              {actionData?.error && (
+                <p className="text-red-500 text-sm text-center">{actionData.error}</p>
               )}
-            </button>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className={`w-full h-[60px] mt-6 rounded-full text-white text-[20px] font-bold bg-gradient-to-r from-adawi-brown via-adawi-brown-light to-adawi-gold-light shadow-md transition duration-500 hover:bg-right flex items-center justify-center ${
+                  isSubmitting ? "opacity-70 cursor-not-allowed" : ""
+                }`}
+              >
+                {isSubmitting ? (
+                  <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  "Send Reset Link"
+                )}
+              </button>
             </Form>
           )}
 
