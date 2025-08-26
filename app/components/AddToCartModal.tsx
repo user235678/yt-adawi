@@ -134,7 +134,7 @@ export default function AddToCartModal({
                     {/* Tailles */}
                     {product.sizes && product.sizes.length > 0 && (
                         <div className="mb-6">
-                            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                            <label className=" text-sm font-medium text-gray-700 mb-2 flex items-center">
                                 <Ruler className="w-4 h-4 mr-1" />
                                 Taille *
                             </label>
@@ -161,7 +161,7 @@ export default function AddToCartModal({
                     {/* Couleurs */}
                     {product.colors && product.colors.length > 0 && (
                         <div className="mb-6">
-                            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                            <label className=" text-sm font-medium text-gray-700 mb-2 flex items-center">
                                 <Palette className="w-4 h-4 mr-1" />
                                 Couleur *
                             </label>

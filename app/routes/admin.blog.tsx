@@ -11,9 +11,11 @@ import {
     useActionData,
 } from "@remix-run/react";
 import { useState } from "react";
-import { Plus, Eye, Trash2 } from "lucide-react";
+import { Plus, Eye, Trash2, Edit } from "lucide-react";
 import { readToken } from "~/utils/session.server";
 import CreatePostModal from "~/components/admin/CreatePostModal";
+import ViewPostModal from "~/components/admin/ViewPostModal";
+import UpdatePostModal from "~/components/admin/UpdatePostModal";
 
 interface BlogPost {
     id: string;
@@ -29,6 +31,7 @@ interface BlogPost {
 
 interface LoaderData {
     posts: BlogPost[];
+    token: string;
     error?: string;
 }
 
@@ -52,11 +55,12 @@ export const loader: LoaderFunction = async ({ request }) => {
         }
 
         const posts: BlogPost[] = await res.json();
-        return json<LoaderData>({ posts });
+        return json<LoaderData>({ posts, token });
     } catch (error: any) {
         console.error("Erreur loader blog:", error);
         return json<LoaderData>({
             posts: [],
+            token: "",
             error: error.message || "Erreur serveur",
         });
     }
@@ -73,11 +77,35 @@ export const action: ActionFunction = async ({ request }) => {
         }
 
         const formData = await request.formData();
+        const intent = formData.get("intent");
 
-        // Préparer FormData pour le backend
+        if (intent === "delete") {
+            const postId = formData.get("postId");
+            
+            const res = await fetch(
+                `https://showroom-backend-2x3g.onrender.com/admin/content/blog/posts/${postId}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (!res.ok) {
+                const errorText = await res.text();
+                return json({ error: errorText }, { status: res.status });
+            }
+
+            return json({ success: true, message: "Post supprimé avec succès" });
+        }
+
+        // Création de post (existant)
         const backendFormData = new FormData();
         formData.forEach((value, key) => {
-            backendFormData.append(key, value);
+            if (key !== "intent") { // Exclure le champ intent
+                backendFormData.append(key, value);
+            }
         });
 
         const res = await fetch(
@@ -96,10 +124,9 @@ export const action: ActionFunction = async ({ request }) => {
             return json({ error: errorText }, { status: res.status });
         }
 
-        // Après création, on recharge la liste
-        return json({ success: true });
+        return json({ success: true, message: "Post créé avec succès" });
     } catch (err: any) {
-        console.error("Erreur création post:", err);
+        console.error("Erreur action:", err);
         return json({ error: err.message || "Erreur serveur" }, { status: 500 });
     }
 };
@@ -108,9 +135,42 @@ export const action: ActionFunction = async ({ request }) => {
    COMPONENT
    ======================= */
 export default function AdminBlog() {
-    const { posts, error } = useLoaderData<LoaderData>();
+    const { posts, token, error } = useLoaderData<LoaderData>();
     const navigation = useNavigation();
+    const actionData = useActionData();
     const [openModal, setOpenModal] = useState(false);
+    const [openViewModal, setOpenViewModal] = useState(false);
+    const [openUpdateModal, setOpenUpdateModal] = useState(false);
+    const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+
+    const handleDelete = (postId: string) => {
+        if (confirm("Êtes-vous sûr de vouloir supprimer cet article ?")) {
+            const form = new FormData();
+            form.append("intent", "delete");
+            form.append("postId", postId);
+            
+            // Soumettre le formulaire
+            const formElement = document.createElement('form');
+            formElement.method = 'POST';
+            formElement.style.display = 'none';
+            
+            form.forEach((value, key) => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = value.toString();
+                formElement.appendChild(input);
+            });
+            
+            document.body.appendChild(formElement);
+            formElement.submit();
+        }
+    };
+
+    const handleUpdateSuccess = () => {
+        // Recharger la page pour voir les modifications
+        window.location.reload();
+    };
 
     return (
         <div className="p-6">
@@ -118,11 +178,24 @@ export default function AdminBlog() {
                 <h1 className="text-2xl font-bold">Gestion des articles de blog</h1>
                 <button
                     onClick={() => setOpenModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow"
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow transition-colors"
                 >
                     <Plus size={18} /> Créer un post
                 </button>
             </div>
+
+            {/* Messages de succès/erreur */}
+            {actionData?.error && (
+                <div className="p-4 mb-4 text-red-700 bg-red-100 rounded-lg">
+                    {actionData.error}
+                </div>
+            )}
+            
+            {actionData?.success && (
+                <div className="p-4 mb-4 text-green-700 bg-green-100 rounded-lg">
+                    {actionData.message || "Opération réussie"}
+                </div>
+            )}
 
             {error && (
                 <div className="p-4 mb-4 text-red-700 bg-red-100 rounded-lg">
@@ -131,55 +204,96 @@ export default function AdminBlog() {
             )}
 
             {posts.length === 0 ? (
-                <p className="text-gray-500">Aucun post trouvé.</p>
+                <div className="text-center py-8">
+                    <p className="text-gray-500 text-lg">Aucun post trouvé.</p>
+                </div>
             ) : (
-                <div className="overflow-x-auto border rounded-lg">
+                <div className="overflow-x-auto border rounded-lg shadow">
                     <table className="w-full text-sm text-left border-collapse">
                         <thead className="bg-gray-100 text-gray-700">
                             <tr>
-                                <th className="px-4 py-2">Titre</th>
-                                <th className="px-4 py-2">Auteur</th>
-                                <th className="px-4 py-2">Statut</th>
-                                <th className="px-4 py-2">Publié le</th>
-                                <th className="px-4 py-2">Vues</th>
+                                <th className="px-4 py-3">Image</th>
+                                <th className="px-4 py-3">Titre</th>
+                                <th className="px-4 py-3">Auteur</th>
+                                <th className="px-4 py-3">Statut</th>
+                                <th className="px-4 py-3">Publié le</th>
+                                <th className="px-4 py-3">Vues</th>
+                                <th className="px-4 py-3">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {posts.map((post) => (
                                 <tr
                                     key={post.id}
-                                    className="border-t hover:bg-gray-50 transition"
+                                    className="border-t hover:bg-gray-50 transition-colors"
                                 >
-                                    <td className="px-4 py-2 font-medium">{post.title}</td>
-                                    <td className="px-4 py-2">{post.author_name}</td>
-                                    <td className="px-4 py-2">
+                                    <td className="px-4 py-3">
+                                        <img
+                                            src={post.cover_image || "/placeholder.jpg"}
+                                            alt={post.title}
+                                            className="w-12 h-12 rounded-lg object-cover"
+                                        />
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <div className="font-medium text-gray-900 max-w-xs truncate">
+                                            {post.title}
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-3 text-gray-700">
+                                        {post.author_name}
+                                    </td>
+                                    <td className="px-4 py-3">
                                         {post.published_at ? (
-                                            <span className="text-green-600 font-semibold">
+                                            <span className="inline-flex px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full">
                                                 Publié
                                             </span>
                                         ) : (
-                                            <span className="text-gray-500">Brouillon</span>
+                                            <span className="inline-flex px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 rounded-full">
+                                                Brouillon
+                                            </span>
                                         )}
                                     </td>
-                                    <td className="px-4 py-2">
+                                    <td className="px-4 py-3 text-gray-700">
                                         {post.published_at
-                                            ? new Date(post.published_at).toLocaleDateString()
+                                            ? new Date(post.published_at).toLocaleDateString('fr-FR')
                                             : "-"}
                                     </td>
-                                    <td className="px-4 py-2">{post.views_count}</td>
-                                    <td>
-                                        <button>
-                                            <Eye className="w-4 h-4" />
-                                        </button>
+                                    <td className="px-4 py-3 text-gray-700">
+                                        {post.views_count.toLocaleString()}
                                     </td>
-                                    <td>
-                                        <button>
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
+                                    <td className="px-4 py-3">
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedSlug(post.slug);
+                                                    setOpenViewModal(true);
+                                                }}
+                                                className="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
+                                                title="Voir le post"
+                                            >
+                                                <Eye size={16} />
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedSlug(post.slug);
+                                                    setOpenUpdateModal(true);
+                                                }}
+                                                className="p-1 text-green-600 hover:text-green-800 hover:bg-green-50 rounded transition-colors"
+                                                title="Modifier le post"
+                                            >
+                                                <Edit size={16} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(post.id)}
+                                                className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
+                                                title="Supprimer le post"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
-
                         </tbody>
                     </table>
                 </div>
@@ -189,6 +303,23 @@ export default function AdminBlog() {
             <CreatePostModal
                 isOpen={openModal}
                 onClose={() => setOpenModal(false)}
+            />
+            
+            {/* Modal visualisation */}
+            <ViewPostModal
+                isOpen={openViewModal}
+                onClose={() => setOpenViewModal(false)}
+                slug={selectedSlug}
+                token={token}
+            />
+            
+            {/* Modal modification */}
+            <UpdatePostModal
+                isOpen={openUpdateModal}
+                onClose={() => setOpenUpdateModal(false)}
+                slug={selectedSlug}
+                token={token}
+                onSuccess={handleUpdateSuccess}
             />
         </div>
     );

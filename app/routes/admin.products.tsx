@@ -1127,7 +1127,7 @@ export default function AdminProducts() {
                       <td className="py-4 px-4">
                         <div className="flex items-center">
                           <img
-                            src={product.images[0] || "/placeholder-product.png"}
+                            src={product.images[0] || "/placeholder"}
                             alt={product.name}
                             className="w-12 h-12 rounded-lg object-cover mr-3"
                           />
