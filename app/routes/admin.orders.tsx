@@ -90,14 +90,17 @@ export default function AdminOrders() {
 
   // === CALCUL DES STATS ===
   const stats = useMemo(() => {
-    const totalOrders = orders.length;
-    const livrees = orders.filter(o => o.status === "livré" || o.status === "livree").length;
-    const enCours = orders.filter(o => o.status === "en_cours").length;
-    const annulees = orders.filter(o => o.status === "annulé" || o.status === "annulee").length;
-    const totalMontant = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+  const totalOrders = orders.length;
+  const livrees = orders.filter(o => o.status === "livré" || o.status === "livree").length;
+  const enCours = orders.filter(o => o.status === "en_cours").length;
+  const annulees = orders.filter(o => o.status === "annulé" || o.status === "annulee").length;
+  const totalMontant = orders
+    .filter(o => o.status !== "annulé" && o.status !== "annulee")
+    .reduce((sum, o) => sum + o.total, 0);
 
-    return { totalOrders, livrees, enCours, annulees, totalMontant };
-  }, [orders]);
+  return { totalOrders, livrees, enCours, annulees, totalMontant };
+}, [orders]);
+
 
   // === FILTRAGE ===
   const filteredOrders = orders.filter(order => {
