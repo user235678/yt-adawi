@@ -13,14 +13,35 @@ import Footer from "~/components/Footer";
 import CompactHeader from "~/components/CompactHeader";
 import { API_BASE } from "~/utils/auth.server";
 import { commitToken, readToken } from "~/utils/session.server";
+import { getUserProfile } from "~/utils/auth.server";
 
 export const meta: MetaFunction = () => [{ title: "The Providers - Login" }];
 
 /** Si déjà connecté, on redirige vers /boutique */
 export const loader: LoaderFunction = async ({ request }) => {
   const token = await readToken(request);
-  if (token) return redirect("/boutique");
-  return null;
+  if (!token) {
+    return null; // pas connecté → rester sur la page
+  }
+
+  const user = await getUserProfile(request);
+  if (!user) {
+    return null; // token invalide → rester sur la page
+  }
+
+  // choisir la bonne route selon le rôle
+  let target = "/client/user";
+  switch (user.role?.toLowerCase()) {
+    case "admin":
+      target = "/admin/dashboard";
+      break;
+    case "vendeur":
+    case "seller":
+      target = "/seller/dashboard";
+      break;
+  }
+
+  throw redirect(target);
 };
 
 export const action: ActionFunction = async ({ request }) => {

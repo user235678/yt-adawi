@@ -262,10 +262,10 @@ export default function CartPage() {
                             </div>
                             <div className="flex gap-3">
                                 <Link
-                                    to="/checkout"
+                                    to="/panier"
                                     className="px-6 py-3 bg-adawi-gold text-white rounded-lg hover:bg-adawi-gold/90 transition-colors"
                                 >
-                                    Aller au checkout
+                                    Aller au panier
                                 </Link>
                                 <button
                                     onClick={clearCart}

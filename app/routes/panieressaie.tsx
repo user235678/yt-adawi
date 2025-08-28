@@ -432,7 +432,7 @@ export default function PanierEssaie() {
                 </div>
 
                 <button
-                  onClick={() => navigate("/checkout")}
+                  onClick={() => navigate("/panier")}
                   className="w-full bg-adawi-gold text-white py-3 rounded-lg hover:bg-adawi-brown transition-colors font-medium"
                 >
                   Passer la commande

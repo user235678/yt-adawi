@@ -33,21 +33,22 @@ const CompactHeader: React.FC = () => {
     ];
 
     // Fonction pour déterminer la route du dashboard selon le rôle
-    const getDashboardRoute = () => {
-        if (!user) return "/login";
+   const getDashboardRoute = () => {
+  if (!user) return "/login";
 
-        switch (user.role?.toLowerCase()) {
-            case 'admin':
-                return "/admin/dashboard";
-            case 'vendeur':
-            case 'seller':
-                return "/seller/dashboard";
-            case 'client':
-            case 'customer':
-            default:
-                return "/client/user";
-        }
-    };
+  switch (user.role?.toLowerCase()) {
+    case "admin":
+      return "/admin/dashboard";
+    case "vendeur":
+    case "seller": // si jamais le backend renvoie seller
+      return "/seller/dashboard";
+    case "client":
+    case "customer":
+    default:
+      return "/client/user";
+  }
+};
+
 
     // Vérifier si on est côté client
     useEffect(() => {
@@ -262,7 +263,7 @@ const CompactHeader: React.FC = () => {
                         </Link>
 
                         <Link
-                            to="/checkout"
+                            to="/panier"
                             className="text-adawi-brown hover:text-adawi-gold transition-all duration-200 p-1.5 rounded-full hover:bg-adawi-beige/50 relative inline-flex items-center justify-center group"
                             aria-label="Panier"
                         >
@@ -288,7 +289,7 @@ const CompactHeader: React.FC = () => {
                     }`}>
                         {/* Panier compact */}
                         <Link
-                            to="/checkout"
+                            to="/panier"
                             className="text-adawi-brown hover:text-adawi-gold transition-all duration-200 p-2 rounded-full hover:bg-adawi-beige/50 relative inline-flex items-center justify-center group"
                             aria-label="Panier"
                         >

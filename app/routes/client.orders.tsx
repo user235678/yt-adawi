@@ -393,7 +393,6 @@ export default function ClientOrders() {
         <div class="total-section">
           <div class="total-amount">Total: ${formatPrice(order.total)}</div>
         </div>
-
         <div class="footer">
           <p>Merci pour votre commande !</p>
           <p>ADAWI - Votre boutique de mode</p>

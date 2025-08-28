@@ -6,6 +6,7 @@ import { useState, useEffect,useRef } from "react";
 import AddProductModal from "~/components/admin/AddProductModal";
 import ViewProductModal from "~/components/admin/ViewProductModal";
 import NotificationDropdown from "~/components/admin/NotificationDropdown";
+import { requireVendor } from "~/utils/auth.server";
 import {
     Package,
     RefreshCw,
@@ -34,6 +35,7 @@ export const meta: MetaFunction = () => {
         { name: "description", content: "Tableau de bord vendeur pour gérer vos produits" },
     ];
 };
+
 function extractTokenFromCookie(cookieHeader: string | null): string | null {
   if (!cookieHeader) return null;
 
@@ -527,31 +529,34 @@ function EditProductModal({
   );
 }
 
+// export const loader: LoaderFunction = async ({ request }) => {
+//     const token = await readToken(request);
+//     if (!token) {
+//         return redirect("/login");
+//     }
+//     try {
+//         // Vérifier les permissions utilisateur
+//         const userResponse = await fetch("https://showroom-backend-2x3g.onrender.com/auth/me", {
+//             headers: { Authorization: `Bearer ${token}` },
+//         });
+//         if (!userResponse.ok) {
+//             return redirect("/login");
+//         }
+//         const user = await userResponse.json();
+//         // Vérifier si l'utilisateur est vendeur ou admin
+//         if (user.role !== 'vendeur' && user.role !== 'admin' && user.role !== '') {
+//             return redirect("/");
+//         }
+//         return json({ user, token });
+//     } catch (error) {
+//         console.error("❌ Erreur loader dashboard:", error);
+//         return redirect("/login");
+//     }
+// };
 export const loader: LoaderFunction = async ({ request }) => {
-    const token = await readToken(request);
-    if (!token) {
-        return redirect("/login");
-    }
-    try {
-        // Vérifier les permissions utilisateur
-        const userResponse = await fetch("https://showroom-backend-2x3g.onrender.com/auth/me", {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!userResponse.ok) {
-            return redirect("/login");
-        }
-        const user = await userResponse.json();
-        // Vérifier si l'utilisateur est vendeur ou admin
-        if (user.role !== 'vendeur' && user.role !== 'admin' && user.role !== '') {
-            return redirect("/");
-        }
-        return json({ user, token });
-    } catch (error) {
-        console.error("❌ Erreur loader dashboard:", error);
-        return redirect("/login");
-    }
+  const user = await requireVendor(request);
+  return json({ user });
 };
-
 // Interface pour les produits
 interface Product {
     id: string;

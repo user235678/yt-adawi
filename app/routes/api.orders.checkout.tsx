@@ -32,7 +32,7 @@ export const action: ActionFunction = async ({ request }) => {
     });
 
     // Appel à l'API backend pour créer la commande
-    const apiUrl = `${process.env.API_BASE_URL || 'https://showroom-backend-2x3g.onrender.com'}/orders/checkout`;
+    const apiUrl = `${process.env.API_BASE_URL || 'https://showroom-backend-2x3g.onrender.com'}/orders/panier`;
 
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -52,7 +52,7 @@ export const action: ActionFunction = async ({ request }) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ Erreur API checkout:', errorText);
+      console.error('❌ Erreur API panier:', errorText);
       
       try {
         const errorData = JSON.parse(errorText);
@@ -74,7 +74,7 @@ export const action: ActionFunction = async ({ request }) => {
 
     return json({ success: true, data: result });
   } catch (error) {
-    console.error('❌ Erreur checkout:', error);
+    console.error('❌ Erreur panier:', error);
     return json({ 
       success: false, 
       error: error instanceof Error ? error.message : 'Erreur inconnue' 

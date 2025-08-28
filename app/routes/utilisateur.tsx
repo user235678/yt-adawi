@@ -344,7 +344,7 @@ export default function UtilisateurProfile() {
             </Link>
 
             <Link
-              to="/checkout"
+              to="/panier"
               className="bg-white rounded-xl p-6 shadow-lg border border-adawi-gold/20 hover:shadow-xl transition-all duration-200 group"
             >
               <div className="text-center">
