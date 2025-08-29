@@ -1,19 +1,45 @@
 import { ChevronRight } from "lucide-react";
 
-export default function TopCategories() {
-  const categories = [
-    { name: "Vêtements Homme", value: 2840, color: "#1f2937", percentage: 45 },
-    { name: "Vêtements Femme", value: 1920, color: "#6b7280", percentage: 30 },
-    // { name: "Montres", value: 1280, color: "#9ca3af", percentage: 20 },
-    { name: "Enfants", value: 320, color: "#d1d5db", percentage: 5 },
-  ];
+interface CategoryData {
+  category_name: string;
+  total_sales: number;
+  product_count: number;
+  percentage: number;
+}
 
-  const total = categories.reduce((sum, cat) => sum + cat.value, 0);
+interface TopCategoriesProps {
+  data: CategoryData[];
+}
+
+export default function TopCategories({ data }: TopCategoriesProps) {
+  if (!data || data.length === 0) {
+    return (
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold text-gray-900">Top Catégories</h3>
+        </div>
+        <div className="flex items-center justify-center h-32 text-gray-500">
+          Aucune donnée disponible
+        </div>
+      </div>
+    );
+  }
+
+  // Couleurs pour le graphique en secteurs
+  const colors = ["#1f2937", "#4b5563", "#6b7280", "#9ca3af", "#d1d5db"];
+  
+  // Ajouter les couleurs aux données
+  const categoriesWithColors = data.slice(0, 5).map((category, index) => ({
+    ...category,
+    color: colors[index % colors.length]
+  }));
+
+  const total = categoriesWithColors.reduce((sum, cat) => sum + cat.total_sales, 0);
 
   // Génère la string pour conic-gradient
   const generateGradient = () => {
     let start = 0;
-    return categories
+    return categoriesWithColors
       .map((cat) => {
         const end = start + cat.percentage * 3.6;
         const segment = `${cat.color} ${start}deg ${end}deg`;
@@ -21,6 +47,15 @@ export default function TopCategories() {
         return segment;
       })
       .join(", ");
+  };
+
+  const formatValue = (value: number) => {
+    if (value >= 1000000) {
+      return `${(value / 1000000).toFixed(1)}M`;
+    } else if (value >= 1000) {
+      return `${(value / 1000).toFixed(1)}k`;
+    }
+    return value.toString();
   };
 
   return (
@@ -45,7 +80,7 @@ export default function TopCategories() {
           <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center">
             <div className="text-center">
               <div className="text-lg font-bold text-gray-900">
-                {(total / 1000).toFixed(1)}k
+                {formatValue(total)}
               </div>
               <div className="text-xs text-gray-500">FCFA</div>
             </div>
@@ -55,19 +90,27 @@ export default function TopCategories() {
 
       {/* Categories List */}
       <div className="space-y-4">
-        {categories.map((category, index) => (
+        {categoriesWithColors.map((category, index) => (
           <div key={index} className="flex items-center justify-between">
             <div className="flex items-center">
               <div
                 className="w-3 h-3 rounded-full mr-3"
                 style={{ backgroundColor: category.color }}
               />
-              <span className="text-sm text-gray-700">{category.name}</span>
+              <div className="flex flex-col">
+                <span className="text-sm text-gray-700">{category.category_name}</span>
+                <span className="text-xs text-gray-500">{category.product_count} produits</span>
+              </div>
             </div>
             <div className="flex items-center">
-              <span className="text-sm font-medium text-gray-900 mr-2">
-                {(category.value / 1000).toFixed(1)}k
-              </span>
+              <div className="text-right mr-2">
+                <div className="text-sm font-medium text-gray-900">
+                  {formatValue(category.total_sales)}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {category.percentage.toFixed(1)}%
+                </div>
+              </div>
               <ChevronRight className="w-4 h-4 text-gray-400" />
             </div>
           </div>

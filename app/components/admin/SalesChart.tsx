@@ -1,35 +1,29 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 
-// Données de démonstration
-const baseChartData = [
-  { date: "01/12", revenus: 45000, couts: 28000 },
-  { date: "02/12", revenus: 52000, couts: 31000 },
-  { date: "03/12", revenus: 48000, couts: 29000 },
-  { date: "04/12", revenus: 61000, couts: 35000 },
-  { date: "05/12", revenus: 55000, couts: 33000 },
-  { date: "06/12", revenus: 67000, couts: 38000 },
-  { date: "07/12", revenus: 72000, couts: 41000 },
-  { date: "08/12", revenus: 58000, couts: 34000 },
-  { date: "09/12", revenus: 63000, couts: 36000 },
-  { date: "10/12", revenus: 69000, couts: 39000 },
-  { date: "11/12", revenus: 75000, couts: 42000 },
-  { date: "12/12", revenus: 71000, couts: 40000 },
-  { date: "13/12", revenus: 78000, couts: 44000 },
-  { date: "14/12", revenus: 82000, couts: 46000 },
-];
+interface CostRevenueEvolution {
+  date: string;
+  revenue: number;
+  cost: number;
+}
 
-export default function SalesChart() {
-  const [timeRange, setTimeRange] = useState("14-days");
+interface SalesChartProps {
+  data: CostRevenueEvolution[];
+}
+
+export default function SalesChart({ data }: SalesChartProps) {
+  const [timeRange, setTimeRange] = useState("all");
 
   const getFilteredData = () => {
+    if (!data || data.length === 0) return [];
+    
     switch (timeRange) {
-      case "7-days":
-        return baseChartData.slice(-7);
+      case "7-days": 
+        return data.slice(-7);
       case "30-days":
-        return [...baseChartData, ...baseChartData.slice(0, 16)].slice(-30);
+        return data.slice(-30);
       default:
-        return baseChartData;
+        return data;
     }
   };
 
@@ -38,7 +32,22 @@ export default function SalesChart() {
   const chartWidth = 700;
   const chartHeight = 300;
 
-  const allValues = chartData.flatMap((d) => [d.revenus, d.couts]);
+  if (chartData.length === 0) {
+    return (
+      <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-200">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-3">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+            Performance des Ventes
+          </h3>
+        </div>
+        <div className="flex items-center justify-center h-64 text-gray-500">
+          Aucune donnée disponible
+        </div>
+      </div>
+    );
+  }
+
+  const allValues = chartData.flatMap((d) => [d.revenue, d.cost]);
   const maxValue = Math.max(...allValues);
   const minValue = Math.min(...allValues);
   const padding = (maxValue - minValue) * 0.1;
@@ -49,14 +58,30 @@ export default function SalesChart() {
   const getY = (val: number) =>
     chartHeight - ((val - chartMin) / (chartMax - chartMin)) * chartHeight;
 
-  const revenusPoints = chartData.map((d, i) => `${getX(i)},${getY(d.revenus)}`).join(" ");
-  const coutsPoints = chartData.map((d, i) => `${getX(i)},${getY(d.couts)}`).join(" ");
+  const revenuePoints = chartData.map((d, i) => `${getX(i)},${getY(d.revenue)}`).join(" ");
+  const costPoints = chartData.map((d, i) => `${getX(i)},${getY(d.cost)}`).join(" ");
 
-  const formatValue = (val: number) => (val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val);
+  const formatValue = (val: number) => {
+    if (val >= 1000000) return `${(val / 1000000).toFixed(0)}M`;
+    if (val >= 1000) return `${(val / 1000).toFixed(0)}k`;
+    return val.toString();
+  };
+
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('fr-FR', { 
+        day: '2-digit', 
+        month: '2-digit' 
+      });
+    } catch {
+      return dateString;
+    }
+  };
 
   const handleExport = () => {
     const header = "Date,Revenus,Coûts\n";
-    const rows = chartData.map((d) => `${d.date},${d.revenus},${d.couts}`).join("\n");
+    const rows = chartData.map((d) => `${d.date},${d.revenue},${d.cost}`).join("\n");
     const csv = header + rows;
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
@@ -88,8 +113,8 @@ export default function SalesChart() {
             className="bg-white px-3 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
           >
             <option value="7-days">7 derniers jours</option>
-            <option value="14-days">14 derniers jours</option>
             <option value="30-days">30 derniers jours</option>
+            <option value="all">Toute la période</option>
           </select>
         </div>
       </div>
@@ -101,7 +126,7 @@ export default function SalesChart() {
           Revenus
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 bg-gray-300 rounded-full" />
+          <span className="w-3 h-3 bg-gray-400 rounded-full" />
           Coûts
         </div>
       </div>
@@ -141,15 +166,15 @@ export default function SalesChart() {
           })}
 
           {/* Lignes */}
-          <polyline fill="none" stroke="#d1d5db" strokeWidth="2" points={coutsPoints} />
-          <polyline fill="none" stroke="#1f2937" strokeWidth="2" points={revenusPoints} />
+          <polyline fill="none" stroke="#9ca3af" strokeWidth="2" points={costPoints} />
+          <polyline fill="none" stroke="#1f2937" strokeWidth="2" points={revenuePoints} />
 
           {/* Points */}
           {chartData.map((d, i) => (
             <circle
-              key={`revenus-${i}`}
+              key={`revenue-${i}`}
               cx={getX(i)}
-              cy={getY(d.revenus)}
+              cy={getY(d.revenue)}
               r="4"
               fill="#1f2937"
               stroke="white"
@@ -158,18 +183,18 @@ export default function SalesChart() {
           ))}
           {chartData.map((d, i) => (
             <circle
-              key={`couts-${i}`}
+              key={`cost-${i}`}
               cx={getX(i)}
-              cy={getY(d.couts)}
+              cy={getY(d.cost)}
               r="4"
-              fill="#d1d5db"
+              fill="#9ca3af"
               stroke="white"
               strokeWidth="1"
             />
           ))}
         </svg>
 
-        {/* Labels Y (bien positionnés) */}
+        {/* Labels Y */}
         <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-gray-500">
           {[chartMax, chartMax * 0.75, chartMax * 0.5, chartMax * 0.25, chartMin].map((v, i) => (
             <div key={i} className="h-full flex items-center">
@@ -183,11 +208,11 @@ export default function SalesChart() {
           {chartData.map((d, i) =>
             i % Math.ceil(chartData.length / 5) === 0 || i === chartData.length - 1 ? (
               <span key={i} className="text-[10px]">
-                {d.date}
+                {formatDate(d.date)}
               </span>
             ) : (
               <span key={i} className="text-[10px] opacity-0">
-                {d.date}
+                {formatDate(d.date)}
               </span>
             )
           )}

@@ -465,7 +465,7 @@ export default function ClientOrders() {
       case "en préparation":
       case "preparing":
         return "text-yellow-600 bg-yellow-50 border-yellow-200";
-      case "annulé":
+      case "annulee":
       case "cancelled":
         return "text-red-600 bg-red-50 border-red-200";
       case "en_attente":

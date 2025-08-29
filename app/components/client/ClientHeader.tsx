@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, Bell, Search } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 
 interface ClientHeaderProps {
   onMenuClick: () => void;
@@ -31,10 +31,10 @@ export default function ClientHeader({ onMenuClick, userName = "Client" }: Clien
 
         {/* Right side */}
         <div className="flex items-center space-x-4">
-          <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative">
+          {/* <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative">
             <Bell className="w-5 h-5 text-gray-600" />
             <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
-          </button>
+          </button> */}
           
           <div className="w-8 h-8 bg-gradient-to-br from-adawi-gold to-adawi-brown rounded-full flex items-center justify-center">
             <span className="text-white font-medium text-sm">

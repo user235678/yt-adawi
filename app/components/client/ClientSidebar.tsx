@@ -6,7 +6,6 @@ import {
   LogOut,
   X
 } from "lucide-react";
-
 interface ClientSidebarProps {
   onClose?: () => void;
 }
@@ -28,6 +27,11 @@ export default function ClientSidebar({ onClose }: ClientSidebarProps) {
     {
       name: "Support",
       href: "/client/tickets",
+      icon: MessageSquare,
+    },
+    {
+      name: "Remboursements",
+      href: "/client/refund",
       icon: MessageSquare,
     },
   ];
