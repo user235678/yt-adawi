@@ -40,6 +40,13 @@ export default function BlogSlug() {
   const [error, setError] = useState<string | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [readingProgress, setReadingProgress] = useState(0);
+  
+  // États pour le zoom d'images
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
+  const [zoomScale, setZoomScale] = useState(1);
+  const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -85,6 +92,93 @@ export default function BlogSlug() {
     window.addEventListener('scroll', updateReadingProgress);
     return () => window.removeEventListener('scroll', updateReadingProgress);
   }, []);
+
+  // Gestion du zoom d'images
+  useEffect(() => {
+    const handleImageClick = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'IMG' && target.closest('.article-content')) {
+        e.preventDefault();
+        const img = target as HTMLImageElement;
+        setZoomedImage(img.src);
+        setZoomScale(1);
+        setZoomPosition({ x: 0, y: 0 });
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (zoomedImage) {
+        if (e.key === 'Escape') {
+          closeZoom();
+        } else if (e.key === '+' || e.key === '=') {
+          e.preventDefault();
+          setZoomScale(prev => Math.min(prev + 0.2, 3));
+        } else if (e.key === '-') {
+          e.preventDefault();
+          setZoomScale(prev => Math.max(prev - 0.2, 0.5));
+        }
+      }
+    };
+
+    document.addEventListener('click', handleImageClick);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('click', handleImageClick);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [zoomedImage]);
+
+  const closeZoom = () => {
+    setZoomedImage(null);
+    setZoomScale(1);
+    setZoomPosition({ x: 0, y: 0 });
+  };
+
+  const handleZoomIn = () => {
+    setZoomScale(prev => Math.min(prev + 0.2, 3));
+  };
+
+  const handleZoomOut = () => {
+    setZoomScale(prev => Math.max(prev - 0.2, 0.5));
+  };
+
+  const handleZoomReset = () => {
+    setZoomScale(1);
+    setZoomPosition({ x: 0, y: 0 });
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (zoomScale > 1) {
+      setIsDragging(true);
+      setDragStart({
+        x: e.clientX - zoomPosition.x,
+        y: e.clientY - zoomPosition.y
+      });
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging && zoomScale > 1) {
+      setZoomPosition({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    if (e.deltaY < 0) {
+      handleZoomIn();
+    } else {
+      handleZoomOut();
+    }
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("fr-FR", {
@@ -176,6 +270,89 @@ export default function BlogSlug() {
         />
       </div>
 
+      {/* Modal de zoom d'image */}
+      {zoomedImage && (
+        <div 
+          className="fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center"
+          onClick={closeZoom}
+        >
+          {/* Contrôles de zoom */}
+          <div className="absolute top-4 right-4 flex space-x-2 z-[10000]">
+            <button
+              onClick={(e) => { e.stopPropagation(); handleZoomOut(); }}
+              className="bg-white/10 backdrop-blur-sm text-white p-3 rounded-full hover:bg-white/20 transition-all duration-200"
+              title="Zoom arrière (- ou molette)"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+              </svg>
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleZoomReset(); }}
+              className="bg-white/10 backdrop-blur-sm text-white p-3 rounded-full hover:bg-white/20 transition-all duration-200"
+              title="Réinitialiser le zoom"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleZoomIn(); }}
+              className="bg-white/10 backdrop-blur-sm text-white p-3 rounded-full hover:bg-white/20 transition-all duration-200"
+              title="Zoom avant (+ ou molette)"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+            </button>
+            <button
+              onClick={closeZoom}
+              className="bg-white/10 backdrop-blur-sm text-white p-3 rounded-full hover:bg-white/20 transition-all duration-200"
+              title="Fermer (Échap)"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Indicateur de zoom */}
+          <div className="absolute bottom-4 left-4 bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm z-[10000]">
+            Zoom: {Math.round(zoomScale * 100)}%
+          </div>
+
+          {/* Instructions */}
+          <div className="absolute bottom-4 right-4 bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded-full text-xs z-[10000]">
+            {zoomScale > 1 ? 'Glisser pour déplacer' : 'Molette ou +/- pour zoomer'}
+          </div>
+
+          {/* Image zoomée */}
+          <div 
+            className="relative max-w-[95vw] max-h-[95vh] cursor-grab active:cursor-grabbing select-none"
+            style={{ 
+              cursor: zoomScale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in'
+            }}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            onWheel={handleWheel}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={zoomedImage}
+              alt="Image zoomée"
+              className="max-w-none transition-transform duration-300 ease-out"
+              style={{
+                transform: `scale(${zoomScale}) translate(${zoomPosition.x / zoomScale}px, ${zoomPosition.y / zoomScale}px)`,
+                transformOrigin: 'center center'
+              }}
+              draggable={false}
+            />
+          </div>
+        </div>
+      )}
+
       <TopBanner />
       <Header />
       
@@ -213,16 +390,26 @@ export default function BlogSlug() {
         <article className={`bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-2xl overflow-hidden border border-gray-100 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           {/* Article Header */}
           <header className="relative">
-            {/* Image de couverture avec effet parallax */}
+            {/* Image de couverture avec effet parallax et zoom */}
             {post.cover_image && (
-              <div className="relative h-48 sm:h-64 md:h-80 lg:h-96 overflow-hidden">
+              <div className="relative h-48 sm:h-64 md:h-80 lg:h-96 overflow-hidden group">
                 <img
                   src={post.cover_image}
                   alt={post.title}
-                  className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700"
+                  className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700 cursor-zoom-in"
                   loading="lazy"
+                  onClick={() => {
+                    setZoomedImage(post.cover_image!);
+                    setZoomScale(1);
+                    setZoomPosition({ x: 0, y: 0 });
+                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
+                
+                {/* Indicateur de zoom sur l'image de couverture */}
+                <div className="absolute top-3 left-3 bg-black/20 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  🔍 Cliquer pour zoomer
+                </div>
                 
                 {/* Badge de statut */}
                 <div className="absolute top-3 sm:top-6 right-3 sm:right-6">
@@ -466,6 +653,120 @@ export default function BlogSlug() {
           word-wrap: break-word;
         }
 
+        /* === STYLES SPÉCIAUX POUR LES IMAGES ZOOMABLES === */
+        .article-content img {
+          max-width: 100%;
+          height: auto;
+          margin: 2rem auto;
+          display: block;
+          border-radius: 0.5rem;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+          transition: all 0.3s ease;
+          cursor: zoom-in;
+          position: relative;
+        }
+
+        @media (min-width: 640px) {
+          .article-content img {
+            margin: 3rem auto;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+          }
+        }
+
+        .article-content img:hover {
+          transform: scale(1.02);
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Effet overlay sur les images */
+        .article-content img::after {
+          content: '🔍 Cliquer pour agrandir';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.7);
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+          border-radius: inherit;
+          font-size: 0.875rem;
+          font-weight: 500;
+        }
+
+        @media (min-width: 640px) {
+          .article-content img::after {
+            font-size: 1rem;
+          }
+        }
+
+        .article-content img:hover::after {
+          opacity: 1;
+        }
+
+        /* Conteneur d'image avec effet zoom */
+        .article-content .image-container {
+          position: relative;
+          display: inline-block;
+          margin: 2rem auto;
+          border-radius: 0.5rem;
+          overflow: hidden;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+          transition: all 0.3s ease;
+        }
+
+        @media (min-width: 640px) {
+          .article-content .image-container {
+            margin: 3rem auto;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+          }
+        }
+
+        .article-content .image-container:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .article-content .image-container .zoom-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(45deg, rgba(212, 175, 55, 0.9), rgba(184, 148, 31, 0.9));
+          color: white;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+          cursor: zoom-in;
+        }
+
+        .article-content .image-container:hover .zoom-overlay {
+          opacity: 1;
+        }
+
+        .article-content .image-container .zoom-overlay svg {
+          width: 2rem;
+          height: 2rem;
+          margin-bottom: 0.5rem;
+        }
+
+        @media (min-width: 640px) {
+          .article-content .image-container .zoom-overlay svg {
+            width: 2.5rem;
+            height: 2.5rem;
+          }
+        }
+
         /* Titres responsifs */
         .article-content h1,
         .article-content h2,
@@ -605,30 +906,6 @@ export default function BlogSlug() {
             line-height: 3rem;
             margin: 0.5rem 0.5rem 0 0;
           }
-        }
-
-        /* Images responsives */
-        .article-content img {
-          max-width: 100%;
-          height: auto;
-          margin: 2rem auto;
-          display: block;
-          border-radius: 0.5rem;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        @media (min-width: 640px) {
-          .article-content img {
-            margin: 3rem auto;
-            border-radius: 1rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-          }
-        }
-
-        .article-content img:hover {
-          transform: scale(1.02);
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
 
         /* Listes responsives */
@@ -911,6 +1188,41 @@ export default function BlogSlug() {
           animation: fadeInUp 0.8s ease-out;
         }
 
+        /* === STYLES POUR LE MODAL DE ZOOM === */
+        .zoom-modal {
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+        }
+
+        .zoom-controls {
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+        }
+
+        /* Animation d'ouverture du modal */
+        @keyframes zoomModalOpen {
+          from {
+            opacity: 0;
+            transform: scale(0.8);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
+        .zoom-modal-enter {
+          animation: zoomModalOpen 0.3s ease-out;
+        }
+
+        /* Styles pour le drag */
+        .zoom-image-dragging {
+          user-select: none;
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+        }
+
         /* Améliorations pour mobile */
         @media (max-width: 640px) {
           .article-content {
@@ -973,6 +1285,16 @@ export default function BlogSlug() {
           .article-content td {
             padding: 0.5rem;
           }
+
+          /* Contrôles de zoom mobiles */
+          .zoom-controls {
+            flex-direction: column;
+            gap: 0.5rem;
+          }
+
+          .zoom-controls button {
+            padding: 0.75rem;
+          }
         }
 
         /* Améliorations pour tablettes */
@@ -1020,6 +1342,11 @@ export default function BlogSlug() {
             max-width: 100% !important;
             box-shadow: none !important;
             break-inside: avoid;
+            cursor: default !important;
+          }
+          
+          .article-content img::after {
+            display: none !important;
           }
           
           .article-content blockquote {
@@ -1042,6 +1369,11 @@ export default function BlogSlug() {
             break-after: avoid;
             color: black !important;
           }
+
+          /* Masquer le modal de zoom en impression */
+          .zoom-modal {
+            display: none !important;
+          }
         }
 
         /* Améliorations pour l'accessibilité */
@@ -1052,12 +1384,14 @@ export default function BlogSlug() {
           .animate-fade-in-delayed,
           .animate-fade-in-up-delayed,
           .animate-slide-up,
-          .animate-bounce-in {
+          .animate-bounce-in,
+          .zoom-modal-enter {
             animation: none;
           }
           
           .article-content img:hover,
-          .article-content a {
+          .article-content a,
+          .article-content .image-container:hover {
             transform: none;
             transition: none;
           }
@@ -1094,7 +1428,8 @@ export default function BlogSlug() {
         }
 
         /* Focus states pour l'accessibilité */
-        .article-content a:focus {
+        .article-content a:focus,
+        .article-content img:focus {
           outline: 2px solid #d4af37;
           outline-offset: 2px;
           border-radius: 2px;
@@ -1150,6 +1485,124 @@ export default function BlogSlug() {
           .article-content img:hover {
             transform: translateY(-5px) scale(1.02);
           }
+
+          .article-content .image-container:hover {
+            transform: translateY(-5px);
+          }
+        }
+
+        /* Curseurs personnalisés */
+        .cursor-zoom-in {
+          cursor: zoom-in;
+        }
+
+        .cursor-zoom-out {
+          cursor: zoom-out;
+        }
+
+        .cursor-grab {
+          cursor: grab;
+        }
+
+        .cursor-grabbing {
+          cursor: grabbing;
+        }
+
+        /* Styles pour les touches de raccourci */
+        .zoom-shortcut-hint {
+          position: absolute;
+          bottom: 80px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(0, 0, 0, 0.8);
+          color: white;
+          padding: 0.5rem 1rem;
+          border-radius: 0.5rem;
+          font-size: 0.75rem;
+          opacity: 0;
+          animation: fadeInUp 0.5s ease-out 1s both;
+        }
+
+        @media (min-width: 640px) {
+          .zoom-shortcut-hint {
+            font-size: 0.875rem;
+            padding: 0.75rem 1.5rem;
+          }
+        }
+
+        /* Animation fluide pour les transformations */
+        .smooth-transform {
+          transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Styles pour les contrôles tactiles */
+        @media (hover: none) and (pointer: coarse) {
+          .article-content img::after {
+            content: '👆 Toucher pour agrandir';
+          }
+
+          .zoom-controls {
+            padding: 1rem;
+            gap: 1rem;
+          }
+
+          .zoom-controls button {
+            min-width: 3rem;
+            min-height: 3rem;
+            font-size: 1.2rem;
+          }
+        }
+
+        /* Protection contre le débordement */
+        .zoom-container {
+          overflow: hidden;
+          will-change: transform;
+        }
+
+        /* Optimisation des performances */
+        .article-content img,
+        .zoom-modal {
+          will-change: transform;
+          backface-visibility: hidden;
+        }
+
+        /* Styles pour la mise en surbrillance de l'image active */
+        .article-content img.zoom-ready {
+          box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3), 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Effet de pulse subtil */
+        @keyframes subtlePulse {
+          0%, 100% {
+            box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4);
+          }
+          50% {
+            box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
+          }
+        }
+
+        .article-content img:hover {
+          animation: subtlePulse 2s infinite;
+        }
+
+        /* Styles pour l'indicateur de chargement */
+        .zoom-loading {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          color: white;
+          font-size: 1rem;
+        }
+
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+
+        .zoom-loading svg {
+          animation: spin 1s linear infinite;
         }
       `}</style>
     </div>

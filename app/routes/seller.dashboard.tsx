@@ -7,6 +7,7 @@ import AddProductModal from "~/components/admin/AddProductModal";
 import ViewProductModal from "~/components/admin/ViewProductModal";
 import NotificationDropdown from "~/components/admin/NotificationDropdown";
 import { requireVendor } from "~/utils/auth.server";
+import SellerLayout from "~/components/seller/SellerLayout";
 import {
     Package,
     RefreshCw,
@@ -815,6 +816,8 @@ export default function SellerDashboard() {
     const unreadCount = notifications.filter(n => !n.read).length;
 
     return (
+      <SellerLayout userName="Nom du Vendeur"> {/* Replace with actual seller name */}
+      <h1 className="text-2xl font-bold">Tableau de bord du Vendeur</h1>
         <div className="min-h-screen bg-gradient-to-br from-adawi-beige via-white to-adawi-beige/50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Header avec gradient */}
@@ -1165,5 +1168,7 @@ export default function SellerDashboard() {
         />
       )}
         </div>
+            </SellerLayout>
+
     );
 }

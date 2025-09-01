@@ -185,7 +185,7 @@ const NewProducts: React.FC = () => {
         </div>
 
         {/* Section CTA supplémentaire */}
-        <div className={`text-center mt-8 sm:mt-12 lg:mt-16 transition-all duration-1000 ease-out ${
+        {/* <div className={`text-center mt-8 sm:mt-12 lg:mt-16 transition-all duration-1000 ease-out ${
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
         }`} style={{ transitionDelay: '1200ms' }}>
           <div className="inline-flex items-center space-x-4 text-gray-600 text-sm sm:text-base">
@@ -203,7 +203,7 @@ const NewProducts: React.FC = () => {
               Retours gratuits 30 jours
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Éléments décoratifs d'arrière-plan */}

@@ -1,104 +1,36 @@
-import { TrendingUp, TrendingDown, Users, ShoppingCart, Package, AlertTriangle, DollarSign, RotateCcw } from "lucide-react";
+import { TrendingUp, TrendingDown, Users, Eye, RotateCcw } from "lucide-react";
 
-interface DashboardData {
-  total_revenue: number;
-  total_orders: number;
-  total_customers: number;
-  total_vendors: number;
-  total_products: number;
-  commission_collected: number;
-  gross_profit: number;
-  gross_margin_percent: number;
-  refunds_count: number;
-  refunds_total_amount: number;
-  low_stock_products: number;
-  revenue_growth: number;
-  orders_growth: number;
-  customers_growth: number;
-}
-
-interface StatsCardsProps {
-  data: DashboardData;
-}
-
-export default function StatsCards({ data }: StatsCardsProps) {
-  const formatCurrency = (value: number) => {
-    if (value >= 1000000) {
-      return `${(value / 1000000).toFixed(1)}M`;
-    } else if (value >= 1000) {
-      return `${(value / 1000).toFixed(1)}k`;
-    }
-    return value.toString();
-  };
-
-  const formatNumber = (value: number) => {
-    return new Intl.NumberFormat('fr-FR').format(value);
-  };
-
+export default function StatsCards() {
   const stats = [
     {
-      title: "Chiffre d'Affaires Total",
-      value: formatCurrency(data.total_revenue),
+      title: "Ventes Totales",
+      value: "2,847,500",
       unit: "FCFA",
-      change: `${data.revenue_growth >= 0 ? '+' : ''}${data.revenue_growth.toFixed(1)}%`,
-      changeValue: `Commission: ${formatCurrency(data.commission_collected)} FCFA`,
-      trend: data.revenue_growth >= 0 ? "up" : "down",
-      icon: DollarSign,
+      change: "+15.6%",
+      changeValue: "+347k cette semaine",
+      trend: "up",
+      icon: TrendingUp,
       bgColor: "bg-gray-800",
       textColor: "text-white"
     },
     {
-      title: "Commandes Totales",
-      value: formatNumber(data.total_orders),
-      subtitle: `Croissance: ${data.orders_growth >= 0 ? '+' : ''}${data.orders_growth.toFixed(1)}%`,
-      change: `${data.orders_growth >= 0 ? '+' : ''}${data.orders_growth.toFixed(1)}%`,
-      changeValue: "cette période",
-      trend: data.orders_growth >= 0 ? "up" : "down",
-      icon: ShoppingCart,
-      bgColor: "bg-white",
-      textColor: "text-gray-900"
-    },
-    {
-      title: "Utilisateurs",
-      value: formatNumber(data.total_customers + data.total_vendors),
-      subtitle: `${data.total_customers} clients • ${data.total_vendors} vendeurs`,
-      change: `${data.customers_growth >= 0 ? '+' : ''}${data.customers_growth.toFixed(1)}%`,
-      changeValue: "nouveaux clients",
-      trend: data.customers_growth >= 0 ? "up" : "down",
-      icon: Users,
-      bgColor: "bg-white",
-      textColor: "text-gray-900"
-    },
-    {
-      title: "Produits",
-      value: formatNumber(data.total_products),
-      subtitle: `${data.low_stock_products} en stock faible`,
-      change: data.low_stock_products > 0 ? "Attention" : "Stock OK",
-      changeValue: `${data.low_stock_products} alertes`,
-      trend: data.low_stock_products > 0 ? "down" : "up",
-      icon: Package,
-      bgColor: "bg-white",
-      textColor: "text-gray-900"
-    },
-    {
-      title: "Bénéfice Brut",
-      value: formatCurrency(data.gross_profit),
-      unit: "FCFA",
-      subtitle: `Marge: ${data.gross_margin_percent.toFixed(1)}%`,
-      change: `${data.gross_margin_percent.toFixed(1)}%`,
-      changeValue: "marge bénéficiaire",
-      trend: data.gross_margin_percent > 20 ? "up" : "down",
-      icon: TrendingUp,
+      title: "Visiteurs",
+      value: "8,420",
+      subtitle: "Temps moyen: 4:30m",
+      change: "+12.7%",
+      changeValue: "+1.2k cette semaine",
+      trend: "up",
+      icon: Eye,
       bgColor: "bg-white",
       textColor: "text-gray-900"
     },
     {
       title: "Remboursements",
-      value: formatNumber(data.refunds_count),
-      subtitle: `${formatCurrency(data.refunds_total_amount)} FCFA`,
-      change: data.refunds_count > 0 ? `${data.refunds_count}` : "0",
-      changeValue: "remboursements",
-      trend: data.refunds_count > 10 ? "down" : "up",
+      value: "156",
+      subtitle: "2 Disputés",
+      change: "-12.7%",
+      changeValue: "-21",
+      trend: "down",
       icon: RotateCcw,
       bgColor: "bg-white",
       textColor: "text-gray-900"
@@ -106,10 +38,11 @@ export default function StatsCards({ data }: StatsCardsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 sm:gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
       {stats.map((stat, index) => {
         const Icon = stat.icon;
         const isPositive = stat.trend === "up";
+
         return (
           <div
             key={index}
@@ -125,7 +58,7 @@ export default function StatsCards({ data }: StatsCardsProps) {
                 </svg>
               </button>
             </div>
-            
+
             <div className="mb-2">
               <h3 className={`text-xs sm:text-sm font-medium ${stat.textColor} opacity-70 mb-1`}>
                 {stat.title}
@@ -136,7 +69,7 @@ export default function StatsCards({ data }: StatsCardsProps) {
                 </p>
               )}
             </div>
-            
+
             <div className="mb-3 sm:mb-4">
               <div className="flex items-baseline">
                 <span className={`text-xl sm:text-2xl font-bold ${stat.textColor}`}>
@@ -149,7 +82,7 @@ export default function StatsCards({ data }: StatsCardsProps) {
                 )}
               </div>
             </div>
-            
+
             <div className="flex items-center">
               <div className={`flex items-center ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
                 {isPositive ? (
