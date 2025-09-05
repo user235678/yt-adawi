@@ -46,7 +46,6 @@ export default function GeographicSales({ data }: GeographicSalesProps) {
       'Lomé': '🏙️',
       'Kpalimé': '🏞️',
       'Sokodé': '🌾',
-      'Kara': '⛰️',
       'Dapaong': '🌿'
     };
     return regionFlags[region] || '📍';

@@ -355,7 +355,7 @@ function EditProductModal({
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Prix de vente (EUR) *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Prix de vente (FCFA) *</label>
                   <input
                     type="number"
                     name="price"
@@ -369,7 +369,7 @@ function EditProductModal({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Prix de revient (EUR)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Prix de revient (FCFA)</label>
                   <input
                     type="number"
                     name="cost_price"

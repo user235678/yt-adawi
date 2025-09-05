@@ -189,7 +189,7 @@ export default function EditProductModal({
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Prix de vente (EUR) *
+                                        Prix de vente (FCFA) *
                                     </label>
                                     <input
                                         type="number"
@@ -204,7 +204,7 @@ export default function EditProductModal({
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Prix de revient (EUR)
+                                        Prix de revient (FCFA)
                                     </label>
                                     <input
                                         type="number"

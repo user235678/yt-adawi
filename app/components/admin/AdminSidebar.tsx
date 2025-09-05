@@ -103,16 +103,16 @@ export default function AdminSidebar({ onClose }: AdminSidebarProps) {
       </nav>
 
       {/* Bottom Section */}
-      <div className="border-t border-gray-700 p-3 sm:p-4 space-y-1 sm:space-y-2">
-       
-        <Link
-          to="/login"
-          onClick={handleLinkClick}
-          className="w-full flex items-center px-3 sm:px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200 text-sm sm:text-base"
-        >
-          <LogOut className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3 flex-shrink-0" />
-          <span className="truncate">Déconnexion</span>
-        </Link>
+      <div className="p-4 border-t border-gray-200">
+        <form method="post" action="/logout" className="w-full">
+          <button
+            type="submit"
+            className="flex items-center space-x-3 w-full px-3 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 group"
+          >
+            <LogOut className="w-5 h-5 group-hover:scale-110 transition-transform flex-shrink-0" />
+            <span className="font-medium truncate">Se déconnecter</span>
+          </button>
+        </form>
       </div>
     </div>
   );

@@ -178,7 +178,7 @@ function BoutiqueContent({ categories, isLoggedIn }: { categories: Category[], i
             id: product.id, // Utiliser l'ID original (string)
             name: product.name,
             price: product.priceValue,
-            currency: apiProduct?.currency || "EUR",
+            currency: apiProduct?.currency || "FCFA",
             sizes: product.sizes ? product.sizes.split(",").map(s => s.trim()).filter(Boolean) : [],
             colors: product.colors ? product.colors.split(",").map(c => c.trim()).filter(Boolean) : [],
             images: [product.image, product.hoverImage, product.image1, product.image2].filter(Boolean) as string[],
