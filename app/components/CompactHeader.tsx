@@ -178,41 +178,39 @@ const CompactHeader: React.FC = () => {
     return (
         <header className="bg-adawi-beige-dark border-b border-gray-200 sticky top-0 z-40">
             <div className="max-w-7xl mx-auto px-4 sm:px-6">
-                <div 
+                <div
                     ref={headerRef}
                     className="flex items-center justify-between h-14 relative"
                 >
                     {/* Logo */}
-                    <Link 
+                    <Link
                         ref={logoRef}
                         to="/"
                         className="flex items-center flex-shrink-0 z-10"
                     >
-                        <img 
-                            src="/lOGO_FOND_BLANC-removebg.png" 
-                            alt="Logo Adawi" 
-                            className="w-32 sm:w-40 h-auto transition-all duration-300" 
+                        <img
+                            src="/lOGO_FOND_BLANC-removebg.png"
+                            alt="Logo Adawi"
+                            className="w-32 sm:w-40 h-auto transition-all duration-300"
                         />
                     </Link>
 
                     {/* Navigation Desktop */}
-                    <nav 
+                    <nav
                         ref={navRef}
-                        className={`items-center space-x-4 lg:space-x-6 transition-all duration-300 ${ 
-                            shouldShowCompactMode() || isTransitioning 
-                                ? 'hidden opacity-0' 
-                                : 'hidden lg:flex opacity-100'
-                        }`}
+                        className={`items-center space-x-4 lg:space-x-6 transition-all duration-300 ${shouldShowCompactMode() || isTransitioning
+                            ? 'hidden opacity-0'
+                            : 'hidden lg:flex opacity-100'
+                            }`}
                     >
                         {navItems.map((item) => (
                             <Link
                                 key={item.to}
                                 to={item.to}
-                                className={`text-sm lg:text-lg font-medium transition-all duration-200 px-2 py-1 rounded whitespace-nowrap ${ 
-                                    currentPath === item.to
-                                        ? "text-black underline decoration-adawi-gold decoration-2 underline-offset-4"
-                                        : "text-black hover:text-adawi-gold hover:bg-adawi-beige/50"
-                                }`}
+                                className={`text-sm lg:text-lg font-medium transition-all duration-200 px-2 py-1 rounded whitespace-nowrap ${currentPath === item.to
+                                    ? "text-black underline decoration-adawi-gold decoration-2 underline-offset-4"
+                                    : "text-black hover:text-adawi-gold hover:bg-adawi-beige/50"
+                                    }`}
                             >
                                 {item.name}
                             </Link>
@@ -220,17 +218,16 @@ const CompactHeader: React.FC = () => {
                     </nav>
 
                     {/* Actions Desktop */}
-                    <div 
+                    <div
                         ref={actionsRef}
-                        className={`items-center space-x-2 lg:space-x-3 transition-all duration-300 ${ 
-                            shouldShowCompactMode() || isTransitioning 
-                                ? 'hidden opacity-0' 
-                                : 'hidden lg:flex opacity-100'
-                        }`}
+                        className={`items-center space-x-2 lg:space-x-3 transition-all duration-300 ${shouldShowCompactMode() || isTransitioning
+                            ? 'hidden opacity-0'
+                            : 'hidden lg:flex opacity-100'
+                            }`}
                     >
                         {/* Search Bar */}
-                        <form 
-                            onSubmit={handleSearchSubmit} 
+                        <form
+                            onSubmit={handleSearchSubmit}
                             className="flex items-center bg-white rounded-full border border-adawi-gold/30 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
                         >
                             <input
@@ -257,10 +254,12 @@ const CompactHeader: React.FC = () => {
                         {user ? (
                             <Link
                                 to={getDashboardRoute()}
-                                className="text-adawi-brown hover:text-adawi-gold transition-all duration-200 p-1.5 rounded-full hover:bg-adawi-beige/50 inline-flex items-center justify-center group"
-                                aria-label="Mon espace"
-                            >
-                                <span className="text-sm">Dashboard</span>
+                                className="text-adawi-brown bg-adawi-brown-light hover:text-adawi-gold transition-all duration-200 p-1.5 rounded-full hover:bg-adawi-beige/50 inline-flex items-center justify-center group"
+                                aria-label="Dashboard"
+                            >MON COMPTE
+                                {/* <svg className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                                </svg> */}
                             </Link>
                         ) : (
                             <Link
@@ -294,13 +293,12 @@ const CompactHeader: React.FC = () => {
                     </div>
 
                     {/* Actions Compactes - Visible en mode compact ou sur mobile */}
-                    <div className={`flex items-center space-x-2 relative transition-all duration-300 ${ 
-                        !isClient 
-                            ? 'lg:hidden opacity-100' // Fallback SSR
-                            : shouldShowCompactMode() 
-                                ? 'opacity-100' 
-                                : 'lg:hidden opacity-100'
-                    }`}>
+                    <div className={`flex items-center space-x-2 relative transition-all duration-300 ${!isClient
+                        ? 'lg:hidden opacity-100' // Fallback SSR
+                        : shouldShowCompactMode()
+                            ? 'opacity-100'
+                            : 'lg:hidden opacity-100'
+                        }`}>
                         {/* Panier compact */}
                         <Link
                             to="/panier"
@@ -329,19 +327,16 @@ const CompactHeader: React.FC = () => {
                         >
                             <div className="w-5 h-5 flex flex-col justify-center items-center">
                                 <span
-                                    className={`block w-5 h-0.5 bg-current transition-all duration-300 ease-in-out ${ 
-                                        isMobileMenuOpen ? 'rotate-45 translate-y-1' : ''
-                                    }`}
+                                    className={`block w-5 h-0.5 bg-current transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'rotate-45 translate-y-1' : ''
+                                        }`}
                                 />
                                 <span
-                                    className={`block w-5 h-5 bg-current transition-all duration-300 ease-in-out mt-1 ${ 
-                                        isMobileMenuOpen ? 'opacity-0 scale-0' : ''
-                                    }`}
+                                    className={`block w-5 h-5 bg-current transition-all duration-300 ease-in-out mt-1 ${isMobileMenuOpen ? 'opacity-0 scale-0' : ''
+                                        }`}
                                 />
                                 <span
-                                    className={`block w-5 h-0.5 bg-current transition-all duration-300 ease-in-out mt-1 ${ 
-                                        isMobileMenuOpen ? '-rotate-45 -translate-y-1' : ''
-                                    }`}
+                                    className={`block w-5 h-0.5 bg-current transition-all duration-300 ease-in-out mt-1 ${isMobileMenuOpen ? '-rotate-45 -translate-y-1' : ''
+                                        }`}
                                 />
                             </div>
                         </button>
@@ -349,11 +344,10 @@ const CompactHeader: React.FC = () => {
                         {/* Menu Mobile Dropdown */}
                         <div
                             ref={menuRef}
-                            className={`absolute top-full right-0 mt-3 w-72 bg-white rounded-2xl shadow-2xl border border-adawi-gold/20 py-4 z-50 transition-all duration-300 ease-out transform origin-top-right ${ 
-                                isMobileMenuOpen
-                                    ? 'opacity-100 scale-100 translate-y-0'
-                                    : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
-                            }`}
+                            className={`absolute top-full right-0 mt-3 w-72 bg-white rounded-2xl shadow-2xl border border-adawi-gold/20 py-4 z-50 transition-all duration-300 ease-out transform origin-top-right ${isMobileMenuOpen
+                                ? 'opacity-100 scale-100 translate-y-0'
+                                : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
+                                }`}
                             role="menu"
                             aria-orientation="vertical"
                         >
@@ -388,14 +382,13 @@ const CompactHeader: React.FC = () => {
                                     <Link
                                         key={item.to}
                                         to={item.to}
-                                        className={`block px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 transform hover:scale-[1.02] ${ 
-                                            currentPath === item.to
-                                                ? "text-adawi-brown bg-adawi-gold-light border-l-4 border-adawi-gold"
-                                                : "text-adawi-brown hover:bg-adawi-beige hover:text-adawi-gold"
-                                        }`}
+                                        className={`block px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 transform hover:scale-[1.02] ${currentPath === item.to
+                                            ? "text-adawi-brown bg-adawi-gold-light border-l-4 border-adawi-gold"
+                                            : "text-adawi-brown hover:bg-adawi-beige hover:text-adawi-gold"
+                                            }`}
                                         onClick={() => setIsMobileMenuOpen(false)}
                                         role="menuitem"
-                                        style={{ 
+                                        style={{
                                             animationDelay: `${index * 50}ms`
                                         }}
                                     >
@@ -409,18 +402,29 @@ const CompactHeader: React.FC = () => {
 
                             {/* Actions Mobile */}
                             <div className="px-2 space-y-1">
-                                <Link
-                                    to={getDashboardRoute()}
-                                    className="flex items-center w-full px-4 py-3 text-sm text-adawi-brown hover:bg-adawi-beige hover:text-adawi-gold rounded-xl transition-all duration-200 transform hover:scale-[1.02] group"
-                                    role="menuitem"
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                >
-                                    <svg className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                    </svg>
-                                    Mon Espace
-                                </Link>
+                                {user ? (
+                                    <Link
+                                        to={getDashboardRoute()}
+                                        className="text-adawi-brown bg-adawi-brown-light hover:text-adawi-gold transition-all duration-200 p-1.5 rounded-full hover:bg-adawi-beige/50 inline-flex items-center justify-center group"
+                                        aria-label="Dashboard"
+                                    >
+                                        <svg className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                                        </svg>
+                                         MON COMPTE
+                                    </Link>
+                                ) : (
+                                    <Link
+                                        to="/login"
+                                        className="text-adawi-brown hover:text-adawi-gold transition-all duration-200 p-1.5 rounded-full hover:bg-adawi-beige/50 inline-flex items-center justify-center group"
+                                        aria-label="Se connecter"
+                                    >
+                                        <svg className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                    </Link>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -429,7 +433,7 @@ const CompactHeader: React.FC = () => {
 
             {/* Overlay pour le menu mobile */}
             {isMobileMenuOpen && (
-                <div 
+                <div
                     className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 transition-opacity duration-300"
                     onClick={() => setIsMobileMenuOpen(false)}
                 />
