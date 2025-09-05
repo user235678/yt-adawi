@@ -1,12 +1,28 @@
 import { TrendingUp, TrendingDown, Users, Eye, RotateCcw } from "lucide-react";
 
-export default function StatsCards() {
+interface StatsCardsProps {
+  data: {
+    total_revenue: number;
+    total_orders: number;
+    total_customers: number;
+    refunds_count: number;
+    revenue_growth: number;
+    orders_growth: number;
+    customers_growth: number;
+  };
+}
+
+export default function StatsCards({ data }: StatsCardsProps) {
+  const formatNumber = (num: number) => {
+    return num.toLocaleString();
+  };
+
   const stats = [
     {
       title: "Ventes Totales",
-      value: "2,847,500",
+      value: formatNumber(data.total_revenue),
       unit: "FCFA",
-      change: "+15.6%",
+      change: `+${data.revenue_growth}%`,
       changeValue: "+347k cette semaine",
       trend: "up",
       icon: TrendingUp,
@@ -14,10 +30,21 @@ export default function StatsCards() {
       textColor: "text-white"
     },
     {
-      title: "Visiteurs",
-      value: "8,420",
-      subtitle: "Temps moyen: 4:30m",
-      change: "+12.7%",
+      title: "Commandes",
+      value: formatNumber(data.total_orders),
+      subtitle: "Total des commandes",
+      change: `+${data.orders_growth}%`,
+      changeValue: "+120 cette semaine",
+      trend: "up",
+      icon: Users,
+      bgColor: "bg-white",
+      textColor: "text-gray-900"
+    },
+    {
+      title: "Clients",
+      value: formatNumber(data.total_customers),
+      subtitle: "Nombre de clients",
+      change: `+${data.customers_growth}%`,
       changeValue: "+1.2k cette semaine",
       trend: "up",
       icon: Eye,
@@ -26,8 +53,8 @@ export default function StatsCards() {
     },
     {
       title: "Remboursements",
-      value: "156",
-      subtitle: "2 Disputés",
+      value: formatNumber(data.refunds_count),
+      subtitle: "Nombre de remboursements",
       change: "-12.7%",
       changeValue: "-21",
       trend: "down",
@@ -55,7 +82,7 @@ export default function StatsCards() {
               <button className={`${stat.textColor} hover:opacity-70`}>
                 <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
+                </svg> 
               </button>
             </div>
 

@@ -1,12 +1,23 @@
 import { ChevronRight } from "lucide-react";
 
-export default function TopCategories() {
-  const categories = [
-    { name: "Vêtements Homme", value: 2840, color: "#1f2937", percentage: 45 },
-    { name: "Vêtements Femme", value: 1920, color: "#6b7280", percentage: 30 },
-    // { name: "Montres", value: 1280, color: "#9ca3af", percentage: 20 },
-    { name: "Enfants", value: 320, color: "#d1d5db", percentage: 5 },
-  ];
+interface TopCategoriesProps {
+  data: {
+    sales_by_category: Array<{
+      category_name: string;
+      total_sales: number;
+      product_count: number;
+      percentage: number;
+    }>;
+  };
+}
+
+export default function TopCategories({ data }: TopCategoriesProps) {
+  const categories = data.sales_by_category.map((cat, index) => ({
+    name: cat.category_name,
+    value: cat.total_sales,
+    color: ["#1f2937", "#6b7280", "#9ca3af", "#d1d5db"][index % 4],
+    percentage: cat.percentage,
+  }));
 
   const total = categories.reduce((sum, cat) => sum + cat.value, 0);
 

@@ -1,26 +1,22 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 
-// Données de démonstration
-const baseChartData = [
-  { date: "01/12", revenus: 45000, couts: 28000 },
-  { date: "02/12", revenus: 52000, couts: 31000 },
-  { date: "03/12", revenus: 48000, couts: 29000 },
-  { date: "04/12", revenus: 61000, couts: 35000 },
-  { date: "05/12", revenus: 55000, couts: 33000 },
-  { date: "06/12", revenus: 67000, couts: 38000 },
-  { date: "07/12", revenus: 72000, couts: 41000 },
-  { date: "08/12", revenus: 58000, couts: 34000 },
-  { date: "09/12", revenus: 63000, couts: 36000 },
-  { date: "10/12", revenus: 69000, couts: 39000 },
-  { date: "11/12", revenus: 75000, couts: 42000 },
-  { date: "12/12", revenus: 71000, couts: 40000 },
-  { date: "13/12", revenus: 78000, couts: 44000 },
-  { date: "14/12", revenus: 82000, couts: 46000 },
-];
+interface SalesChartProps {
+  data: {
+    revenue_evolution: Array<{ date: string; revenue: number; orders_count: number }>;
+    cost_revenue_evolution: Array<{ date: string; cost: number }>;
+  };
+}
 
-export default function SalesChart() {
+export default function SalesChart({ data }: SalesChartProps) {
   const [timeRange, setTimeRange] = useState("14-days");
+
+  // Combine revenue and cost data
+  const baseChartData = data.revenue_evolution.map((rev, index) => ({
+    date: new Date(rev.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }),
+    revenus: rev.revenue,
+    couts: data.cost_revenue_evolution[index]?.cost || 0,
+  }));
 
   const getFilteredData = () => {
     switch (timeRange) {
@@ -54,15 +50,33 @@ export default function SalesChart() {
 
   const formatValue = (val: number) => (val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val);
 
-  const handleExport = () => {
-    const header = "Date,Revenus,Coûts\n";
-    const rows = chartData.map((d) => `${d.date},${d.revenus},${d.couts}`).join("\n");
-    const csv = header + rows;
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `ventes-${timeRange}.csv`;
-    link.click();
+  const handleExport = async () => {
+    const daysMap: Record<string, number> = {
+      "7-days": 7,
+      "14-days": 14,
+      "30-days": 30,
+    };
+    const days = daysMap[timeRange] || 30;
+
+    try {
+      const response = await fetch(`/api.admin.export.sales?range_days=${days}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to export CSV");
+      }
+      const blob = await response.blob();
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `ventes-export-${days}.csv`;
+      link.click();
+    } catch (error) {
+      console.error("Error exporting CSV:", error);
+      alert("Erreur lors de l'export CSV");
+    }
   };
 
   return (

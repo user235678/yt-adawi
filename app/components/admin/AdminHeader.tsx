@@ -1,6 +1,7 @@
 import { Search, Bell, ChevronDown, Menu } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import NotificationDropdown from "./NotificationDropdown";
+import NotificationDetailsModal from "./NotificationDetailsModal";
 
 interface AdminHeaderProps {
   onMenuClick?: () => void;
@@ -12,8 +13,15 @@ interface Notification {
   type: string;
   message: string;
   order_id?: string;
+  product_id?: string;
+  ticket_id?: string;
+  refund_id?: string;
   created_at: string;
   read: boolean;
+  order_details?: object;
+  product_details?: object;
+  ticket_details?: object;
+  refund_details?: object;
 }
 
 export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
@@ -21,6 +29,11 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+   
+  // États pour le modal
+  const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
   const notificationRef = useRef<HTMLDivElement>(null);
 
   // Fermer le dropdown quand on clique ailleurs
@@ -99,6 +112,19 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
     }
   };
 
+  // Fonction pour ouvrir le modal avec une notification
+  const handleNotificationClick = (notification: Notification) => {
+    setSelectedNotification(notification);
+    setIsModalOpen(true);
+    setIsNotificationOpen(false); // Fermer le dropdown
+  };
+
+  // Fonction pour fermer le modal
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedNotification(null);
+  };
+
   // Charger les notifications au montage du composant
   useEffect(() => {
     fetchNotifications();
@@ -111,7 +137,7 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
   // Compter les notifications non lues
   const unreadCount = notifications.filter(notif => !notif.read).length;
 
-  const handleNotificationClick = () => {
+  const handleNotificationToggle = () => {
     setIsNotificationOpen(!isNotificationOpen);
     if (!isNotificationOpen) {
       fetchNotifications(); // Actualiser quand on ouvre
@@ -119,73 +145,85 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4 w-full">
-      <div className="flex items-center justify-between">
-        {/* Left Section - Menu button + Search */}
-        <div className="flex items-center flex-1">
-          {/* Menu button pour mobile */}
-          {onMenuClick && (
-            <button
-              onClick={onMenuClick}
-              className="lg:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors mr-2"
-              aria-label="Ouvrir le menu"
-            >
-              <Menu className="w-6 h-6" />
-            </button>
-          )}
+    <>
+      <header className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4 w-full">
+        <div className="flex items-center justify-between">
+          {/* Left Section - Menu button + Search */}
+          <div className="flex items-center flex-1">
+            {/* Menu button pour mobile */}
+            {onMenuClick && (
+              <button
+                onClick={onMenuClick}
+                className="lg:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors mr-2"
+                aria-label="Ouvrir le menu"
+              >
+                <Menu className="w-6 h-6" />
+              </button>
+            )}
 
-          {/* Search Bar */}
-          <div className="flex-1 max-w-md">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
-              <input
-                type="text"
-                placeholder="Rechercher..."
-                className="w-full pl-8 sm:pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none bg-gray-50"
+            {/* Search Bar */}
+            <div className="flex-1 max-w-md">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
+                <input
+                  type="text"
+                  placeholder="Rechercher..."
+                  className="w-full pl-8 sm:pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none bg-gray-50"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Right Section */}
+          <div className="flex items-center space-x-2 sm:space-x-4 ml-4">
+            {/* Notifications */}
+            <div className="relative" ref={notificationRef}>
+              <button 
+                onClick={handleNotificationToggle}
+                className="relative p-2 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <Bell className="w-5 h-5 sm:w-6 sm:h-6" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center text-[10px] sm:text-xs">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              <NotificationDropdown
+                isOpen={isNotificationOpen}
+                notifications={notifications}
+                isLoading={isLoading}
+                error={error}
+                onMarkAsRead={markAsRead}
+                onRefresh={fetchNotifications}
+                onNotificationClick={handleNotificationClick}
+                onClose={() => setIsNotificationOpen(false)}
               />
             </div>
+
+            {/* User Profile */}
+            <div className="flex items-center space-x-2 sm:space-x-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 transition-colors">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-adawi-gold rounded-full flex items-center justify-center">
+                <span className="text-white font-semibold text-xs sm:text-sm">AP</span>
+              </div>
+              <div className="hidden sm:block text-right">
+                <p className="text-sm font-medium text-gray-900">Admin Principal</p>
+                <p className="text-xs text-gray-500">admin@adawi.com</p>
+              </div>
+              <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
+            </div>
           </div>
         </div>
+      </header>
 
-        {/* Right Section */}
-        <div className="flex items-center space-x-2 sm:space-x-4 ml-4">
-          {/* Notifications */}
-          <div className="relative" ref={notificationRef}>
-            <button 
-              onClick={handleNotificationClick}
-              className="relative p-2 text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <Bell className="w-5 h-5 sm:w-6 sm:h-6" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center text-[10px] sm:text-xs">
-                  {unreadCount > 99 ? '99+' : unreadCount}
-                </span>
-              )}
-            </button>
-
-            <NotificationDropdown
-              isOpen={isNotificationOpen}
-              notifications={notifications}
-              isLoading={isLoading}
-              error={error}
-              onMarkAsRead={markAsRead}
-              onRefresh={fetchNotifications}
-            />
-          </div>
-
-          {/* User Profile */}
-          <div className="flex items-center space-x-2 sm:space-x-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 transition-colors">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-adawi-gold rounded-full flex items-center justify-center">
-              <span className="text-white font-semibold text-xs sm:text-sm">AP</span>
-            </div>
-            <div className="hidden sm:block text-right">
-              <p className="text-sm font-medium text-gray-900">Admin Principal</p>
-              <p className="text-xs text-gray-500">admin@adawi.com</p>
-            </div>
-            <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
-          </div>
-        </div>
-      </div>
-    </header>
+      {/* Modal des détails de notification */}
+      <NotificationDetailsModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        notification={selectedNotification}
+        onMarkAsRead={markAsRead}
+      />
+    </>
   );
 }

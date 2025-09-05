@@ -24,6 +24,9 @@ const CompactHeader: React.FC = () => {
     const { state } = useCart();
     const { user } = useUser(); // Récupérer l'utilisateur connecté
 
+    // Debugging: Log the user object
+    console.log("Current User:", user);
+
     const navItems = [
         { name: "Maison", to: "/" },
         { name: "Boutique", to: "/boutique" },
@@ -33,22 +36,21 @@ const CompactHeader: React.FC = () => {
     ];
 
     // Fonction pour déterminer la route du dashboard selon le rôle
-   const getDashboardRoute = () => {
-  if (!user) return "/login";
+    const getDashboardRoute = () => {
+        if (!user) return "/login";
 
-  switch (user.role?.toLowerCase()) {
-    case "admin":
-      return "/admin/dashboard";
-    case "vendeur":
-    case "seller": // si jamais le backend renvoie seller
-      return "/seller/dashboard";
-    case "client":
-    case "customer":
-    default:
-      return "/client/user";
-  }
-};
-
+        switch (user.role?.toLowerCase()) {
+            case "admin":
+                return "/admin/dashboard";
+            case "vendeur":
+            case "seller": // si jamais le backend renvoie seller
+                return "/seller/dashboard";
+            case "client":
+            case "customer":
+            default:
+                return "/client/user";
+        }
+    };
 
     // Vérifier si on est côté client
     useEffect(() => {
@@ -193,7 +195,7 @@ const CompactHeader: React.FC = () => {
                         />
                     </Link>
 
-                    {/* Navigation Desktop - Visible uniquement en mode non-compact */}
+                    {/* Navigation Desktop */}
                     <nav 
                         ref={navRef}
                         className={`items-center space-x-4 lg:space-x-6 transition-all duration-300 ${ 
@@ -217,7 +219,7 @@ const CompactHeader: React.FC = () => {
                         ))}
                     </nav>
 
-                    {/* Actions Desktop - Visible uniquement en mode non-compact */}
+                    {/* Actions Desktop */}
                     <div 
                         ref={actionsRef}
                         className={`items-center space-x-2 lg:space-x-3 transition-all duration-300 ${ 
@@ -226,7 +228,7 @@ const CompactHeader: React.FC = () => {
                                 : 'hidden lg:flex opacity-100'
                         }`}
                     >
-                        {/* Barre de recherche Desktop */}
+                        {/* Search Bar */}
                         <form 
                             onSubmit={handleSearchSubmit} 
                             className="flex items-center bg-white rounded-full border border-adawi-gold/30 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
@@ -251,17 +253,29 @@ const CompactHeader: React.FC = () => {
                             </button>
                         </form>
 
-                        <Link
-                            to={getDashboardRoute()}
-                            className="text-adawi-brown hover:text-adawi-gold transition-all duration-200 p-1.5 rounded-full hover:bg-adawi-beige/50 inline-flex items-center justify-center group"
-                            aria-label="Mon espace"
-                        >
-                            <svg className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                        </Link>
+                        {/* User Icon or Dashboard Button */}
+                        {user ? (
+                            <Link
+                                to={getDashboardRoute()}
+                                className="text-adawi-brown hover:text-adawi-gold transition-all duration-200 p-1.5 rounded-full hover:bg-adawi-beige/50 inline-flex items-center justify-center group"
+                                aria-label="Mon espace"
+                            >
+                                <span className="text-sm">Dashboard</span>
+                            </Link>
+                        ) : (
+                            <Link
+                                to="/login"
+                                className="text-adawi-brown hover:text-adawi-gold transition-all duration-200 p-1.5 rounded-full hover:bg-adawi-beige/50 inline-flex items-center justify-center group"
+                                aria-label="Se connecter"
+                            >
+                                <svg className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                            </Link>
+                        )}
 
+                        {/* Cart Icon */}
                         <Link
                             to="/panier"
                             className="text-adawi-brown hover:text-adawi-gold transition-all duration-200 p-1.5 rounded-full hover:bg-adawi-beige/50 relative inline-flex items-center justify-center group"
