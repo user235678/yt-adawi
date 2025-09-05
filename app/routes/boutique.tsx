@@ -108,8 +108,6 @@ export default function Boutique() {
 
             const params = new URLSearchParams();
             params.append('limit', '100');
-            if (selectedSize) params.append('sizes', selectedSize);
-            if (selectedColor) params.append('colors', selectedColor);
 
             const response = await fetch(`/api/products?${params.toString()}`);
             if (!response.ok) throw new Error(`Erreur ${response.status}: ${response.statusText}`);
@@ -145,7 +143,9 @@ export default function Boutique() {
                     date: new Date(2023, 5, 15),
                     category: "homme",
                     size: "xxl",
-                    color: "rouge"
+                    sizes: "s,m,l,xl,xxl",
+                    color: "rouge",
+                    colors: "rouge,vert,noir"
                 },
                 {
                     id: "2",
@@ -159,7 +159,9 @@ export default function Boutique() {
                     date: new Date(2023, 6, 10),
                     category: "femme",
                     size: "m",
-                    color: "noir"
+                    sizes: "s,m,l,xl",
+                    color: "noir",
+                    colors: "noir,blanc,rouge"
                 },
                 {
                     id: "3",
@@ -173,7 +175,9 @@ export default function Boutique() {
                     date: new Date(2023, 7, 5),
                     category: "enfant",
                     size: "s",
-                    color: "blanc"
+                    sizes: "xs,s,m",
+                    color: "blanc",
+                    colors: "blanc,noir,vert"
                 }
             ]);
         } finally {
@@ -182,7 +186,6 @@ export default function Boutique() {
     };
 
     useEffect(() => { fetchProducts(); }, []);
-    useEffect(() => { fetchProducts(); }, [selectedSize, selectedColor]);
 
     const allProducts = [...products];
     const filteredByCategory = allProducts.filter(product => {
@@ -196,6 +199,19 @@ export default function Boutique() {
         return product.category === activeCategory;
     });
 
+    // Filtrage par taille et couleur côté client
+    const filteredProducts = filteredByCategory.filter(product => {
+        const sizeMatch = !selectedSize ||
+                          product.size === selectedSize ||
+                          (product.sizes && product.sizes.split(',').map(s => s.trim().toLowerCase()).includes(selectedSize?.toLowerCase() ?? ""));
+
+        const colorMatch = !selectedColor ||
+                          product.color === selectedColor ||
+                          (product.colors && product.colors.split(',').map(c => c.trim().toLowerCase()).includes(selectedColor?.toLowerCase() ?? ""));
+
+        return sizeMatch && colorMatch;
+    });
+
     const sortProducts = (products: Product[], option: SortOption) => {
         const sortedProducts = [...products];
         switch (option) {
@@ -207,7 +223,7 @@ export default function Boutique() {
         }
     };
 
-    const sortedProducts = sortProducts(filteredByCategory, sortOption);
+    const sortedProducts = sortProducts(filteredProducts, sortOption);
 
     const handleCategoryChange = (category: ProductCategory) => {
         setActiveCategory(category);
