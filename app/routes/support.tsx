@@ -128,7 +128,7 @@ export default function Support() {
     {
       id: 'faq5',
       question: "Proposez-vous des retouches ?",
-      answer: "Oui, nous offrons un service de retouches professionnel. Les retouches mineures (ourlets) sont gratuites pour les achats de plus de 100€. Contactez-nous pour plus d'informations."
+      answer: "Oui, nous offrons un service de retouches professionnel. Les retouches mineures (ourlets) sont gratuites pour les achats de plus de 100FCFA. Contactez-nous pour plus d'informations."
     },
     {
       id: 'faq6',

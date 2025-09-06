@@ -7,6 +7,7 @@ import AddUserModal from "~/components/admin/AddUserModal";
 import EditRoleModal from "~/components/admin/EditRoleModal";
 import { readToken } from "~/utils/session.server";
 import ViewUserModal from "~/components/admin/ViewUserModal";
+import { requireAdmin } from "~/utils/auth.server";
 export const meta: MetaFunction = () => {
   return [
     { title: "Utilisateurs - Adawi Admin" },
@@ -45,6 +46,9 @@ interface ActionData {
 
 export const loader: LoaderFunction = async ({ request }) => {
   console.log("🔍 Début du loader admin.users");
+  // Vérifier que l'utilisateur est admin
+    await requireAdmin(request);
+
 
   const tokenData = await readToken(request);
   console.log("🔑 Token data récupéré:", !!tokenData);

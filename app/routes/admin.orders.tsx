@@ -2,8 +2,8 @@ import { useState, useMemo } from "react";
 import type { MetaFunction, LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { 
-  Search, Eye, Package, XCircle, CheckCircle, Clock, Truck, AlertCircle, BarChart3 
+import {
+  Search, Eye, Package, XCircle, CheckCircle, Clock, Truck, AlertCircle, BarChart3
 } from "lucide-react";
 import ViewOrderModal from "~/components/admin/ViewOrderModal";
 import UpdateStatusModal from "~/components/admin/UpdateStatusModal";
@@ -90,16 +90,16 @@ export default function AdminOrders() {
 
   // === CALCUL DES STATS ===
   const stats = useMemo(() => {
-  const totalOrders = orders.length;
-  const livrees = orders.filter(o => o.status === "livré" || o.status === "livree").length;
-  const enCours = orders.filter(o => o.status === "en_cours").length;
-  const annulees = orders.filter(o => o.status === "annulé" || o.status === "annulee").length;
-  const totalMontant = orders
-    .filter(o => o.status !== "annulé" && o.status !== "annulee")
-    .reduce((sum, o) => sum + o.total, 0);
+    const totalOrders = orders.length;
+    const livrees = orders.filter(o => o.status === "livré" || o.status === "livree").length;
+    const enCours = orders.filter(o => o.status === "en_cours").length;
+    const annulees = orders.filter(o => o.status === "annulé" || o.status === "annulee").length;
+    const totalMontant = orders
+      .filter(o => o.status !== "annulé" && o.status !== "annulee")
+      .reduce((sum, o) => sum + o.total, 0);
 
-  return { totalOrders, livrees, enCours, annulees, totalMontant };
-}, [orders]);
+    return { totalOrders, livrees, enCours, annulees, totalMontant };
+  }, [orders]);
 
 
   // === FILTRAGE ===
@@ -170,6 +170,8 @@ export default function AdminOrders() {
         return { icon: <CheckCircle className="w-4 h-4" />, color: "bg-green-100 text-green-800" };
       case "en_cours":
         return { icon: <Truck className="w-4 h-4" />, color: "bg-blue-100 text-blue-800" };
+      case "en_preparation":
+        return { icon: <Package className="w-4 h-4" />, color: "bg-blue-100 text-blue-800" };
       case "en_attente":
         return { icon: <Clock className="w-4 h-4" />, color: "bg-gray-100 text-gray-800" };
       case "annulé": case "annulee":
@@ -217,7 +219,7 @@ export default function AdminOrders() {
           <Clock className="w-6 h-6 text-yellow-500" />
           <div>
             <p className="text-sm text-gray-500">Montant total</p>
-            <p className="text-lg font-bold">{stats.totalMontant.toLocaleString("fr-FR")} FCFA</p>
+            <p className="text-lg font-bold">{stats.totalMontant.toLocaleString("fr-FR")} EUR</p>
           </div>
         </div>
       </div>
@@ -245,6 +247,7 @@ export default function AdminOrders() {
             <option value="all">Tous les statuts</option>
             <option value="livré">Livré</option>
             <option value="en_cours">En cours</option>
+            <option value="en preparation">en preparation</option>
             <option value="en_attente">En attente</option>
             <option value="annulé">Annulé</option>
           </select>
@@ -282,7 +285,7 @@ export default function AdminOrders() {
                 </td>
                 <td className="border px-4 py-2">{order.payment_status}</td>
                 <td className="border px-4 py-2">{new Date(order.created_at).toLocaleDateString("fr-FR")}</td>
-                <td className="border px-4 py-2">{order.total} FCFA</td>
+                <td className="border px-4 py-2">{order.total} EUR</td>
                 <td className="border px-4 py-2 flex gap-2">
                   <button onClick={() => openViewModal(order)} className="text-blue-500"><Eye className="w-4 h-4" /></button>
                   <button onClick={() => openUpdateStatusModal(order)} className="text-green-500"><Package className="w-4 h-4" /></button>

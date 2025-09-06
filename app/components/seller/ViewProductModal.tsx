@@ -185,14 +185,14 @@ export default function ViewProductModal({ isOpen, onClose, productId }: ViewPro
                           Prix de vente
                         </label>
                         <p className="mt-1 text-gray-900 font-semibold">
-                          {product.price.toLocaleString('fr-FR')} {product.currency || 'FCFA'}
+                          {product.price.toLocaleString('fr-FR')} {product.currency || 'EUR'}
                         </p>
                       </div>
                       {product.cost_price && (
                         <div>
                           <label className="block text-sm font-medium text-gray-700">Prix de revient</label>
                           <p className="mt-1 text-gray-900">
-                            {product.cost_price.toLocaleString('fr-FR')} {product.currency || 'FCFA'}
+                            {product.cost_price.toLocaleString('fr-FR')} {product.currency || 'EUR'}
                           </p>
                         </div>
                       )}

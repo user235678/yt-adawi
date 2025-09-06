@@ -298,7 +298,7 @@
 //                     {user.orders} commandes
 //                   </td>
 //                   <td className="py-4 px-4 text-gray-900">
-//                     {parseInt(user.totalSpent).toLocaleString()} FCFA
+//                     {parseInt(user.totalSpent).toLocaleString()} EUR
 //                   </td>
 //                   <td className="py-4 px-4 text-sm text-gray-500">
 //                     {new Date(user.lastLogin).toLocaleDateString('fr-FR')}

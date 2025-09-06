@@ -62,15 +62,15 @@ export const fetchRefunds = async (
 
     } catch (error) {
         console.error('🚨 Fetch error:', error);
-        
+
         if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
             throw new Error('Erreur réseau: Impossible de se connecter au serveur. Le serveur pourrait être en veille.');
         }
-        
-        if (error.name === 'AbortError') {
+
+        if (error instanceof Error && error.name === 'AbortError') {
             throw new Error('Timeout: Le serveur met trop de temps à répondre.');
         }
-        
+
         throw error;
     }
 };
@@ -99,7 +99,7 @@ export const fetchRefundsNoAuth = async (
     queryParams.append('limit', limit.toString());
 
     const url = `https://showroom-backend-2x3g.onrender.com/refunds/?${queryParams.toString()}`;
-    
+
     const response = await fetch(url, {
         method: "GET",
         headers: {
@@ -114,4 +114,173 @@ export const fetchRefundsNoAuth = async (
     }
 
     return await response.json();
+};
+
+// Get single refund details
+export const fetchRefundDetails = async (token: string, refundId: string): Promise<Refund> => {
+    const url = `https://showroom-backend-2x3g.onrender.com/refunds/${refundId}`;
+
+    console.log('🔍 Fetching refund details URL:', url);
+
+    try {
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "accept": "application/json",
+                "Authorization": `Bearer ${token}`,
+            },
+            signal: AbortSignal.timeout(30000)
+        });
+
+        console.log('📡 Response status:', response.status);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("❌ Error response:", errorText);
+
+            if (response.status === 401) {
+                throw new Error('Token d\'authentification invalide ou expiré');
+            }
+            if (response.status === 403) {
+                throw new Error('Accès refusé - permissions insuffisantes');
+            }
+            if (response.status === 404) {
+                throw new Error('Remboursement non trouvé');
+            }
+
+            throw new Error(`API Error (${response.status}): ${errorText || response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log('✅ Success! Refund details received:', data);
+        return data;
+
+    } catch (error) {
+        console.error('🚨 Fetch refund details error:', error);
+
+        if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+            throw new Error('Erreur réseau: Impossible de se connecter au serveur. Le serveur pourrait être en veille.');
+        }
+
+        if (error instanceof Error && error.name === 'AbortError') {
+            throw new Error('Timeout: Le serveur met trop de temps à répondre.');
+        }
+
+        throw error;
+    }
+};
+
+// Update refund status and admin comment
+export const updateRefund = async (
+    token: string,
+    refundId: string,
+    updateData: { status?: "pending" | "approved" | "rejected" | "processed"; admin_comment?: string }
+): Promise<Refund> => {
+    const url = `https://showroom-backend-2x3g.onrender.com/refunds/${refundId}`;
+
+    console.log('🔄 Updating refund URL:', url);
+    console.log('📝 Update data:', updateData);
+
+    try {
+        const response = await fetch(url, {
+            method: "PATCH",
+            headers: {
+                "accept": "application/json",
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(updateData),
+            signal: AbortSignal.timeout(30000)
+        });
+
+        console.log('📡 Response status:', response.status);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("❌ Error response:", errorText);
+
+            if (response.status === 401) {
+                throw new Error('Token d\'authentification invalide ou expiré');
+            }
+            if (response.status === 403) {
+                throw new Error('Accès refusé - permissions insuffisantes');
+            }
+            if (response.status === 404) {
+                throw new Error('Remboursement non trouvé');
+            }
+            if (response.status === 422) {
+                throw new Error('Données de mise à jour invalides');
+            }
+
+            throw new Error(`API Error (${response.status}): ${errorText || response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log('✅ Success! Refund updated:', data);
+        return data;
+
+    } catch (error) {
+        console.error('🚨 Update refund error:', error);
+
+        if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+            throw new Error('Erreur réseau: Impossible de se connecter au serveur. Le serveur pourrait être en veille.');
+        }
+
+        if (error instanceof Error && error.name === 'AbortError') {
+            throw new Error('Timeout: Le serveur met trop de temps à répondre.');
+        }
+
+        throw error;
+    }
+};
+
+// Get refund statistics summary
+export const fetchRefundStats = async (token: string): Promise<any> => {
+    const url = `https://showroom-backend-2x3g.onrender.com/refunds/stats/summary`;
+
+    console.log('📊 Fetching refund stats URL:', url);
+
+    try {
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "accept": "application/json",
+                "Authorization": `Bearer ${token}`,
+            },
+            signal: AbortSignal.timeout(30000)
+        });
+
+        console.log('📡 Response status:', response.status);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("❌ Error response:", errorText);
+
+            if (response.status === 401) {
+                throw new Error('Token d\'authentification invalide ou expiré');
+            }
+            if (response.status === 403) {
+                throw new Error('Accès refusé - permissions insuffisantes');
+            }
+
+            throw new Error(`API Error (${response.status}): ${errorText || response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log('✅ Success! Refund stats received:', data);
+        return data;
+
+    } catch (error) {
+        console.error('🚨 Fetch refund stats error:', error);
+
+        if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+            throw new Error('Erreur réseau: Impossible de se connecter au serveur. Le serveur pourrait être en veille.');
+        }
+
+        if (error instanceof Error && error.name === 'AbortError') {
+            throw new Error('Timeout: Le serveur met trop de temps à répondre.');
+        }
+
+        throw error;
+    }
 };

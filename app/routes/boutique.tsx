@@ -93,9 +93,9 @@ export default function Boutique() {
             image2: apiProduct.images[2],
             date: new Date(apiProduct.created_at),
             category: category,
-            size: apiProduct.sizes[0] as ProductSize,
+            size: apiProduct.sizes.length > 0 ? apiProduct.sizes[0] as ProductSize : undefined,
             sizes: apiProduct.sizes.join(","),
-            color: apiProduct.colors[0] as ProductColor,
+            color: apiProduct.colors.length > 0 ? apiProduct.colors[0] as ProductColor : undefined,
             colors: apiProduct.colors.join(","),
         };
     };
@@ -113,6 +113,7 @@ export default function Boutique() {
             if (!response.ok) throw new Error(`Erreur ${response.status}: ${response.statusText}`);
 
             const responseData = await response.json();
+            console.log("🔍 API Response:", responseData); // Debug log
             let apiProducts: ApiProduct[];
 
             if (Array.isArray(responseData)) {
@@ -125,6 +126,8 @@ export default function Boutique() {
                 throw new Error('Format de réponse API inattendu');
             }
 
+            console.log("📦 API Products:", apiProducts); // Debug log
+
             const activeProducts = apiProducts.filter(product => product.is_active);
             setApiProducts(activeProducts); // Stocker les produits API originaux
             setProducts(activeProducts.map(mapApiProductToProduct));
@@ -134,7 +137,7 @@ export default function Boutique() {
                 {
                     id: "1",
                     name: "Polo vert",
-                    price: "10000 fcfa",
+                    price: "10000 EUR",
                     priceValue: 10000,
                     image: "/polo_homme.jpg",
                     hoverImage: "/6.png",
@@ -150,7 +153,7 @@ export default function Boutique() {
                 {
                     id: "2",
                     name: "Robe élégante",
-                    price: "15000 fcfa",
+                    price: "15000 EUR",
                     priceValue: 15000,
                     image: "/robe_femme.jpg",
                     hoverImage: "/7.png",
@@ -166,7 +169,7 @@ export default function Boutique() {
                 {
                     id: "3",
                     name: "T-shirt enfant",
-                    price: "5000 fcfa",
+                    price: "5000 EUR",
                     priceValue: 5000,
                     image: "/tshirt_enfant.jpg",
                     hoverImage: "/12.png",
@@ -201,13 +204,28 @@ export default function Boutique() {
 
     // Filtrage par taille et couleur côté client
     const filteredProducts = filteredByCategory.filter(product => {
+        console.log("🔍 Filtering product:", product.name, {
+            selectedSize: selectedSize,
+            productSize: product.size,
+            productSizes: product.sizes,
+            selectedColor: selectedColor,
+            productColor: product.color,
+            productColors: product.colors
+        });
+
         const sizeMatch = !selectedSize ||
-                          product.size === selectedSize ||
-                          (product.sizes && product.sizes.split(',').map(s => s.trim().toLowerCase()).includes(selectedSize?.toLowerCase() ?? ""));
+                          (product.size && product.size.toLowerCase() === selectedSize?.toLowerCase()) ||
+                          (product.sizes && product.sizes.length > 0 && product.sizes.split(',').some(s =>
+                              s.trim().toLowerCase() === selectedSize?.toLowerCase()
+                          ));
 
         const colorMatch = !selectedColor ||
-                          product.color === selectedColor ||
-                          (product.colors && product.colors.split(',').map(c => c.trim().toLowerCase()).includes(selectedColor?.toLowerCase() ?? ""));
+                           (product.color && product.color.toLowerCase() === selectedColor?.toLowerCase()) ||
+                           (product.colors && product.colors.length > 0 && product.colors.split(',').some(c =>
+                               c.trim().toLowerCase() === selectedColor?.toLowerCase()
+                           ));
+
+        console.log("✅ Filter result for", product.name, ":", { sizeMatch, colorMatch, final: sizeMatch && colorMatch });
 
         return sizeMatch && colorMatch;
     });

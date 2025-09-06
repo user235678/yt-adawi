@@ -34,6 +34,11 @@ export default function ClientSidebar({ onClose }: ClientSidebarProps) {
       href: "/client/refund",
       icon: MessageSquare,
     },
+    {
+      name: "tracking",
+      href: "/client/tracking",
+      icon: MessageSquare,
+    },
   ];
 
   const isActive = (href: string) => {

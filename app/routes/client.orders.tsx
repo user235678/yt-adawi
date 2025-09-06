@@ -507,7 +507,7 @@ export default function ClientOrders() {
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
-      currency: 'FCFA'
+      currency: 'EUR'
     }).format(price);
   };
 

@@ -207,7 +207,7 @@ export default function NotificationDetailsModal({
 
         {/* Footer */}
         <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end space-x-3">
-          {!notification.read && onMarkAsRead && (
+          {/* {!notification.read && onMarkAsRead && (
             <button
               className="px-4 py-2 text-sm font-medium text-green-700 bg-green-100 rounded-lg hover:bg-green-200 transition-colors"
               onClick={() => {
@@ -216,7 +216,7 @@ export default function NotificationDetailsModal({
             >
               Marquer comme lu
             </button>
-          )}
+          )} */}
           <button
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"

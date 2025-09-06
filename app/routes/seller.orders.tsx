@@ -171,6 +171,8 @@ export default function AdminOrders() {
         return { icon: <CheckCircle className="w-4 h-4" />, color: "bg-green-100 text-green-800" };
       case "en_cours":
         return { icon: <Truck className="w-4 h-4" />, color: "bg-blue-100 text-blue-800" };
+      case "en_preparation":
+        return { icon: <Package className="w-4 h-4" />, color: "bg-blue-100 text-blue-800" };
       case "en_attente":
         return { icon: <Clock className="w-4 h-4" />, color: "bg-gray-100 text-gray-800" };
       case "annulé": case "annulee":
@@ -181,7 +183,7 @@ export default function AdminOrders() {
   };
 
   return (
-    <SellerLayout userName="Nom du Vendeur"> {/* Replace with actual seller name */}
+    <SellerLayout userName="VENDEUR"> {/* Replace with actual seller name */}
       <h1 className="text-2xl font-bold">Tableau de bord du Vendeur</h1>
     <div className="space-y-6">
       {error && <div className="text-red-600">{error}</div>}
@@ -220,7 +222,7 @@ export default function AdminOrders() {
           <Clock className="w-6 h-6 text-yellow-500" />
           <div>
             <p className="text-sm text-gray-500">Montant total</p>
-            <p className="text-lg font-bold">{stats.totalMontant.toLocaleString("fr-FR")} FCFA</p>
+            <p className="text-lg font-bold">{stats.totalMontant.toLocaleString("fr-FR")} EUR</p>
           </div>
         </div>
       </div>
@@ -245,9 +247,10 @@ export default function AdminOrders() {
       {showFilters && (
         <div className="flex gap-4 mt-2">
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="border rounded-lg px-2 py-1">
-            <option value="all">Tous les statuts</option>
+           <option value="all">Tous les statuts</option>
             <option value="livré">Livré</option>
             <option value="en_cours">En cours</option>
+            <option value="en preparation">en preparation</option>
             <option value="en_attente">En attente</option>
             <option value="annulé">Annulé</option>
           </select>
@@ -285,7 +288,7 @@ export default function AdminOrders() {
                 </td>
                 <td className="border px-4 py-2">{order.payment_status}</td>
                 <td className="border px-4 py-2">{new Date(order.created_at).toLocaleDateString("fr-FR")}</td>
-                <td className="border px-4 py-2">{order.total} FCFA</td>
+                <td className="border px-4 py-2">{order.total} EUR</td>
                 <td className="border px-4 py-2 flex gap-2">
                   <button onClick={() => openViewModal(order)} className="text-blue-500"><Eye className="w-4 h-4" /></button>
                   <button onClick={() => openUpdateStatusModal(order)} className="text-green-500"><Package className="w-4 h-4" /></button>

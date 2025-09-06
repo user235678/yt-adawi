@@ -6,6 +6,7 @@ import { Search, Filter, Eye, MessageCircle, CheckCircle, XCircle, Clock, AlertC
 import ViewTicketModal from "~/components/admin/ViewTicketModal";
 import UpdateTicketModal from "~/components/admin/UpdateTicketModal";
 import { readToken } from "~/utils/session.server";
+import { requireAdmin } from "~/utils/auth.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -37,6 +38,8 @@ export interface Ticket {
 // Loader pour récupérer les tickets
 export async function loader({ request }: LoaderFunctionArgs) {
   const token = await readToken(request);
+    await requireAdmin(request);
+
 
   if (!token) {
     throw new Response("Non autorisé", { status: 401 });

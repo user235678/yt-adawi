@@ -22,8 +22,8 @@ export default function SellerSidebar({ onClose }: SellerSidebarProps) {
     // { id: "products", label: "Produits", icon: Package, path: "/seller/products" },
     { id: "orders", label: "Commandes", icon: ShoppingCart, path: "/seller/orders" },
     { id: "support", label: "Support", icon: MessageSquare, path: "/seller/support" },
-    { id: "rembourssements", label: "rembourssements", icon: BarChart3, path: "/seller/refunds" },
-    // { id: "settings", label: "Paramètres", icon: Settings, path: "/seller/settings" },
+    { id: "rembourssements", label: "rembourssements", icon: BarChart3, path: "/seller/refund" },
+    // { id: "refunds", label: "refunds", icon: Settings, path: "/seller/refund" },
   ];
 
   const handleLinkClick = () => {

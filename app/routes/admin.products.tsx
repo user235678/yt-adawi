@@ -6,6 +6,7 @@ import { Plus, Search, Filter, Edit, Trash2, Eye, X, AlertCircle, Loader2, Uploa
 import AddProductModal from "~/components/admin/AddProductModal";
 import ViewProductModal from "~/components/admin/ViewProductModal";
 import { readToken } from "~/utils/session.server";
+import { requireAdmin } from "~/utils/auth.server";
 
 // Mettre à jour l'interface pour correspondre à l'API
 export interface Product {
@@ -61,6 +62,8 @@ function extractTokenFromCookie(cookieHeader: string | null): string | null {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const token = await readToken(request);
+    await requireAdmin(request);
+
 
   if (!token) {
     throw new Response("Unauthorized", { status: 401 });
@@ -355,7 +358,7 @@ function EditProductModal({
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Prix de vente (FCFA) *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Prix de vente (EUR) *</label>
                   <input
                     type="number"
                     name="price"
@@ -369,7 +372,7 @@ function EditProductModal({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Prix de revient (FCFA)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Prix de revient (EUR)</label>
                   <input
                     type="number"
                     name="cost_price"

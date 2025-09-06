@@ -52,7 +52,7 @@ export default function TestProductAdder() {
                 {testProducts.map((product) => (
                     <div key={product.id} className="border border-gray-200 rounded-lg p-4">
                         <h4 className="font-medium">{product.name}</h4>
-                        <p className="text-adawi-gold font-bold">{product.price} €</p>
+                        <p className="text-adawi-gold font-bold">{product.price} EUR</p>
                         <button
                             onClick={() => handleAddProduct(product)}
                             disabled={isAdding}

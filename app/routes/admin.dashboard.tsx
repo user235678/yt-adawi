@@ -8,6 +8,8 @@ import InventoryAlerts from "~/components/admin/InventoryAlerts";
 import { readToken } from "~/utils/session.server";
 import GeographicSales from "~/components/admin/GeographicSales";
 import RefundStats from "~/components/admin/RefundStats";
+import { requireAdmin } from "~/utils/auth.server";
+
 
 export const meta: MetaFunction = () => {
   return [
@@ -16,7 +18,11 @@ export const meta: MetaFunction = () => {
   ];
 };
 
+
 export const loader: LoaderFunction = async ({ request }) => {
+  // Vérifier que l'utilisateur est admin
+  const user = await requireAdmin(request);
+
   try {
     const token = await readToken(request);
     if (!token) {
@@ -35,11 +41,12 @@ export const loader: LoaderFunction = async ({ request }) => {
     }
 
     const data = await response.json();
-    return json(data);
+    return json({ ...data, user });
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
     // Return empty data or handle error
     return json({
+      user,
       total_revenue: 0,
       total_orders: 0,
       total_customers: 0,
@@ -78,6 +85,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   }
 };
 
+
 export default function AdminDashboard() {
   const data = useLoaderData<typeof loader>();
   const [activeSection, setActiveSection] = useState<string>('overview');
@@ -86,7 +94,7 @@ export default function AdminDashboard() {
     { id: 'overview', label: 'Vue d\'ensemble', icon: '📊' },
     { id: 'sales', label: 'Ventes', icon: '💰' },
     { id: 'inventory', label: 'Inventaire', icon: '📦' },
-    { id: 'geographic', label: 'Géographie', icon: '🌍' },
+    // { id: 'geographic', label: 'Géographie', icon: '🌍' },
     { id: 'refunds', label: 'Remboursements', icon: '🔄' },
   ];
 
@@ -183,12 +191,12 @@ export default function AdminDashboard() {
           </div>
         );
 
-      case 'geographic':
-        return (
-          <div className="space-y-6">
-            <GeographicSales data={data.geographic_sales} />
-          </div>
-        );
+      // case 'geographic':
+      //   return (
+      //     <div className="space-y-6">
+      //       <GeographicSales data={data.geographic_sales} />
+      //     </div>
+      //   );
 
       case 'refunds':
         return (

@@ -202,7 +202,7 @@ export default function CheckoutPage() {
         <div className="flex justify-between items-center">
           <span className="font-medium">Total à payer:</span>
           <span className="text-xl font-bold text-adawi-brown">
-            {total.toLocaleString()} FCFA
+            {total.toLocaleString()} EUR
           </span>
         </div>
       </div>

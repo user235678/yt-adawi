@@ -23,21 +23,21 @@ export const meta: MetaFunction = () => {
 // //       id: "CMD-001",
 // //       date: "2024-01-15",
 // //       status: "En cours",
-// //       total: "89.99€",
+// //       total: "89.99FCFA",
 // //       items: 3
 // //     },
 // //     {
 // //       id: "CMD-002", 
 // //       date: "2024-01-10",
 // //       status: "Livré",
-// //       total: "156.50€",
+// //       total: "156.50FCFA",
 // //       items: 5
 // //     },
 // //     {
 // //       id: "CMD-003",
 // //       date: "2024-01-05",
 // //       status: "En préparation",
-// //       total: "45.00€",
+// //       total: "45.00FCFA",
 // //       items: 2
 // //     }
 // //   ];

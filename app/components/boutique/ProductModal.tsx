@@ -566,7 +566,7 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
                         <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
                         <span className="font-medium">Livraison standard: 3-5 jours ouvrés</span>
                       </p>
-                      <p className="text-xs text-gray-500 ml-4">Gratuite à partir de 75€</p>
+                      <p className="text-xs text-gray-500 ml-4">Gratuite à partir de 75FCFA</p>
                     </div>
                   </div>
                 </details>

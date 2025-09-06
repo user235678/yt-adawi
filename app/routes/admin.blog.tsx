@@ -16,6 +16,7 @@ import { readToken } from "~/utils/session.server";
 import CreatePostModal from "~/components/admin/CreatePostModal";
 import ViewPostModal from "~/components/admin/ViewPostModal";
 import UpdatePostModal from "~/components/admin/UpdatePostModal";
+import { requireAdmin } from "~/utils/auth.server";
 
 interface BlogPost {
     id: string;
@@ -41,6 +42,7 @@ interface LoaderData {
 export const loader: LoaderFunction = async ({ request }) => {
     try {
         const token = await readToken(request);
+            // await requireAdmin(request);
         if (!token) throw new Response("Non autorisé", { status: 401 });
 
         const res = await fetch(
@@ -66,12 +68,15 @@ export const loader: LoaderFunction = async ({ request }) => {
     }
 };
 
+
 /* =======================
    ACTION : création de post
    ======================= */
 export const action: ActionFunction = async ({ request }) => {
     try {
         const token = await readToken(request);
+            await requireAdmin(request);
+
         if (!token) {
             return json({ error: "Non autorisé" }, { status: 401 });
         }

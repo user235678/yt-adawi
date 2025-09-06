@@ -6,6 +6,7 @@ import EditCategoryModal from "~/components/admin/EditCategoryModal";
 import ViewCategoryModal from "~/components/admin/ViewCategoryModal";
 import DeleteCategoryModal from "~/components/admin/DeleteCategoryModal";
 import CategoryTester from "~/components/admin/CategoryTester";
+import { requireAdmin } from "~/utils/auth.server";
 
 interface Category {
     id: string;
@@ -52,9 +53,12 @@ export default function AdminCategories() {
     const loadCategories = async () => {
         setIsLoading(true);
         setError(null);
+        
 
         try {
+            
             const response = await fetch('/api/categories');
+
             const data = await response.json();
 
             if (data.success) {

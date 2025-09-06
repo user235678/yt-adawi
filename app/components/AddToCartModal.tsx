@@ -50,7 +50,7 @@ export default function AddToCartModal({
         await onAddToCart(product.id, quantity, selectedSize, selectedColor);
     };
 
-    const formatPrice = (price: number, currency: string = "FCFA") => {
+    const formatPrice = (price: number, currency: string = "EUR") => {
         return new Intl.NumberFormat('fr-FR', {
             style: 'currency',
             currency: currency

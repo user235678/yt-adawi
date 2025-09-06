@@ -20,7 +20,7 @@ const NewProducts: React.FC = () => {
     { id: 1, name: "Costume Élégant", image: "/0.png",  isNew: true, badge: "Nouveau" },
     { id: 2, name: "Chemise Premium", image: "/5.png",  },
     { id: 3, name: "Pantalon Classique", image: "/6.png",  isNew: true },
-    { id: 4, name: "Veste Tendance", image: "/8.png",  originalPrice: "279€" },
+    { id: 4, name: "Veste Tendance", image: "/8.png",  originalPrice: "279FCFA" },
     { id: 5, name: "Accessoire Mode", image: "/9.png",  badge: "Best" },
   ];
 
@@ -193,7 +193,7 @@ const NewProducts: React.FC = () => {
               <svg className="w-4 h-4 sm:w-5 sm:h-5 text-adawi-gold mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-              Livraison gratuite dès 100€
+              Livraison gratuite dès 100FCFA
             </div>
             <div className="hidden sm:block w-1 h-1 bg-gray-400 rounded-full"></div>
             <div className="flex items-center">

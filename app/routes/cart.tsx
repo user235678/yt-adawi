@@ -142,7 +142,7 @@ export default function CartPage() {
                             <div className="flex items-center justify-between">
                                 <h2 className="text-lg font-semibold">Articles du panier ({state.items.length})</h2>
                                 <p className="text-lg font-bold text-adawi-gold">
-                                    Total: {state.total.toFixed(2)} €
+                                    Total: {state.total.toFixed(2)} EUR
                                 </p>
                             </div>
                         </div>
@@ -186,7 +186,7 @@ export default function CartPage() {
                                                         {item.name}
                                                     </h3>
                                                     <p className="text-sm text-gray-600">
-                                                        Prix unitaire: {itemPrice.toFixed(2)} €
+                                                        Prix unitaire: {itemPrice.toFixed(2)} EUR
                                                     </p>
                                                     {(item.size || item.color) && (
                                                         <p className="text-xs text-gray-500 mt-1">
@@ -222,7 +222,7 @@ export default function CartPage() {
                                                 {/* Prix total et suppression */}
                                                 <div className="text-right">
                                                     <p className="text-lg font-medium text-gray-900">
-                                                        {itemTotal.toFixed(2)} €
+                                                        {itemTotal.toFixed(2)} EUR
                                                     </p>
                                                     <button
                                                         onClick={() => removeItem(item.id)}
@@ -258,7 +258,7 @@ export default function CartPage() {
                         <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
                             <div className="text-lg">
                                 <span className="text-gray-600">Total: </span>
-                                <span className="font-bold text-adawi-gold">{state.total.toFixed(2)} €</span>
+                                <span className="font-bold text-adawi-gold">{state.total.toFixed(2)} EUR</span>
                             </div>
                             <div className="flex gap-3">
                                 <Link

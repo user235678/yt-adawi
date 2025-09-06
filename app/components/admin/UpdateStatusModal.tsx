@@ -11,9 +11,10 @@ interface UpdateStatusModalProps {
 
 const API_BASE = "https://showroom-backend-2x3g.onrender.com";
 
-// Statuts acceptés par l'API: en_cours, expediee, livree, annulee
+// Statuts acceptés par l'API: en_cours, expediee, livree, annulee, en preparation
 const STATUSES = [
   { value: "en_cours",  label: "En cours" },
+  { value: "en_preparation",  label: "en preparation" },
   { value: "expediee",  label: "Expédiée" },
   { value: "livree",    label: "Livrée" },
   { value: "annulee",   label: "Annulée" },

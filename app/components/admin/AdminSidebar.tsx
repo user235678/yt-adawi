@@ -31,6 +31,7 @@ export default function AdminSidebar({ onClose }: AdminSidebarProps) {
     { id: "rapports", label: "Rapports", icon: BarChart3, path: "/admin/rapports" },
     { id: "categories", label: "Categories", icon: Box, path: "/admin/categories" },
     { id: "Blogs", label: "Blog", icon: TableOfContents, path: "/admin/blog" },
+    { id: "refunds", label: "refunds", icon: TableOfContents, path: "/admin/refunds" },
     { id: "settings", label: "Paramètres", icon: Settings, path: "/admin/settings" },
   ];
 
