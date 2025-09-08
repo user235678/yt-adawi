@@ -31,7 +31,7 @@ interface ProductGridProps {
   selectedColor?: ProductColor;
   onProductClick?: (product: Product) => void; // Fonction pour gérer le clic
 }
-
+ 
 const ProductGrid = ({ products, selectedSize, selectedColor, onProductClick }: ProductGridProps) => {
   // Fonction pour obtenir la couleur de fond basée sur la couleur du produit
   const getColorBadgeStyle = (color: string) => {

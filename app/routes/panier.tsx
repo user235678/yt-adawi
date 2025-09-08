@@ -483,7 +483,7 @@ export default function panier() {
                                                 {item.name}
                                             </h3>
                                             <p className="text-sm text-gray-600 mb-2">
-                                                {itemPrice.toLocaleString()} EUR
+                                                {itemPrice.toLocaleString()} Fcfa
                                             </p>
                                             <p className="text-xs text-gray-500 mb-3">
                                                 {(item.size || 'M').toUpperCase()} / {(item.color || 'NOIR').toUpperCase()}
@@ -527,7 +527,7 @@ export default function panier() {
                                                 
                                                 <div className="text-right">
                                                     <p className="text-lg font-medium text-black mb-1">
-                                                        {itemTotal.toLocaleString()} EUR
+                                                        {itemTotal.toLocaleString()} Fcfa
                                                     </p>
                                                     <button
                                                         onClick={() => removeItem(itemId)}
@@ -564,7 +564,7 @@ export default function panier() {
                                                 {item.name}
                                             </h3>
                                             <p className="text-sm text-gray-600 mb-2">
-                                                {itemPrice.toLocaleString()} EUR
+                                                {itemPrice.toLocaleString()} Fcfa
                                             </p>
                                             <p className="text-xs text-gray-500">
                                                 {(item.size || 'M').toUpperCase()} / {(item.color || 'NOIR').toUpperCase()}
@@ -610,7 +610,7 @@ export default function panier() {
                                     {/* Total et Remove */}
                                     <div className="col-span-3 text-right space-y-2">
                                         <p className="text-lg font-medium text-black">
-                                            {itemTotal.toLocaleString()} EUR
+                                            {itemTotal.toLocaleString()} Fcfa
                                         </p>
                                         <button
                                             onClick={() => removeItem(itemId)}
@@ -672,16 +672,16 @@ export default function panier() {
                             <div className="space-y-4 mb-6">
                                 <div className="flex justify-between text-base py-2">
                                     <span className="text-gray-600">Subtotal:</span>
-                                    <span className="font-medium text-black">{total.toLocaleString()} EUR</span>
+                                    <span className="font-medium text-black">{total.toLocaleString()} Fcfa</span>
                                 </div>
                                 <div className="flex justify-between text-base py-2">
                                     <span className="text-gray-600">Taxes:</span>
-                                    <span className="font-medium text-black">0 EUR</span>
+                                    <span className="font-medium text-black">0 Fcfa</span>
                                 </div>
                                 <div className="border-t border-gray-200 pt-4">
                                     <div className="flex justify-between text-xl font-bold">
                                         <span className="text-black">Total:</span>
-                                        <span className="text-adawi-gold">{total.toLocaleString()} EUR</span>
+                                        <span className="text-adawi-gold">{total.toLocaleString()} Fcfa</span>
                                     </div>
                                 </div>
                                 

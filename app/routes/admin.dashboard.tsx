@@ -6,7 +6,6 @@ import StatsCards from "~/components/admin/StatsCards";
 import SalesChart from "~/components/admin/SalesChart";
 import InventoryAlerts from "~/components/admin/InventoryAlerts";
 import { readToken } from "~/utils/session.server";
-import GeographicSales from "~/components/admin/GeographicSales";
 import RefundStats from "~/components/admin/RefundStats";
 import { requireAdmin } from "~/utils/auth.server";
 

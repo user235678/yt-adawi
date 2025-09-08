@@ -58,7 +58,7 @@ export default function TopCategories({ data }: TopCategoriesProps) {
               <div className="text-lg font-bold text-gray-900">
                 {(total / 1000).toFixed(1)}k
               </div>
-              <div className="text-xs text-gray-500">EUR</div>
+              <div className="text-xs text-gray-500">Fcfa</div>
             </div>
           </div>
         </div>

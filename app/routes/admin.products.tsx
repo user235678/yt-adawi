@@ -358,7 +358,7 @@ function EditProductModal({
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Prix de vente (EUR) *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Prix de vente (Fcfa) *</label>
                   <input
                     type="number"
                     name="price"
@@ -372,7 +372,7 @@ function EditProductModal({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Prix de revient (EUR)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Prix de revient (Fcfa)</label>
                   <input
                     type="number"
                     name="cost_price"
@@ -947,7 +947,7 @@ export default function AdminProducts() {
         </button>
       </div>
 
-      {/* Debug info - À supprimer en production */}
+      {/* Debug info - À supprimer en production
       {process.env.NODE_ENV === 'development' && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <p className="text-blue-800 text-sm">
@@ -955,7 +955,7 @@ export default function AdminProducts() {
             {token && ` (${token.length} caractères)`}
           </p>
         </div>
-      )}
+      )} */}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

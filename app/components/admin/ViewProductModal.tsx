@@ -91,7 +91,7 @@ export default function ViewProductModal({
         });
     };
 
-    const formatPrice = (price: number, currency: string = 'EUR') => {
+    const formatPrice = (price: number, currency: string = 'Fcfa') => {
         return `${price.toLocaleString()} ${currency}`;
     };
 

@@ -102,7 +102,7 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ isOpen, orderId, token,
               <div><span className="text-gray-500">Paiement :</span> <span className="font-medium">{order.payment_status}</span></div>
               <div><span className="text-gray-500">Créée le :</span> <span className="font-medium">{new Date(order.created_at).toLocaleString("fr-FR")}</span></div>
               <div><span className="text-gray-500">MAJ le :</span> <span className="font-medium">{new Date(order.updated_at).toLocaleString("fr-FR")}</span></div>
-              <div><span className="text-gray-500">Total :</span> <span className="font-medium">{order.total} EUR</span></div>
+              <div><span className="text-gray-500">Total :</span> <span className="font-medium">{order.total} Fcfa</span></div>
               <div><span className="text-gray-500">Méthode :</span> <span className="font-medium">{order.payment_method || "—"}</span></div>
               <div><span className="text-gray-500">Livraison :</span> <span className="font-medium">{order.delivery_method || "—"}</span></div>
               <div><span className="text-gray-500">Statut livraison :</span> <span className="font-medium">{order.delivery_status || "—"}</span></div>
@@ -131,7 +131,7 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ isOpen, orderId, token,
                         {it.color ? ` • Couleur: ${it.color}` : ""}
                       </div>
                     </div>
-                    <div className="font-medium">{it.price} EUR</div>
+                    <div className="font-medium">{it.price} Fcfa</div>
                   </div>
                 )) : (
                   <div className="p-3 text-sm text-gray-500">Aucun article</div>

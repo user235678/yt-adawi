@@ -35,6 +35,11 @@ interface LoaderData {
     token: string;
     error?: string;
 }
+interface ActionData {
+    error?: string;
+    success?: boolean;
+    message?: string;
+}
 
 /* =======================
    LOADER : liste des posts
@@ -42,7 +47,7 @@ interface LoaderData {
 export const loader: LoaderFunction = async ({ request }) => {
     try {
         const token = await readToken(request);
-            // await requireAdmin(request);
+             await requireAdmin(request);
         if (!token) throw new Response("Non autorisé", { status: 401 });
 
         const res = await fetch(
@@ -142,7 +147,7 @@ export const action: ActionFunction = async ({ request }) => {
 export default function AdminBlog() {
     const { posts, token, error } = useLoaderData<LoaderData>();
     const navigation = useNavigation();
-    const actionData = useActionData();
+      const actionData = useActionData<ActionData>();
     const [openModal, setOpenModal] = useState(false);
     const [openViewModal, setOpenViewModal] = useState(false);
     const [openUpdateModal, setOpenUpdateModal] = useState(false);

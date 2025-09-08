@@ -7,7 +7,7 @@ import {
   ShoppingBag,
   MessageSquare,
   LogOut,
-  X
+  X 
 } from "lucide-react";
 // Interface pour les produits API originaux
 interface ApiProduct {

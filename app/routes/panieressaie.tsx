@@ -371,7 +371,7 @@ export default function PanierEssaie() {
                         <p className="text-sm text-gray-600">Couleur: {item.color}</p>
                       )}
                       <p className="text-lg font-bold text-black mt-1">
-                        {item.price.toLocaleString()} EUR
+                        {item.price.toLocaleString()} Fcfa
                       </p>
                     </div>
 
@@ -417,7 +417,7 @@ export default function PanierEssaie() {
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Sous-total</span>
-                    <span className="font-medium">{total.toLocaleString()} EUR</span>
+                    <span className="font-medium">{total.toLocaleString()} Fcfa</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Livraison</span>
@@ -426,7 +426,7 @@ export default function PanierEssaie() {
                   <div className="border-t pt-3">
                     <div className="flex justify-between">
                       <span className="text-lg font-bold">Total</span>
-                      <span className="text-lg font-bold">{total.toLocaleString()} EUR</span>
+                      <span className="text-lg font-bold">{total.toLocaleString()} Fcfa</span>
                     </div>
                   </div>
                 </div>

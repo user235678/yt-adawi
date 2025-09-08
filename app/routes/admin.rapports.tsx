@@ -104,7 +104,7 @@ export default function AdminRapports() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Revenus</p>
-              <p className="text-2xl font-bold text-gray-900">2.4M EUR</p>
+              <p className="text-2xl font-bold text-gray-900">2.4M Fcfa</p>
               <p className="text-sm text-green-600">+8% ce mois</p>
             </div>
             <div className="p-3 bg-blue-100 rounded-lg">
@@ -213,7 +213,7 @@ export default function AdminRapports() {
                           {sale.quantite}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {sale.montant.toLocaleString()} EUR
+                          {sale.montant.toLocaleString()} Fcfa
                         </td>
                       </tr>
                     ))}
@@ -272,7 +272,7 @@ export default function AdminRapports() {
                           {product.vendus}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {product.revenus.toLocaleString()} EUR
+                          {product.revenus.toLocaleString()} Fcfa
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${

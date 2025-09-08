@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { MetaFunction, LoaderFunction, ActionFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData, useSubmit, useActionData, useNavigation } from "@remix-run/react";
@@ -8,6 +8,7 @@ import EditRoleModal from "~/components/admin/EditRoleModal";
 import { readToken } from "~/utils/session.server";
 import ViewUserModal from "~/components/admin/ViewUserModal";
 import { requireAdmin } from "~/utils/auth.server";
+
 export const meta: MetaFunction = () => {
   return [
     { title: "Utilisateurs - Adawi Admin" },
@@ -47,8 +48,7 @@ interface ActionData {
 export const loader: LoaderFunction = async ({ request }) => {
   console.log("🔍 Début du loader admin.users");
   // Vérifier que l'utilisateur est admin
-    await requireAdmin(request);
-
+  await requireAdmin(request);
 
   const tokenData = await readToken(request);
   console.log("🔑 Token data récupéré:", !!tokenData);
@@ -286,8 +286,6 @@ export const action: ActionFunction = async ({ request }) => {
   return json<ActionData>({ error: "Intent non reconnu" }, { status: 400 });
 };
 
-
-
 export default function AdminUsers() {
   const { users, error, debug, success } = useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>();
@@ -298,43 +296,59 @@ export default function AdminUsers() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("all");
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [modalKey, setModalKey] = useState(0);
 
   const submit = useSubmit();
 
   const isSubmitting = navigation.state === "submitting";
 
+  // ✅ FIX: Added null checks for user properties
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = filterRole === "all" || user.role.toLowerCase() === filterRole.toLowerCase();
+    // Check if user properties exist and provide fallbacks
+    const fullName = user.full_name || "";
+    const email = user.email || "";
+    const role = user.role || "";
+
+    const matchesSearch = fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = filterRole === "all" || role.toLowerCase() === filterRole.toLowerCase();
     return matchesSearch && matchesRole;
   });
 
   const handleEditRole = (user: User) => {
     setSelectedUser(user);
+    setModalKey(prev => prev + 1);
     setIsEditRoleModalOpen(true);
+    setSuccessMessage(null);
   };
+  
   const handleViewUser = (user: User) => {
     setSelectedUser(user);
     setIsViewModalOpen(true);
   };
-
 
   const updateUserRole = async (userId: string, role: string) => {
     submit(
       { intent: "updateRole", userId, role }, // 👈 ajouter intent
       { method: "post" }
     );
+    setSuccessMessage(`${selectedUser?.full_name} est passé de ${selectedUser?.role} à ${role}`);
   };
 
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
   // Fermer le modal après succès
-  if (actionData?.success && isEditRoleModalOpen) {
-    setIsEditRoleModalOpen(false);
-    setSelectedUser(null);
-  }
+  // if (actionData?.success && isEditRoleModalOpen) {
+  //   setIsEditRoleModalOpen(false);
+  //   setSelectedUser(null);
+  // }
+
 
 
   const getRoleColor = (role: string) => {
+    // ✅ FIX: Added null check
+    if (!role) return "bg-gray-100 text-gray-800";
+    
     switch (role.toLowerCase()) {
       case "admin":
         return "bg-red-100 text-red-800";
@@ -351,6 +365,9 @@ export default function AdminUsers() {
   };
 
   const getRoleLabel = (role: string) => {
+    // ✅ FIX: Added null check
+    if (!role) return "Non défini";
+    
     switch (role.toLowerCase()) {
       case "admin": return "Admin";
       case "seller": return "Vendeur";
@@ -386,6 +403,9 @@ export default function AdminUsers() {
   };
 
   const generateAvatar = (name: string) => {
+    // ✅ FIX: Added null check for name
+    if (!name) name = "?";
+    
     const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
     const colors = ['DAA520', '8B4513', 'CD853F', 'D2691E', 'B8860B'];
     const color = colors[name.length % colors.length];
@@ -410,7 +430,7 @@ export default function AdminUsers() {
         </button>
       </div>
 
-      {/* Debug Info (en développement) */}
+      {/* Debug Info (en développement)
       {debug && process.env.NODE_ENV === 'development' && (
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
           <h4 className="font-medium text-blue-800 mb-2">Debug Info:</h4>
@@ -418,7 +438,7 @@ export default function AdminUsers() {
             {JSON.stringify(debug, null, 2)}
           </pre>
         </div>
-      )}
+      )} */}
 
       {/* Success Message */}
       {(success || actionData?.success) && (
@@ -477,7 +497,10 @@ export default function AdminUsers() {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">
-                {users.filter(u => u.role.toLowerCase() === "client" || u.role.toLowerCase() === "customer").length}
+                {users.filter(u => {
+                  const role = u.role || "";
+                  return role.toLowerCase() === "client" || role.toLowerCase() === "customer";
+                }).length}
               </p>
               <p className="text-sm text-gray-600">Clients</p>
             </div>
@@ -493,7 +516,10 @@ export default function AdminUsers() {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">
-                {users.filter(u => u.role.toLowerCase() === "seller" || u.role.toLowerCase() === "vendeur").length}
+                {users.filter(u => {
+                  const role = u.role || "";
+                  return role.toLowerCase() === "seller" || role.toLowerCase() === "vendeur";
+                }).length}
               </p>
               <p className="text-sm text-gray-600">Vendeurs</p>
             </div>
@@ -509,7 +535,10 @@ export default function AdminUsers() {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">
-                {users.filter(u => u.role.toLowerCase() === "admin").length}
+                {users.filter(u => {
+                  const role = u.role || "";
+                  return role.toLowerCase() === "admin";
+                }).length}
               </p>
               <p className="text-sm text-gray-600">Administrateurs</p>
             </div>
@@ -594,13 +623,13 @@ export default function AdminUsers() {
                     <td className="py-4 px-4">
                       <div className="flex items-center">
                         <img
-                          src={generateAvatar(user.full_name)}
-                          alt={user.full_name}
+                          src={generateAvatar(user.full_name || "")}
+                          alt={user.full_name || "User"}
                           className="w-10 h-10 rounded-full mr-3"
                         />
                         <div>
-                          <p className="font-medium text-gray-900">{user.full_name}</p>
-                          <p className="text-sm text-gray-500">ID: {user.id.slice(-8)}</p>
+                          <p className="font-medium text-gray-900">{user.full_name || "Nom non disponible"}</p>
+                          <p className="text-sm text-gray-500">ID: {user.id ? user.id.slice(-8) : "N/A"}</p>
                         </div>
                       </div>
                     </td>
@@ -608,7 +637,7 @@ export default function AdminUsers() {
                       <div className="space-y-1">
                         <div className="flex items-center text-sm text-gray-900">
                           <Mail className="w-4 h-4 mr-2 text-gray-400" />
-                          {user.email}
+                          {user.email || "Email non disponible"}
                         </div>
                       </div>
                     </td>
@@ -670,7 +699,7 @@ export default function AdminUsers() {
                           className="p-2 text-gray-400 hover:text-red-600 transition-colors"
                           title="Supprimer"
                           onClick={() => {
-                            if (confirm(`Voulez-vous vraiment supprimer ${user.full_name} ?`)) {
+                            if (confirm(`Voulez-vous vraiment supprimer ${user.full_name || "cet utilisateur"} ?`)) {
                               submit(
                                 { intent: "deleteUser", userId: user.id },
                                 { method: "post" }
@@ -727,12 +756,20 @@ export default function AdminUsers() {
       />
 
       {/* Edit Role Modal */}
+      {/* Edit Role Modal */}
       <EditRoleModal
+        key={modalKey} // Force le re-render du modal
         isOpen={isEditRoleModalOpen}
-        onClose={() => setIsEditRoleModalOpen(false)}
+        onClose={() => {
+          setIsEditRoleModalOpen(false);
+          setSelectedUser(null);
+          setSuccessMessage(null);
+        }}
         user={selectedUser}
         onUpdateRole={updateUserRole}
+        successMessage={successMessage}
       />
+
       <ViewUserModal
         isOpen={isViewModalOpen}
         onClose={() => setIsViewModalOpen(false)}

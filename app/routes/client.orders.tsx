@@ -507,7 +507,7 @@ export default function ClientOrders() {
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
-      currency: 'EUR'
+      currency: 'XOF'
     }).format(price);
   };
 
@@ -524,7 +524,7 @@ export default function ClientOrders() {
           </p>
         </div>
 
-        {/* Debug Info (en développement) */}
+        {/* Debug Info (en développement)
         {debug && process.env.NODE_ENV === 'development' && (
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
             <h4 className="font-medium text-blue-800 mb-2">Debug Info:</h4>
@@ -532,7 +532,7 @@ export default function ClientOrders() {
               {JSON.stringify(debug, null, 2)}
             </pre>
           </div>
-        )}
+        )} */}
 
         {/* Error Message */}
         {error && (

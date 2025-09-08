@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Check, Loader2 } from "lucide-react";
 
 interface User {
@@ -13,19 +13,34 @@ interface EditRoleModalProps {
   onClose: () => void;
   user: User | null;
   onUpdateRole: (userId: string, role: string) => Promise<void>;
+  successMessage?: string | null;
 }
 
-export default function EditRoleModal({ isOpen, onClose, user, onUpdateRole }: EditRoleModalProps) {
+export default function EditRoleModal({ isOpen, onClose, user, onUpdateRole, successMessage }: EditRoleModalProps) {
   const [selectedRole, setSelectedRole] = useState<string>(user?.role || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Réinitialiser le rôle sélectionné quand l'utilisateur change
-  useState(() => {
+  useEffect(() => {
     if (user) {
       setSelectedRole(user.role);
+      setError(null); // Réinitialiser l'erreur quand on change d'utilisateur
     }
   }, [user]);
+
+  // Réinitialiser les états quand le modal s'ouvre/se ferme
+  useEffect(() => {
+    if (isOpen && user) {
+      setSelectedRole(user.role);
+      setError(null);
+      setIsSubmitting(false);
+    } else if (!isOpen) {
+      // Réinitialiser complètement quand le modal se ferme
+      setError(null);
+      setIsSubmitting(false);
+    }
+  }, [isOpen, user]);
 
   if (!isOpen || !user) return null;
 
@@ -47,10 +62,19 @@ export default function EditRoleModal({ isOpen, onClose, user, onUpdateRole }: E
 
     try {
       await onUpdateRole(user.id, selectedRole);
-      // Le modal sera fermé automatiquement par le parent après succès
+      // Succès : ne pas fermer automatiquement le modal
+      setIsSubmitting(false);
     } catch (err: any) {
       setError(err.message || "Une erreur est survenue lors de la mise à jour du rôle");
       setIsSubmitting(false);
+    }
+  };
+
+  const handleClose = () => {
+    if (!isSubmitting) {
+      setError(null);
+      setIsSubmitting(false);
+      onClose();
     }
   };
 
@@ -61,7 +85,7 @@ export default function EditRoleModal({ isOpen, onClose, user, onUpdateRole }: E
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">Modifier le rôle</h2>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
             disabled={isSubmitting}
           >
@@ -76,7 +100,7 @@ export default function EditRoleModal({ isOpen, onClose, user, onUpdateRole }: E
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 bg-adawi-gold/20 rounded-full flex items-center justify-center">
                 <span className="text-adawi-brown font-semibold">
-                  {user.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                  {(user.full_name || "").split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                 </span>
               </div>
               <div>
@@ -134,33 +158,41 @@ export default function EditRoleModal({ isOpen, onClose, user, onUpdateRole }: E
             </div>
           )}
 
+          {/* Success Message */}
+          {successMessage && (
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center space-x-2">
+                <Check className="w-4 h-4 text-green-500" />
+                <p className="text-sm text-green-700">{successMessage}</p>
+              </div>
+            </div>
+          )}
+
           {/* Actions */}
           <div className="flex items-center justify-end space-x-4">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               disabled={isSubmitting}
             >
               Annuler
             </button>
             <button
-              type="submit"
-              disabled={isSubmitting || !selectedRole || selectedRole === user.role}
-              className="flex items-center px-4 py-2 bg-adawi-gold text-white rounded-lg hover:bg-adawi-gold/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? (
-                <div>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Mise à jour...
-                </div>
-              ) : (
-                <div>
-                  <Check className="w-4 h-4 mr-2" />
-                  Mettre à jour
-                </div>
-              )}
-            </button>
+  type="submit"
+  disabled={isSubmitting || !selectedRole || selectedRole === user.role}
+  className="flex items-center px-4 py-2 bg-adawi-gold text-white rounded-lg hover:bg-adawi-gold/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+>
+  {isSubmitting ? (
+    <>
+      <Loader2 className="w-4 h-4 mr-2 animate-spin text-white" />
+      Mise à jour...
+    </>
+  ) : (
+    "Mettre à jour"
+  )}
+</button>
+
           </div>
         </form>
       </div>

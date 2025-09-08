@@ -108,7 +108,7 @@ export default function RefundModal({ token, refundId, isOpen, onClose, onUpdate
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Montant</label>
-                <p className="mt-1 text-sm text-gray-900">{refund.amount.toFixed(2)} EUR</p>
+                <p className="mt-1 text-sm text-gray-900">{refund.amount.toFixed(2)} Fcfa</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Utilisateur</label>

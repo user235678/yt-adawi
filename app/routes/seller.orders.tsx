@@ -9,6 +9,8 @@ import ViewOrderModal from "~/components/seller/ViewOrderModal";
 import UpdateStatusModal from "~/components/admin/UpdateStatusModal";
 import { readToken } from "~/utils/session.server";
 import SellerLayout from "~/components/seller/SellerLayout";
+import { requireVendor } from "~/utils/auth.server";
+
 
 export const meta: MetaFunction = () => [
   { title: "Commandes - Adawi Admin" },
@@ -51,6 +53,7 @@ interface LoaderData {
 }
 
 export const loader: LoaderFunction = async ({ request }) => {
+  await requireVendor(request);
   try {
     const tokenData = await readToken(request);
     if (!tokenData) throw new Response("Non autorisé", { status: 401 });
@@ -222,7 +225,7 @@ export default function AdminOrders() {
           <Clock className="w-6 h-6 text-yellow-500" />
           <div>
             <p className="text-sm text-gray-500">Montant total</p>
-            <p className="text-lg font-bold">{stats.totalMontant.toLocaleString("fr-FR")} EUR</p>
+            <p className="text-lg font-bold">{stats.totalMontant.toLocaleString("fr-FR")} Fcfa</p>
           </div>
         </div>
       </div>
@@ -288,7 +291,7 @@ export default function AdminOrders() {
                 </td>
                 <td className="border px-4 py-2">{order.payment_status}</td>
                 <td className="border px-4 py-2">{new Date(order.created_at).toLocaleDateString("fr-FR")}</td>
-                <td className="border px-4 py-2">{order.total} EUR</td>
+                <td className="border px-4 py-2">{order.total} Fcfa</td>
                 <td className="border px-4 py-2 flex gap-2">
                   <button onClick={() => openViewModal(order)} className="text-blue-500"><Eye className="w-4 h-4" /></button>
                   <button onClick={() => openUpdateStatusModal(order)} className="text-green-500"><Package className="w-4 h-4" /></button>

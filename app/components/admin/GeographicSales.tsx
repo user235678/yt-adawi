@@ -109,7 +109,7 @@ export default function GeographicSales({ data }: GeographicSalesProps) {
                 </div>
                 <div className="text-right">
                   <div className="font-semibold text-gray-900">
-                    {formatCurrency(region.revenue)} EUR
+                    {formatCurrency(region.revenue)} Fcfa
                   </div>
                   <div className="text-xs text-gray-500">
                     #{index + 1}

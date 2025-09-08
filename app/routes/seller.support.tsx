@@ -7,6 +7,7 @@ import ViewTicketModal from "~/components/admin/ViewTicketModal";
 import UpdateTicketModal from "~/components/seller/UpdateTicketModal";
 import { readToken } from "~/utils/session.server";
 import SellerLayout from "~/components/seller/SellerLayout";
+import { requireVendor } from "~/utils/auth.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -37,6 +38,7 @@ export interface Ticket {
 
 // Loader pour récupérer les tickets du vendeur
 export async function loader({ request }: LoaderFunctionArgs) {
+  await requireVendor(request);
   const token = await readToken(request);
 
   if (!token) {

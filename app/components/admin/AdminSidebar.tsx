@@ -27,7 +27,7 @@ export default function AdminSidebar({ onClose }: AdminSidebarProps) {
     { id: "users", label: "Utilisateurs", icon: Users, path: "/admin/users" },
     { id: "products", label: "Produits", icon: Package, path: "/admin/products" },
     { id: "orders", label: "Commandes", icon: ShoppingCart, path: "/admin/orders" },
-    { id: "support", label: "Support", icon: MessageSquare, path: "/admin/support", badge: "2" },
+    { id: "support", label: "Support", icon: MessageSquare, path: "/admin/support",},
     { id: "rapports", label: "Rapports", icon: BarChart3, path: "/admin/rapports" },
     { id: "categories", label: "Categories", icon: Box, path: "/admin/categories" },
     { id: "Blogs", label: "Blog", icon: TableOfContents, path: "/admin/blog" },
@@ -91,11 +91,7 @@ export default function AdminSidebar({ onClose }: AdminSidebarProps) {
                   <Icon className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3 flex-shrink-0" />
                   <span className="flex-1 truncate">{item.label}</span>
 
-                  {item.badge && (
-                    <span className="bg-red-500 text-white text-xs px-1.5 sm:px-2 py-0.5 rounded-full ml-2 flex-shrink-0">
-                      {item.badge}
-                    </span>
-                  )}
+                
                 </Link>
               </li>
             );

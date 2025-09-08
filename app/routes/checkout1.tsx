@@ -64,7 +64,7 @@ export default function CheckoutPage() {
         <div className="bg-green-100 text-green-700 p-3 rounded mb-4">
           ✅ Commande créée avec succès !<br />
           ID : {actionData.order.id}<br />
-          Total : {actionData.order.total} EUR<br />
+          Total : {actionData.order.total} Fcfa<br />
           Statut : {actionData.order.status}
         </div>
       )}

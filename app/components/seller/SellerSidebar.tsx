@@ -18,12 +18,11 @@ export default function SellerSidebar({ onClose }: SellerSidebarProps) {
   const location = useLocation();
 
   const menuItems = [
-    { id: "dashboard", label: "Tableau de bord", icon: LayoutDashboard, path: "/seller/dashboard" },
-    // { id: "products", label: "Produits", icon: Package, path: "/seller/products" },
+    { id: "Dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/seller/dashboard" },
+    { id: "produits", label: "Produits", icon: Package, path: "/seller/products" },
     { id: "orders", label: "Commandes", icon: ShoppingCart, path: "/seller/orders" },
     { id: "support", label: "Support", icon: MessageSquare, path: "/seller/support" },
     { id: "rembourssements", label: "rembourssements", icon: BarChart3, path: "/seller/refund" },
-    // { id: "refunds", label: "refunds", icon: Settings, path: "/seller/refund" },
   ];
 
   const handleLinkClick = () => {
