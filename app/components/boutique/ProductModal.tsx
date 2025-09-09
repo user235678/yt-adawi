@@ -607,6 +607,18 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
                   COMMANDER SUR MESURE
                 </Link>
               </div>
+              <div className="animate-fade-in-up text-center space-y-4" style={{animationDelay: '500ms'}}>
+                <h3 className="text-sm font-medium text-gray-600">Voulez-vous prendre rendez-vous?</h3>
+                <Link
+                  to="/client/appointments"
+                  className="w-full py-4 px-6 rounded-2xl font-bold text-lg transition-all duration-300 bg-adawi-gold border-2 text-white  hover:text-white flex items-center justify-center gap-3 transform hover:scale-105 active:scale-95 hover:shadow-xl"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  PRENDRE RENDEZ-VOUS
+                </Link>
+              </div>
               </div>
             </div>
           </div>
