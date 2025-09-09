@@ -39,6 +39,16 @@ export default function ClientSidebar({ onClose }: ClientSidebarProps) {
       href: "/client/tracking",
       icon: MessageSquare,
     },
+    {
+      name: "Rendez-vous",
+      href: "/client/appointments",
+      icon: MessageSquare,
+    },
+    {
+      name: "Mes Rendez-vous",
+      href: "/client/list",
+      icon: MessageSquare,
+    },
   ];
 
   const isActive = (href: string) => {

@@ -27,12 +27,14 @@ export default function AdminSidebar({ onClose }: AdminSidebarProps) {
     { id: "users", label: "Utilisateurs", icon: Users, path: "/admin/users" },
     { id: "products", label: "Produits", icon: Package, path: "/admin/products" },
     { id: "orders", label: "Commandes", icon: ShoppingCart, path: "/admin/orders" },
-    { id: "support", label: "Support", icon: MessageSquare, path: "/admin/support",},
+    { id: "support", label: "Support", icon: MessageSquare, path: "/admin/support", },
     { id: "rapports", label: "Rapports", icon: BarChart3, path: "/admin/rapports" },
     { id: "categories", label: "Categories", icon: Box, path: "/admin/categories" },
     { id: "Blogs", label: "Blog", icon: TableOfContents, path: "/admin/blog" },
     { id: "refunds", label: "refunds", icon: TableOfContents, path: "/admin/refunds" },
+    { id: "Rendez-Vous", label: "Rendez-Vous", icon: Settings, path: "/admin/appointments" },
     { id: "settings", label: "Paramètres", icon: Settings, path: "/admin/settings" },
+
   ];
 
   const handleLinkClick = () => {
@@ -47,8 +49,8 @@ export default function AdminSidebar({ onClose }: AdminSidebarProps) {
       {/* Header avec bouton de fermeture sur mobile */}
       <div className="p-4 sm:p-6 border-b border-gray-700">
         <div className="flex items-center justify-between">
-          <Link 
-            to="/admin/dashboard" 
+          <Link
+            to="/admin/dashboard"
             className="flex items-center"
             onClick={handleLinkClick}
           >
@@ -82,16 +84,15 @@ export default function AdminSidebar({ onClose }: AdminSidebarProps) {
                 <Link
                   to={item.path}
                   onClick={handleLinkClick}
-                  className={`w-full flex items-center px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-colors duration-200 text-sm sm:text-base ${
-                    isActive
+                  className={`w-full flex items-center px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-colors duration-200 text-sm sm:text-base ${isActive
                       ? "bg-adawi-gold text-black"
                       : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                  }`}
+                    }`}
                 >
                   <Icon className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3 flex-shrink-0" />
                   <span className="flex-1 truncate">{item.label}</span>
 
-                
+
                 </Link>
               </li>
             );
