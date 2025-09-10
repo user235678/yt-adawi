@@ -21,7 +21,7 @@ export default function StatsCards({ data }: StatsCardsProps) {
     {
       title: "Ventes Totales",
       value: formatNumber(data.total_revenue),
-      unit: "Fcfa",
+      unit: "F CFA",
       change: `+${data.revenue_growth}%`,
       changeValue: "+347k cette semaine",
       trend: "up",

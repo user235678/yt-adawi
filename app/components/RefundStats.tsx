@@ -89,7 +89,7 @@ export default function RefundStats({ token }: RefundStatsProps) {
         </div>
 
         <div className="bg-indigo-50 p-4 rounded-lg">
-          <div className="text-xl font-bold text-indigo-600">{stats.total_amount?.toFixed(2)} Fcfa</div>
+          <div className="text-xl font-bold text-indigo-600">{stats.total_amount?.toFixed(2)} F CFA</div>
           <div className="text-sm text-indigo-600">Montant total</div>
         </div>
 

@@ -292,7 +292,7 @@ export default function Appointments() {
   };
 
   const handleGoToDashboard = () => {
-    window.location.href = "/client/dashboard";
+    window.location.href = "/client/list";
   };
 
 

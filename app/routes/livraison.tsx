@@ -40,7 +40,7 @@ export default function Livraison() {
     {
       zone: "Grand Lomé",
       delay: "2-3 jours",
-      price: "2 000 Fcfa",
+      price: "2 000 F CFA",
       description: "Banlieue de Lomé et environs",
       icon: "🏘️",
       color: "bg-blue-100 text-blue-800"
@@ -48,7 +48,7 @@ export default function Livraison() {
     {
       zone: "Togo (Intérieur)",
       delay: "3-5 jours",
-      price: "5 000 Fcfa",
+      price: "5 000 F CFA",
       description: "Toutes les régions du Togo",
       icon: "🗺️",
       color: "bg-adawi-gold/20 text-adawi-brown"
@@ -123,7 +123,7 @@ export default function Livraison() {
     {
       id: 'faq5',
       question: "Comment fonctionne le paiement à la livraison ?",
-      answer: "Le paiement à la livraison est disponible pour les commandes au Togo. Vous payez en espèces ou par mobile money directement au livreur. Des frais supplémentaires de 1 000 Fcfa s'appliquent pour ce service."
+      answer: "Le paiement à la livraison est disponible pour les commandes au Togo. Vous payez en espèces ou par mobile money directement au livreur. Des frais supplémentaires de 1 000 F CFA s'appliquent pour ce service."
     },
     {
       id: 'faq6',

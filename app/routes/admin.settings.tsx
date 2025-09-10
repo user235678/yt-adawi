@@ -549,7 +549,7 @@ export default function AdminSettings() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Prix (Fcfa)
+                          Prix (F CFA)
                         </label>
                         <input
                           type="number"
@@ -573,7 +573,7 @@ export default function AdminSettings() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Gratuite à partir de (Fcfa)
+                          Gratuite à partir de (F CFA)
                         </label>
                         <input
                           type="number"
@@ -591,7 +591,7 @@ export default function AdminSettings() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Prix (Fcfa)
+                          Prix (F CFA)
                         </label>
                         <input
                           type="number"

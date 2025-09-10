@@ -25,7 +25,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     {
       id: 17,
       name: "Montre Sport",
-      price: "28000 Fcfa",
+      price: "28000 F CFA",
       priceValue: 28000,
       image: "/istockp.png",
       hoverImage: "/6.png", // Image de survol ajoutée
@@ -39,7 +39,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     {
       id: 2,
       name: "Veste Noire L",
-      price: "25000 Fcfa",
+      price: "25000 F CFA",
       priceValue: 25000,
       image: "/5.png",
       hoverImage: "/8.png", // Image de survol ajoutée
@@ -53,7 +53,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     {
       id: 3,
       name: "Chemise Blanche M",
-      price: "7000 Fcfa",
+      price: "7000 F CFA",
       priceValue: 7000,
       image: "/5.png",
       hoverImage: "/9.png", // Image de survol ajoutée
@@ -67,7 +67,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     {
       id: 4,
       name: "Cardigan Vert XXL",
-      price: "5000 Fcfa",
+      price: "5000 F CFA",
       priceValue: 5000,
       image: "/5.png",
       hoverImage: "/0.png", // Image de survol ajoutée
@@ -81,7 +81,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     {
       id: 5,
       name: "T-shirt Rouge M",
-      price: "4000 Fcfa",
+      price: "4000 F CFA",
       priceValue: 4000,
       image: "/5.png",
       hoverImage: "/6.png", // Image de survol ajoutée

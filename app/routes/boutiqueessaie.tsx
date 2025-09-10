@@ -178,7 +178,7 @@ function BoutiqueContent({ categories, isLoggedIn }: { categories: Category[], i
             id: product.id, // Utiliser l'ID original (string)
             name: product.name,
             price: product.priceValue,
-            currency: apiProduct?.currency || "Fcfa",
+            currency: apiProduct?.currency || "F CFA",
             sizes: product.sizes ? product.sizes.split(",").map(s => s.trim()).filter(Boolean) : [],
             colors: product.colors ? product.colors.split(",").map(c => c.trim()).filter(Boolean) : [],
             images: [product.image, product.hoverImage, product.image1, product.image2].filter(Boolean) as string[],
@@ -294,7 +294,7 @@ function BoutiqueContent({ categories, isLoggedIn }: { categories: Category[], i
                 {
                     id: "1",
                     name: "Polo vert",
-                    price: "10000 Fcfa",
+                    price: "10000 F CFA",
                     priceValue: 10000,
                     image: "/polo_homme.jpg",
                     hoverImage: "/6.png",
@@ -310,7 +310,7 @@ function BoutiqueContent({ categories, isLoggedIn }: { categories: Category[], i
                 {
                     id: "2",
                     name: "Robe élégante",
-                    price: "15000 Fcfa",
+                    price: "15000 F CFA",
                     priceValue: 15000,
                     image: "/robe_femme.jpg",
                     hoverImage: "/7.png",
@@ -326,7 +326,7 @@ function BoutiqueContent({ categories, isLoggedIn }: { categories: Category[], i
                 {
                     id: "3",
                     name: "T-shirt enfant",
-                    price: "5000 Fcfa",
+                    price: "5000 F CFA",
                     priceValue: 5000,
                     image: "/tshirt_enfant.jpg",
                     hoverImage: "/12.png",

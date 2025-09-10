@@ -76,7 +76,7 @@ export default function RefundStats({ data }: RefundStatsProps) {
               <div className="text-2xl font-bold text-gray-900">
                 {formatCurrency(data.total_refunded_amount)}
               </div>
-              <div className="text-sm text-gray-600">Fcfa remboursés</div>
+              <div className="text-sm text-gray-600">F CFA remboursés</div>
             </div>
             <div className="text-right">
               <div className="text-lg font-semibold text-gray-700">

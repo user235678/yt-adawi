@@ -163,6 +163,8 @@ function getStatusColor(status: string) {
   switch (status) {
     case 'en_cours':
       return 'bg-blue-100 text-blue-800';
+    case 'en_preparation':
+      return 'bg-blue-100 text-blue-800';
     case 'expediee':
       return 'bg-orange-100 text-orange-800';
     case 'livree':

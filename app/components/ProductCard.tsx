@@ -75,7 +75,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         </h3>
 
         <p className="text-xl font-bold text-adawi-gold">
-          {product.price.toLocaleString()} Fcfa
+          {product.price.toLocaleString()} F CFA
         </p>
 
         {/* Quantité */}

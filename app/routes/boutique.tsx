@@ -137,7 +137,7 @@ export default function Boutique() {
                 {
                     id: "1",
                     name: "Polo vert",
-                    price: "10000 Fcfa",
+                    price: "10000 F CFA",
                     priceValue: 10000,
                     image: "/polo_homme.jpg",
                     hoverImage: "/6.png",
@@ -153,7 +153,7 @@ export default function Boutique() {
                 {
                     id: "2",
                     name: "Robe élégante",
-                    price: "15000 Fcfa",
+                    price: "15000 F CFA",
                     priceValue: 15000,
                     image: "/robe_femme.jpg",
                     hoverImage: "/7.png",
@@ -169,7 +169,7 @@ export default function Boutique() {
                 {
                     id: "3",
                     name: "T-shirt enfant",
-                    price: "5000 Fcfa",
+                    price: "5000 F CFA",
                     priceValue: 5000,
                     image: "/tshirt_enfant.jpg",
                     hoverImage: "/12.png",

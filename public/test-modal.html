@@ -269,7 +269,7 @@
                                     </div>
                                     <div className="detail-item">
                                         <span className="detail-label">Total :</span>
-                                        <span className="detail-value">{order.total} Fcfa</span>
+                                        <span className="detail-value">{order.total} F CFA</span>
                                     </div>
                                 </div>
 
@@ -278,7 +278,7 @@
                                     <div key={i} style={{padding: '8px', border: '1px solid #ddd', marginBottom: '8px', borderRadius: '4px'}}>
                                         <div><strong>{item.name}</strong></div>
                                         <div style={{color: '#666', fontSize: '14px'}}>
-                                            Qté: {item.quantity} • Taille: {item.size} • Couleur: {item.color} • {item.price} Fcfa
+                                            Qté: {item.quantity} • Taille: {item.size} • Couleur: {item.color} • {item.price} F CFA
                                         </div>
                                     </div>
                                 ))}
@@ -354,7 +354,7 @@
                                             {order.status}
                                         </span>
                                     </td>
-                                    <td>{order.total} Fcfa</td>
+                                    <td>{order.total} F CFA</td>
                                     <td>
                                         <button 
                                             onClick={() => openViewModal(order)} 

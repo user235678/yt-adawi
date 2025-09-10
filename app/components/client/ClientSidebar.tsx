@@ -35,7 +35,7 @@ export default function ClientSidebar({ onClose }: ClientSidebarProps) {
       icon: MessageSquare,
     },
     {
-      name: "tracking",
+      name: "Suivie",
       href: "/client/tracking",
       icon: MessageSquare,
     },

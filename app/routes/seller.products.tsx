@@ -255,7 +255,7 @@ function EditProductModal({
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Prix de vente (Fcfa) *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Prix de vente (F CFA) *</label>
                   <input
                     type="number"
                     name="price"
@@ -269,7 +269,7 @@ function EditProductModal({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Prix de revient (Fcfa)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Prix de revient (F CFA)</label>
                   <input
                     type="number"
                     name="cost_price"
@@ -915,7 +915,7 @@ export default function SellerDashboard() {
                   <p className="text-sm text-gray-500">Valeur Stock</p>
                 </div>
               </div>
-              <span className="text-sm text-gray-600">Fcfa</span>
+              <span className="text-sm text-gray-600">F CFA</span>
             </div>
 
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
@@ -930,7 +930,7 @@ export default function SellerDashboard() {
                   <p className="text-sm text-gray-500">Profit Potentiel</p>
                 </div>
               </div>
-              <span className="text-sm text-gray-600">Fcfa</span>
+              <span className="text-sm text-gray-600">F CFA</span>
             </div>
           </div>
 
@@ -1047,7 +1047,7 @@ export default function SellerDashboard() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900 font-semibold">
-                            {product.price.toLocaleString('fr-FR')} {product.currency || 'Fcfa'}
+                            {product.price.toLocaleString('fr-FR')} {product.currency || 'F CFA'}
                           </div>
                           {product.cost_price && product.cost_price > 0 && (
                             <div className="text-xs text-green-600 font-medium">

@@ -120,7 +120,7 @@ export default function AdminDashboard() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                     <div className="bg-white rounded-lg p-4 shadow-md">
                         <h2 className="text-xl font-semibold">Revenu Total</h2>
-                        <p className="text-2xl font-bold">{total_revenue} Fcfa</p>
+                        <p className="text-2xl font-bold">{total_revenue} F CFA</p>
                     </div>
                     <div className="bg-white rounded-lg p-4 shadow-md">
                         <h2 className="text-xl font-semibold">Total Commandes</h2>
@@ -140,7 +140,7 @@ export default function AdminDashboard() {
                     </div>
                     <div className="bg-white rounded-lg p-4 shadow-md">
                         <h2 className="text-xl font-semibold">Commission Collectée</h2>
-                        <p className="text-2xl font-bold">{commission_collected} Fcfa</p>
+                        <p className="text-2xl font-bold">{commission_collected} F CFA</p>
                     </div>
                 </div>
 
@@ -149,7 +149,7 @@ export default function AdminDashboard() {
                     {revenue_evolution.map((item, index) => (
                         <li key={index} className="flex justify-between">
                             <span>{item.date}</span>
-                            <span>{item.revenue} Fcfa ({item.orders_count} commandes)</span>
+                            <span>{item.revenue} F CFA ({item.orders_count} commandes)</span>
                         </li>
                     ))}
                 </ul>
@@ -159,7 +159,7 @@ export default function AdminDashboard() {
                     {sales_by_category.map((category, index) => (
                         <li key={index} className="flex justify-between">
                             <span>{category.category_name}</span>
-                            <span>{category.total_sales} Fcfa ({category.product_count} produits)</span>
+                            <span>{category.total_sales} F CFA ({category.product_count} produits)</span>
                         </li>
                     ))}
                 </ul>
@@ -179,7 +179,7 @@ export default function AdminDashboard() {
                     {geographic_sales.map((sale, index) => (
                         <li key={index} className="flex justify-between">
                             <span>{sale.region}</span>
-                            <span>{sale.sales_count} ventes, {sale.revenue} Fcfa</span>
+                            <span>{sale.sales_count} ventes, {sale.revenue} F CFA</span>
                         </li>
                     ))}
                 </ul>
@@ -189,7 +189,7 @@ export default function AdminDashboard() {
                     {recent_orders.map((order, index) => (
                         <li key={index} className="flex justify-between">
                             <span>{order.order_id} - {order.user_name}</span>
-                            <span>{order.total} Fcfa - {order.status}</span>
+                            <span>{order.total} F CFA - {order.status}</span>
                         </li>
                     ))}
                 </ul>

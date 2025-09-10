@@ -71,7 +71,7 @@ export default function SidebarEssaie({
                             onChange={(e) => onMaxPriceChange(e.target.value)}
                             className="flex-1 px-1.5 py-1 border border-gray-300 rounded text-xs w-12"
                         />
-                        <span className="text-xs text-gray-600">Fcfa</span>
+                        <span className="text-xs text-gray-600">F CFA</span>
                     </div>
                 </div>
 

@@ -213,7 +213,7 @@ export default function SellerDashboard() {
                       <p className="text-sm text-gray-500">Chiffre d'affaires</p>
                     </div>
                   </div>
-                  <span className="text-sm text-gray-600">Fcfa</span>
+                  <span className="text-sm text-gray-600">F CFA</span>
                 </div>
 
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
@@ -257,7 +257,7 @@ export default function SellerDashboard() {
                       <p className="text-sm text-gray-500">Panier Moyen</p>
                     </div>
                   </div>
-                  <span className="text-sm text-gray-600">Fcfa</span>
+                  <span className="text-sm text-gray-600">F CFA</span>
                 </div>
               </div>
 
@@ -309,7 +309,7 @@ export default function SellerDashboard() {
                           </div>
                           <div className="text-right">
                             <p className="text-sm font-semibold text-gray-900">
-                              {formatCurrency(order.total)} Fcfa
+                              {formatCurrency(order.total)} F CFA
                             </p>
                             <p className="text-xs text-gray-500">{formatDate(order.created_at)}</p>
                           </div>
@@ -350,7 +350,7 @@ export default function SellerDashboard() {
                           </div>
                           <div className="text-right">
                             <p className="text-sm font-semibold text-gray-900">
-                              {formatCurrency(product.total_revenue)} Fcfa
+                              {formatCurrency(product.total_revenue)} F CFA
                             </p>
                           </div>
                         </div>
@@ -391,7 +391,7 @@ export default function SellerDashboard() {
                               </span>
                             </div>
                             <p className="text-sm font-semibold text-gray-900">
-                              {formatCurrency(order.total)} Fcfa
+                              {formatCurrency(order.total)} F CFA
                             </p>
                             <p className="text-xs text-gray-500">{formatDate(order.created_at)}</p>
                           </div>

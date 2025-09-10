@@ -137,7 +137,7 @@ export default function FAQ() {
       id: 'faq15',
       category: 'paiement',
       question: "Puis-je payer en plusieurs fois ?",
-      answer: "Le paiement en plusieurs fois est disponible pour les commandes supérieures à 50 000 Fcfa. Cette option apparaît lors du panier."
+      answer: "Le paiement en plusieurs fois est disponible pour les commandes supérieures à 50 000 F CFA. Cette option apparaît lors du panier."
     },
     {
       id: 'faq16',
