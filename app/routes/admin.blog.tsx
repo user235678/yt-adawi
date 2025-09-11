@@ -306,7 +306,7 @@ export default function AdminBlog() {
                             ))}
                         </tbody>
                     </table>
-                </div>
+                </div> 
             )}
 
             {/* Modal création */}

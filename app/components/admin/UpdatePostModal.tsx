@@ -473,14 +473,20 @@ export default function UpdatePostModal({
                     </button>
                   </div>
                   {formData.cover_image && (
-                    <img
-                      src={formData.cover_image}
-                      alt="Aperçu"
-                      className="mt-2 w-32 h-20 object-cover rounded-md"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
+                    <div className="mt-2">
+                      <img
+                        src={formData.cover_image}
+                        alt="Aperçu"
+                        className="w-32 h-20 object-cover rounded-md border border-gray-200"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                        }}
+                      />
+                      <div className="hidden text-sm text-gray-500 mt-1">
+                        Impossible de charger l'image
+                      </div>
+                    </div>
                   )}
                 </div>
 

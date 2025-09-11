@@ -16,6 +16,7 @@ import CreatePostModal from "~/components/admin/CreatePostModal";
 import ViewPostModal from "~/components/admin/ViewPostModal";
 import UpdatePostModal from "~/components/admin/UpdatePostModal";
 import { requireVendor } from "~/utils/auth.server";
+import SellerLayout from "~/components/seller/SellerLayout";
 
 interface BlogPost {
   id: string;
@@ -30,15 +31,15 @@ interface BlogPost {
 }
 
 interface LoaderData {
-    posts: BlogPost[];
-    token: string;
-    error?: string;
+  posts: BlogPost[];
+  token: string;
+  error?: string;
 }
 
 interface ActionData {
-    error?: string;
-    success?: boolean;
-    message?: string;
+  error?: string;
+  success?: boolean;
+  message?: string;
 }
 
 /* =======================
@@ -183,147 +184,150 @@ export default function SellerBlog() {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Gestion des articles de blog</h1>
-        <button
-          onClick={() => setOpenModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow transition-colors"
-        >
-          <Plus size={18} /> Créer un post
-        </button>
-      </div>
+    <SellerLayout userName="Nom du Vendeur"> {/* Replace with actual seller name */}
 
-      {/* Messages de succès/erreur */}
-      {actionData?.error && (
-        <div className="p-4 mb-4 text-red-700 bg-red-100 rounded-lg">
-          {actionData.error}
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold">Gestion des articles de blog</h1>
+          <button
+            onClick={() => setOpenModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow transition-colors"
+          >
+            <Plus size={18} /> Créer un post
+          </button>
         </div>
-      )}
 
-      {actionData?.success && (
-        <div className="p-4 mb-4 text-green-700 bg-green-100 rounded-lg">
-          {actionData.message || "Opération réussie"}
-        </div>
-      )}
+        {/* Messages de succès/erreur */}
+        {actionData?.error && (
+          <div className="p-4 mb-4 text-red-700 bg-red-100 rounded-lg">
+            {actionData.error}
+          </div>
+        )}
 
-      {error && (
-        <div className="p-4 mb-4 text-red-700 bg-red-100 rounded-lg">{error}</div>
-      )}
+        {actionData?.success && (
+          <div className="p-4 mb-4 text-green-700 bg-green-100 rounded-lg">
+            {actionData.message || "Opération réussie"}
+          </div>
+        )}
 
-      {posts.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-gray-500 text-lg">Aucun post trouvé.</p>
-        </div>
-      ) : (
-        <div className="overflow-x-auto border rounded-lg shadow">
-          <table className="w-full text-sm text-left border-collapse">
-            <thead className="bg-gray-100 text-gray-700">
-              <tr>
-                <th className="px-4 py-3">Image</th>
-                <th className="px-4 py-3">Titre</th>
-                <th className="px-4 py-3">Auteur</th>
-                <th className="px-4 py-3">Statut</th>
-                <th className="px-4 py-3">Publié le</th>
-                <th className="px-4 py-3">Vues</th>
-                <th className="px-4 py-3">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {posts.map((post) => (
-                <tr
-                  key={post.id}
-                  className="border-t hover:bg-gray-50 transition-colors"
-                >
-                  <td className="px-4 py-3">
-                    <img
-                      src={post.cover_image || "/placeholder.jpg"}
-                      alt={post.title}
-                      className="w-12 h-12 rounded-lg object-cover"
-                    />
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="font-medium text-gray-900 max-w-xs truncate">
-                      {post.title}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-gray-700">{post.author_name}</td>
-                  <td className="px-4 py-3">
-                    {post.published_at ? (
-                      <span className="inline-flex px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full">
-                        Publié
-                      </span>
-                    ) : (
-                      <span className="inline-flex px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 rounded-full">
-                        Brouillon
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-gray-700">
-                    {post.published_at
-                      ? new Date(post.published_at).toLocaleDateString("fr-FR")
-                      : "-"}
-                  </td>
-                  <td className="px-4 py-3 text-gray-700">
-                    {post.views_count.toLocaleString()}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => {
-                          setSelectedSlug(post.slug);
-                          setOpenViewModal(true);
-                        }}
-                        className="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
-                        title="Voir le post"
-                      >
-                        <Eye size={16} />
-                      </button>
-                      <button
-                        onClick={() => {
-                          setSelectedSlug(post.slug);
-                          setOpenUpdateModal(true);
-                        }}
-                        className="p-1 text-green-600 hover:text-green-800 hover:bg-green-50 rounded transition-colors"
-                        title="Modifier le post"
-                      >
-                        <Edit size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(post.id)}
-                        className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
-                        title="Supprimer le post"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
+        {error && (
+          <div className="p-4 mb-4 text-red-700 bg-red-100 rounded-lg">{error}</div>
+        )}
+
+        {posts.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500 text-lg">Aucun post trouvé.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto border rounded-lg shadow">
+            <table className="w-full text-sm text-left border-collapse">
+              <thead className="bg-gray-100 text-gray-700">
+                <tr>
+                  <th className="px-4 py-3">Image</th>
+                  <th className="px-4 py-3">Titre</th>
+                  <th className="px-4 py-3">Auteur</th>
+                  <th className="px-4 py-3">Statut</th>
+                  <th className="px-4 py-3">Publié le</th>
+                  <th className="px-4 py-3">Vues</th>
+                  <th className="px-4 py-3">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody>
+                {posts.map((post) => (
+                  <tr
+                    key={post.id}
+                    className="border-t hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="px-4 py-3">
+                      <img
+                        src={post.cover_image || "/placeholder.jpg"}
+                        alt={post.title}
+                        className="w-12 h-12 rounded-lg object-cover"
+                      />
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="font-medium text-gray-900 max-w-xs truncate">
+                        {post.title}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-gray-700">{post.author_name}</td>
+                    <td className="px-4 py-3">
+                      {post.published_at ? (
+                        <span className="inline-flex px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full">
+                          Publié
+                        </span>
+                      ) : (
+                        <span className="inline-flex px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 rounded-full">
+                          Brouillon
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-gray-700">
+                      {post.published_at
+                        ? new Date(post.published_at).toLocaleDateString("fr-FR")
+                        : "-"}
+                    </td>
+                    <td className="px-4 py-3 text-gray-700">
+                      {post.views_count.toLocaleString()}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => {
+                            setSelectedSlug(post.slug);
+                            setOpenViewModal(true);
+                          }}
+                          className="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
+                          title="Voir le post"
+                        >
+                          <Eye size={16} />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedSlug(post.slug);
+                            setOpenUpdateModal(true);
+                          }}
+                          className="p-1 text-green-600 hover:text-green-800 hover:bg-green-50 rounded transition-colors"
+                          title="Modifier le post"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(post.id)}
+                          className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
+                          title="Supprimer le post"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
-      {/* Modal création */}
-      <CreatePostModal isOpen={openModal} onClose={() => setOpenModal(false)} />
+        {/* Modal création */}
+        <CreatePostModal isOpen={openModal} onClose={() => setOpenModal(false)} />
 
-      {/* Modal visualisation */}
-      <ViewPostModal
-        isOpen={openViewModal}
-        onClose={() => setOpenViewModal(false)}
-        slug={selectedSlug}
-        token={token}
-      />
+        {/* Modal visualisation */}
+        <ViewPostModal
+          isOpen={openViewModal}
+          onClose={() => setOpenViewModal(false)}
+          slug={selectedSlug}
+          token={token}
+        />
 
-      {/* Modal modification */}
-      <UpdatePostModal
-        isOpen={openUpdateModal}
-        onClose={() => setOpenUpdateModal(false)}
-        slug={selectedSlug}
-        token={token}
-        onSuccess={handleUpdateSuccess}
-      />
-    </div>
+        {/* Modal modification */}
+        <UpdatePostModal
+          isOpen={openUpdateModal}
+          onClose={() => setOpenUpdateModal(false)}
+          slug={selectedSlug}
+          token={token}
+          onSuccess={handleUpdateSuccess}
+        />
+      </div>
+    </SellerLayout>
   );
 }

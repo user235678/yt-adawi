@@ -5,8 +5,6 @@ import { useLoaderData } from "@remix-run/react";
 import { useState, useEffect, useRef } from "react";
 import AddProductModal from "~/components/admin/AddProductModal";
 import ViewProductModal from "~/components/admin/ViewProductModal";
-import NotificationDropdown from "~/components/admin/NotificationDropdown";
-import NotificationDetailsModal from "~/components/admin/NotificationDetailsModal";
 import { requireVendor } from "~/utils/auth.server";
 import SellerLayout from "~/components/seller/SellerLayout";
 import {
@@ -532,30 +530,6 @@ function EditProductModal({
   );
 }
 
-// export const loader: LoaderFunction = async ({ request }) => {
-//     const token = await readToken(request);
-//     if (!token) {
-//         return redirect("/login");
-//     }
-//     try {
-//         // Vérifier les permissions utilisateur
-//         const userResponse = await fetch("https://showroom-backend-2x3g.onrender.com/auth/me", {
-//             headers: { Authorization: `Bearer ${token}` },
-//         });
-//         if (!userResponse.ok) {
-//             return redirect("/login");
-//         }
-//         const user = await userResponse.json();
-//         // Vérifier si l'utilisateur est vendeur ou admin
-//         if (user.role !== 'vendeur' && user.role !== 'admin' && user.role !== '') {
-//             return redirect("/");
-//         }
-//         return json({ user, token });
-//     } catch (error) {
-//         console.error("❌ Erreur loader dashboard:", error);
-//         return redirect("/login");
-//     }
-// };
 export const loader: LoaderFunction = async ({ request }) => {
   const user = await requireVendor(request);
   return json({ user });
@@ -1100,7 +1074,7 @@ export default function SellerDashboard() {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex items-center justify-end space-x-2">
+                          <div className="flex items-center justify-center space-x-2">
                             <button
                               onClick={() => openViewModal(product)}
                               className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
@@ -1108,7 +1082,7 @@ export default function SellerDashboard() {
                             >
                               <Eye className="w-4 h-4" />
                             </button>
-                            <button
+                            {/* <button
                               onClick={() => openEditModal(product)}
                               className="p-2 text-gray-400 hover:text-green-600 transition-colors"
                               title="Modifier"
@@ -1120,7 +1094,7 @@ export default function SellerDashboard() {
                               title="Supprimer le produit"
                             >
                               <Trash2 className="w-4 h-4" />
-                            </button>
+                            </button> */}
                           </div>
                         </td>
                       </tr>
@@ -1148,7 +1122,7 @@ export default function SellerDashboard() {
             product={selectedProduct}
           />
         )}
-        {selectedProduct && (
+        {/* {selectedProduct && (
           <EditProductModal
             isOpen={isEditModalOpen}
             onClose={() => setIsEditModalOpen(false)}
@@ -1158,14 +1132,9 @@ export default function SellerDashboard() {
             token={token}
           />
 
-        )}
+        )} */}
       </div>
-      <NotificationDetailsModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        notification={selectedNotification}
-        onMarkAsRead={markAsRead}
-      />
+      
     </SellerLayout>
 
   );

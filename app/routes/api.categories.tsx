@@ -1,6 +1,6 @@
 import { json, redirect, type LoaderFunction } from "@remix-run/node";
 import { readToken } from "~/utils/session.server";
-import { requireAdmin } from "~/utils/auth.server";
+
 
 export const loader: LoaderFunction = async ({ request }) => {
   try {
@@ -15,7 +15,6 @@ export const loader: LoaderFunction = async ({ request }) => {
     }
 
     // Vérifier que l'utilisateur est bien admin
-    await requireAdmin(request);
 
     // Appeler ton backend
     const response = await fetch(
