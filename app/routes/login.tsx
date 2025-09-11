@@ -14,6 +14,7 @@ import CompactHeader from "~/components/CompactHeader";
 import { API_BASE } from "~/utils/auth.server";
 import { commitToken, readToken } from "~/utils/session.server";
 import { getUserProfile } from "~/utils/auth.server";
+import Header from "~/components/CompactHeader";
 
 export const meta: MetaFunction = () => [{ title: "The Providers - Login" }];
 
@@ -153,7 +154,7 @@ export default function Login() {
   return (
     <>
       <TopBanner />
-      <CompactHeader />
+      <Header />
       <div
         className="min-h-screen flex items-center justify-center bg-cover bg-center px-4"
         style={{

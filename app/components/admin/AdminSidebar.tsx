@@ -12,7 +12,8 @@ import {
   Mail,
   LogOut,
   X,
-  TableOfContents
+  TableOfContents,
+  Clock
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -33,6 +34,7 @@ export default function AdminSidebar({ onClose }: AdminSidebarProps) {
     { id: "Blogs", label: "Blog", icon: TableOfContents, path: "/admin/blog" },
     { id: "refunds", label: "refunds", icon: TableOfContents, path: "/admin/refunds" },
     { id: "Rendez-Vous", label: "Rendez-Vous", icon: Settings, path: "/admin/appointments" },
+    { id: "availability", label: "Disponibilités", icon: Clock, path: "/admin/availability" },
     { id: "settings", label: "Paramètres", icon: Settings, path: "/admin/settings" },
 
   ];

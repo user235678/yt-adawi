@@ -360,7 +360,7 @@ export default function panier() {
         }
 
         const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        navigate(`/checkout?total=${total}`);
+        navigate(`/checkout-new?total=${total}`);
     };
 
     // Vérifications de sécurité pour l'état du panier
