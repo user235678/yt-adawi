@@ -132,9 +132,7 @@ export default function RefundStats({ data }: RefundStatsProps) {
 
       {/* Footer */}
       <div className="mt-6 pt-4 border-t border-gray-100">
-        <button className="w-full text-center text-sm text-blue-600 hover:text-blue-800">
-          Gérer les remboursements →
-        </button>
+       
       </div>
     </div>
   );

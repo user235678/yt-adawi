@@ -1,14 +1,14 @@
 import type { MetaFunction, LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import StatsCards from "~/components/admin/StatsCards";
 import SalesChart from "~/components/admin/SalesChart";
 import InventoryAlerts from "~/components/admin/InventoryAlerts";
 import { readToken } from "~/utils/session.server";
 import RefundStats from "~/components/admin/RefundStats";
 import { requireAdmin } from "~/utils/auth.server";
-
+import { GripVertical, X, MinusCircle, PlusCircle } from "lucide-react";
 
 export const meta: MetaFunction = () => {
   return [
@@ -16,7 +16,6 @@ export const meta: MetaFunction = () => {
     { name: "description", content: "Tableau de bord administrateur" },
   ];
 };
-
 
 export const loader: LoaderFunction = async ({ request }) => {
   // Vérifier que l'utilisateur est admin
@@ -84,10 +83,99 @@ export const loader: LoaderFunction = async ({ request }) => {
   }
 };
 
-
 export default function AdminDashboard() {
   const data = useLoaderData<typeof loader>();
   const [activeSection, setActiveSection] = useState<string>('overview');
+
+  // État pour la position de la div Stats - Initialisation sécurisée
+  const [statsPosition, setStatsPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [isStatsVisible, setIsStatsVisible] = useState(true);
+  const [isStatsMinimized, setIsStatsMinimized] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  // Référence à la div Stats
+  const statsRef = useRef<HTMLDivElement>(null);
+
+  // Gestionnaire pour commencer le drag
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (statsRef.current) {
+      const rect = statsRef.current.getBoundingClientRect();
+      setDragOffset({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      });
+      setIsDragging(true);
+    }
+  };
+
+  // Gestionnaire pour le mouvement pendant le drag
+  const handleMouseMove = (e: MouseEvent) => {
+    if (isDragging) {
+      // Contraindre la position dans les limites de l'écran
+      const maxX = window.innerWidth - (isStatsMinimized ? 200 : 256); // 256px = w-64
+      const maxY = window.innerHeight - 100;
+
+      setStatsPosition({
+        x: Math.max(0, Math.min(maxX, e.clientX - dragOffset.x)),
+        y: Math.max(0, Math.min(maxY, e.clientY - dragOffset.y))
+      });
+    }
+  };
+
+  // Gestionnaire pour terminer le drag
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  // Effet pour ajouter/supprimer les écouteurs d'événements
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, dragOffset]);
+
+  // Initialiser la position au chargement de la page - Côté client uniquement
+  useEffect(() => {
+    setIsClient(true);
+
+    // Position initiale par défaut
+    const initialX = Math.max(0, window.innerWidth - 300);
+    const initialY = Math.max(0, window.innerHeight / 2 - 100);
+
+    setStatsPosition({
+      x: initialX,
+      y: initialY
+    });
+  }, []);
+
+  // Gérer le redimensionnement de la fenêtre
+  useEffect(() => {
+    if (!isClient) return;
+
+    const handleResize = () => {
+      // Ajuster la position si elle sort de l'écran après redimensionnement
+      setStatsPosition(prev => {
+        const maxX = window.innerWidth - (isStatsMinimized ? 200 : 256);
+        const maxY = window.innerHeight - 100;
+
+        return {
+          x: Math.max(0, Math.min(maxX, prev.x)),
+          y: Math.max(0, Math.min(maxY, prev.y))
+        };
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isClient, isStatsMinimized]);
 
   const sections = [
     { id: 'overview', label: 'Vue d\'ensemble', icon: '📊' },
@@ -156,46 +244,8 @@ export default function AdminDashboard() {
         return (
           <div className="space-y-6">
             <InventoryAlerts data={data.inventory_alerts} />
-            {/* {data.top_products?.length > 0 && (
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Produits populaires</h3>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Produit
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Ventes
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {data.top_products.slice(0, 5).map((product: any, index: number) => (
-                        <tr key={index}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {product.name}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {product.sales}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )} */}
           </div>
         );
-
-      // case 'geographic':
-      //   return (
-      //     <div className="space-y-6">
-      //       <GeographicSales data={data.geographic_sales} />
-      //     </div>
-      //   );
 
       case 'refunds':
         return (
@@ -270,48 +320,106 @@ export default function AdminDashboard() {
         {renderContent()}
       </div>
 
-      {/* Floating Action Button - Mobile */}
-      <div className="fixed bottom-6 right-6 md:hidden">
-        <div className="relative">
-          <button className="bg-adawi-brown hover:bg-adawi-brown/90 text-white rounded-full p-4 shadow-lg transition-colors">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-          </button>
-        </div>
-      </div>
+      {/* Quick Stats Sidebar - Draggable - Rendu côté client uniquement */}
+      {isClient && isStatsVisible && (
+        <div
+          ref={statsRef}
+          style={{
+            position: 'fixed',
+            left: `${statsPosition.x}px`,
+            top: `${statsPosition.y}px`,
+            zIndex: 50,
+            width: isStatsMinimized ? 'auto' : '16rem', // w-64 = 16rem
+            cursor: isDragging ? 'grabbing' : 'auto',
+            transition: isDragging ? 'none' : 'all 0.2s ease',
+            opacity: isDragging ? 0.8 : 1,
+          }}
+          className="bg-white rounded-lg shadow-lg border border-gray-200"
+        >
+          {/* Header avec poignée de déplacement */}
+          <div
+            className="flex items-center justify-between p-3 bg-adawi-brown/10 rounded-t-lg cursor-grab border-b border-gray-200 select-none"
+            onMouseDown={handleMouseDown}
+          >
+            <div className="flex items-center">
+              <GripVertical className="w-4 h-4 text-gray-500 mr-2" />
+              <h4 className="font-semibold text-gray-800 text-sm">Stats en temps réel</h4>
+            </div>
+            <div className="flex items-center space-x-1">
+              {isStatsMinimized ? (
+                <button
+                  onClick={() => setIsStatsMinimized(false)}
+                  className="p-1 hover:bg-gray-200 rounded-full transition-colors"
+                  title="Agrandir"
+                >
+                  <PlusCircle className="w-4 h-4 text-gray-500" />
+                </button>
+              ) : (
+                <button
+                  onClick={() => setIsStatsMinimized(true)}
+                  className="p-1 hover:bg-gray-200 rounded-full transition-colors"
+                  title="Réduire"
+                >
+                  <MinusCircle className="w-4 h-4 text-gray-500" />
+                </button>
+              )}
+              <button
+                onClick={() => setIsStatsVisible(false)}
+                className="p-1 hover:bg-gray-200 rounded-full transition-colors"
+                title="Fermer"
+              >
+                <X className="w-4 h-4 text-gray-500" />
+              </button>
+            </div>
+          </div>
 
-      {/* Quick Stats Sidebar - Desktop */}
-      <div className="hidden xl:block fixed right-6 top-1/2 transform -translate-y-1/2 w-64 bg-white rounded-lg shadow-lg p-4">
-        <h4 className="font-semibold text-gray-800 mb-3">Stats en temps réel</h4>
-        <div className="space-y-3 text-sm">
-          <div className="flex justify-between items-center">
-            <span className="text-gray-600">Revenus du jour</span>
-            <span className="font-semibold text-green-600">
-              {new Intl.NumberFormat('fr-FR', { 
-                style: 'currency', 
-                currency: 'XOF',
-                minimumFractionDigits: 0 
-              }).format(data.total_revenue)}
-            </span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-600">Commandes</span>
-            <span className="font-semibold">{data.total_orders}</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-600">Nouveaux clients</span>
-            <span className="font-semibold text-blue-600">{data.total_customers}</span>
-          </div>
-          <div className="h-px bg-gray-200 my-3"></div>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-600">Croissance revenus</span>
-            <span className={`font-semibold ${data.revenue_growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {data.revenue_growth >= 0 ? '+' : ''}{data.revenue_growth?.toFixed(1)}%
-            </span>
-          </div>
+          {/* Contenu */}
+          {!isStatsMinimized && (
+            <div className="p-4">
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Revenus du jour</span>
+                  <span className="font-semibold text-green-600">
+                    {new Intl.NumberFormat('fr-FR', {
+                      style: 'currency',
+                      currency: 'XOF',
+                      minimumFractionDigits: 0
+                    }).format(data.total_revenue)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Commandes</span>
+                  <span className="font-semibold">{data.total_orders}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Nouveaux clients</span>
+                  <span className="font-semibold text-blue-600">{data.total_customers}</span>
+                </div>
+                <div className="h-px bg-gray-200 my-3"></div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Croissance revenus</span>
+                  <span className={`font-semibold ${data.revenue_growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {data.revenue_growth >= 0 ? '+' : ''}{data.revenue_growth?.toFixed(1)}%
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
+      )}
+
+      {/* Bouton pour réafficher les stats si masquées */}
+      {isClient && !isStatsVisible && (
+        <button
+          onClick={() => setIsStatsVisible(true)}
+          className="fixed bottom-6 right-6 bg-adawi-brown text-white rounded-full p-3 shadow-lg hover:bg-adawi-brown/90 transition-colors z-50"
+          title="Afficher les statistiques"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+        </button>
+      )}
     </div>
   );
 }
