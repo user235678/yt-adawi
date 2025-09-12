@@ -4,7 +4,7 @@ import { json, redirect } from "@remix-run/node";
 import { useLoaderData, Form } from "@remix-run/react";
 import {
     Calendar, Clock, User, CheckCircle, XCircle, Search,
-    ChevronLeft, ChevronRight, AlertCircle
+    ChevronLeft, ChevronRight, AlertCircle, X
 } from "lucide-react";
 import { readToken } from "~/utils/session.server";
 import CompactHeader from "~/components/CompactHeader";
@@ -41,6 +41,14 @@ function formatDisplayDate(dateStr: string): string {
         day: 'numeric',
         month: 'long',
         year: 'numeric'
+    });
+}
+
+function formatShortDate(dateStr: string): string {
+    return new Date(dateStr).toLocaleDateString('fr-FR', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short'
     });
 }
 
@@ -222,62 +230,72 @@ export default function ClientBooking() {
     console.log("Hook data - filteredSlots:", filteredSlots);
     console.log("Hook data - weekDates:", weekDates);
 
+    // Mobile view state
+    const [isMobileCalendarView, setIsMobileCalendarView] = useState(false);
+
     return (
         <ClientLayout>
             <div className="min-h-screen bg-gradient-to-br from-adawi-beige via-white to-adawi-beige-dark">
-                <div className="container mx-auto px-4 py-8">
+                <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+                    {/* Error Alert - Responsive */}
                     {error && (
-                        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center">
-                            <AlertCircle className="w-5 h-5 text-red-600 mr-2" />
-                            <span className="text-red-700">{error}</span>
+                        <div className="mb-4 sm:mb-6 bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4 flex items-start gap-2 sm:gap-3">
+                            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                            <span className="text-red-700 text-sm sm:text-base break-words">{error}</span>
                         </div>
                     )}
 
-                    {/* Debug Info - À supprimer en production */}
-                    <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <h3 className="font-bold text-blue-800 mb-2">Debug Info:</h3>
-                        <p className="text-blue-700 text-sm">Total slots: {initialSlots?.length || 0}</p>
-                        <p className="text-blue-700 text-sm">Filtered slots: {filteredSlots?.length || 0}</p>
-                        <p className="text-blue-700 text-sm">Vendors: {vendors?.length || 0}</p>
-                        <p className="text-blue-700 text-sm">Week dates: {weekDates?.length || 0}</p>
+                    {/* Debug Info - Responsive (À supprimer en production) */}
+                    <div className="mb-4 sm:mb-6 bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
+                        <h3 className="font-bold text-blue-800 mb-2 text-sm sm:text-base">Debug Info:</h3>
+                        <div className="text-blue-700 text-xs sm:text-sm space-y-1">
+                            <p>Total slots: {initialSlots?.length || 0}</p>
+                            <p>Filtered slots: {filteredSlots?.length || 0}</p>
+                            <p>Vendors: {vendors?.length || 0}</p>
+                            <p>Week dates: {weekDates?.length || 0}</p>
+                        </div>
                         {initialSlots?.length > 0 && (
                             <details className="mt-2">
-                                <summary className="text-blue-700 text-sm cursor-pointer">Voir les créneaux bruts</summary>
-                                <pre className="text-xs bg-blue-100 p-2 mt-2 rounded overflow-auto max-h-40">
+                                <summary className="text-blue-700 text-xs sm:text-sm cursor-pointer">
+                                    Voir les créneaux bruts
+                                </summary>
+                                <pre className="text-xs bg-blue-100 p-2 mt-2 rounded overflow-auto max-h-32 sm:max-h-40">
                                     {JSON.stringify(initialSlots.slice(0, 3), null, 2)}
                                 </pre>
                             </details>
                         )}
                     </div>
 
-                    {/* Header */}
-                    <div className="text-center mb-8">
-                        <h1 className="text-3xl md:text-4xl font-bold text-adawi-brown mb-4">
+                    {/* Header - Responsive */}
+                    <div className="text-center mb-6 sm:mb-8">
+                        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-adawi-brown mb-3 sm:mb-4">
                             Réserver un créneau
                         </h1>
-                        <p className="text-gray-600 max-w-2xl mx-auto">
+                        <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto px-2">
                             Choisissez le créneau qui vous convient le mieux pour votre rendez-vous
                         </p>
                     </div>
 
-                    {/* Filters */}
-                    <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-                        <div className="flex flex-col md:flex-row gap-4">
+                    {/* Filters - Responsive */}
+                    <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8">
+                        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                            {/* Search Input */}
                             <div className="flex-1 relative">
-                                <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                                 <input
                                     type="text"
                                     placeholder="Rechercher par vendeur..."
                                     value={searchTerm}
                                     onChange={e => setSearchTerm(e.target.value)}
-                                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-adawi-gold focus:border-transparent"
+                                    className="pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg w-full text-sm sm:text-base focus:ring-2 focus:ring-adawi-gold focus:border-transparent"
                                 />
                             </div>
 
+                            {/* Vendor Filter */}
                             <select
                                 value={vendorFilter}
                                 onChange={e => setVendorFilter(e.target.value)}
-                                className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-adawi-gold focus:border-transparent"
+                                className="border border-gray-300 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-adawi-gold focus:border-transparent min-w-0 sm:min-w-[200px]"
                             >
                                 <option value="all">Tous les vendeurs</option>
                                 {vendors.map(vendor => (
@@ -287,32 +305,65 @@ export default function ClientBooking() {
                         </div>
                     </div>
 
-                    {/* Week Navigation */}
-                    <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-                        <div className="flex items-center justify-between mb-4">
+                    {/* Mobile View Toggle */}
+                    <div className="block sm:hidden mb-4">
+                        <div className="bg-white rounded-lg p-2 flex">
+                            <button
+                                onClick={() => setIsMobileCalendarView(false)}
+                                className={`flex-1 py-2 px-4 rounded text-sm font-medium transition-colors ${
+                                    !isMobileCalendarView 
+                                        ? 'bg-adawi-gold text-black' 
+                                        : 'text-gray-600 hover:bg-gray-100'
+                                }`}
+                            >
+                                Liste
+                            </button>
+                            <button
+                                onClick={() => setIsMobileCalendarView(true)}
+                                className={`flex-1 py-2 px-4 rounded text-sm font-medium transition-colors ${
+                                    isMobileCalendarView 
+                                        ? 'bg-adawi-gold text-black' 
+                                        : 'text-gray-600 hover:bg-gray-100'
+                                }`}
+                            >
+                                Calendrier
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Week Navigation - Responsive */}
+                    <div className={`bg-white rounded-xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8 ${!isMobileCalendarView ? 'hidden sm:block' : ''}`}>
+                        <div className="flex items-center justify-between mb-4 sm:mb-6">
                             <button
                                 onClick={goToPreviousWeek}
-                                className="flex items-center px-4 py-2 text-adawi-brown hover:bg-adawi-beige rounded-lg transition-colors"
+                                className="flex items-center px-3 sm:px-4 py-2 text-adawi-brown hover:bg-adawi-beige rounded-lg transition-colors text-sm sm:text-base"
                             >
-                                <ChevronLeft className="w-5 h-5 mr-1" />
-                                Semaine précédente
+                                <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-1" />
+                                <span className="hidden sm:inline">Semaine précédente</span>
+                                <span className="sm:hidden">Précédente</span>
                             </button>
 
-                            <h2 className="text-lg font-semibold text-adawi-brown">
-                                Semaine du {weekDates[0] ? formatDisplayDate(weekDates[0]) : "Chargement..."}
+                            <h2 className="text-sm sm:text-lg font-semibold text-adawi-brown text-center px-2">
+                                <span className="hidden sm:inline">
+                                    Semaine du {weekDates[0] ? formatDisplayDate(weekDates[0]) : "Chargement..."}
+                                </span>
+                                <span className="sm:hidden">
+                                    {weekDates[0] ? formatShortDate(weekDates[0]) : "Chargement..."}
+                                </span>
                             </h2>
 
                             <button
                                 onClick={goToNextWeek}
-                                className="flex items-center px-4 py-2 text-adawi-brown hover:bg-adawi-beige rounded-lg transition-colors"
+                                className="flex items-center px-3 sm:px-4 py-2 text-adawi-brown hover:bg-adawi-beige rounded-lg transition-colors text-sm sm:text-base"
                             >
-                                Semaine suivante
-                                <ChevronRight className="w-5 h-5 ml-1" />
+                                <span className="hidden sm:inline">Semaine suivante</span>
+                                <span className="sm:hidden">Suivante</span>
+                                <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 ml-1" />
                             </button>
                         </div>
 
-                        {/* Calendar Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
+                        {/* Calendar Grid - Responsive */}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-2 sm:gap-4">
                             {weekDates.map(date => {
                                 const daySlots = slotsByDate[date] || [];
                                 const availableSlots = daySlots.filter(slot => 
@@ -322,13 +373,14 @@ export default function ClientBooking() {
                                 );
 
                                 return (
-                                    <div key={date} className="border border-gray-200 rounded-lg p-4 min-h-[200px]">
-                                        <div className="text-center mb-3">
-                                            <div className="font-semibold text-adawi-brown">
-                                                {formatDisplayDate(date)}
+                                    <div key={date} className="border border-gray-200 rounded-lg p-2 sm:p-4 min-h-[120px] sm:min-h-[200px]">
+                                        <div className="text-center mb-2 sm:mb-3">
+                                            <div className="font-semibold text-adawi-brown text-xs sm:text-sm">
+                                                <span className="sm:hidden">{formatShortDate(date)}</span>
+                                                <span className="hidden sm:block">{formatDisplayDate(date)}</span>
                                             </div>
-                                            <div className="text-sm text-gray-500">
-                                                {availableSlots.length} créneaux disponibles
+                                            <div className="text-xs text-gray-500">
+                                                {availableSlots.length} créneaux
                                             </div>
                                             {/* Debug pour chaque jour */}
                                             <div className="text-xs text-red-500">
@@ -336,12 +388,12 @@ export default function ClientBooking() {
                                             </div>
                                         </div>
 
-                                        <div className="space-y-2">
+                                        <div className="space-y-1 sm:space-y-2">
                                             {availableSlots.slice(0, 3).map((slot, index) => (
                                                 <div
                                                     key={index}
                                                     onClick={() => handleSlotClick(slot)}
-                                                    className="bg-adawi-beige hover:bg-adawi-gold/20 rounded-lg p-2 cursor-pointer transition-colors text-center text-sm"
+                                                    className="bg-adawi-beige hover:bg-adawi-gold/20 rounded-lg p-1 sm:p-2 cursor-pointer transition-colors text-center text-xs sm:text-sm"
                                                 >
                                                     <div className="font-medium text-adawi-brown">
                                                         {formatDisplayTime(slot.start_time)} - {formatDisplayTime(slot.end_time)}
@@ -354,7 +406,7 @@ export default function ClientBooking() {
 
                                             {availableSlots.length > 3 && (
                                                 <div className="text-center text-xs text-gray-500 pt-1">
-                                                    +{availableSlots.length - 3} autres créneaux
+                                                    +{availableSlots.length - 3} autres
                                                 </div>
                                             )}
                                         </div>
@@ -364,58 +416,60 @@ export default function ClientBooking() {
                         </div>
                     </div>
 
-                    {/* Available Slots List */}
-                    <div className="bg-white rounded-xl shadow-lg p-6">
-                        <h3 className="text-xl font-semibold text-adawi-brown mb-4 flex items-center">
-                            <Clock className="w-5 h-5 mr-2" />
-                            Tous les créneaux disponibles ({filteredSlots.length})
+                    {/* Available Slots List - Responsive */}
+                    <div className={`bg-white rounded-xl shadow-lg p-4 sm:p-6 ${isMobileCalendarView ? 'hidden sm:block' : ''}`}>
+                        <h3 className="text-lg sm:text-xl font-semibold text-adawi-brown mb-4 flex items-center">
+                            <Clock className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                            <span className="hidden sm:inline">Tous les créneaux disponibles ({filteredSlots.length})</span>
+                            <span className="sm:hidden">Créneaux ({filteredSlots.length})</span>
                         </h3>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                             {filteredSlots.map((slot, index) => (
                                 <div
                                     key={index}
-                                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                                    className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow"
                                 >
-                                    <div className="flex items-start justify-between mb-3">
-                                        <div>
-                                            <div className="font-semibold text-adawi-brown">
-                                                {formatDisplayDate(slot.date)}
+                                    <div className="flex items-start justify-between mb-3 gap-2">
+                                        <div className="min-w-0 flex-1">
+                                            <div className="font-semibold text-adawi-brown text-sm sm:text-base">
+                                                <span className="hidden sm:block">{formatDisplayDate(slot.date)}</span>
+                                                <span className="sm:hidden">{formatShortDate(slot.date)}</span>
                                             </div>
-                                            <div className="text-sm text-gray-600">
+                                            <div className="text-xs sm:text-sm text-gray-600">
                                                 {formatDisplayTime(slot.start_time)} - {formatDisplayTime(slot.end_time)}
                                             </div>
-                                            <div className="text-sm text-gray-500">
-                                                {slot.duration_minutes} minutes
+                                            <div className="text-xs sm:text-sm text-gray-500">
+                                                {slot.duration_minutes} min
                                             </div>
                                         </div>
-                                        <div className="flex items-center">
+                                        <div className="flex-shrink-0">
                                             {slot.is_available ? (
-                                                <CheckCircle className="w-5 h-5 text-green-500" />
+                                                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
                                             ) : (
-                                                <XCircle className="w-5 h-5 text-red-500" />
+                                                <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
                                             )}
                                         </div>
                                     </div>
 
                                     <div className="mb-3">
-                                        <div className="flex items-center text-sm text-gray-600">
-                                            <User className="w-4 h-4 mr-1" />
-                                            {slot.vendor_name}
+                                        <div className="flex items-center text-xs sm:text-sm text-gray-600">
+                                            <User className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
+                                            <span className="truncate">{slot.vendor_name}</span>
                                         </div>
                                     </div>
 
-                                    <div className="flex gap-2">
+                                    <div className="flex flex-col sm:flex-row gap-2">
                                         <button
                                             onClick={() => handleCheckAvailability(slot)}
                                             disabled={checkingSlot === `${slot.date}-${slot.start_time}` || isLoading}
-                                            className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm transition-colors disabled:opacity-50"
+                                            className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-xs sm:text-sm transition-colors disabled:opacity-50"
                                         >
                                             {checkingSlot === `${slot.date}-${slot.start_time}` ? "Vérification..." : "Vérifier"}
                                         </button>
                                         <button
                                             onClick={() => handleSlotClick(slot)}
-                                            className="flex-1 bg-adawi-gold hover:bg-adawi-gold/90 text-black px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                                            className="flex-1 bg-adawi-gold hover:bg-adawi-gold/90 text-black px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors"
                                         >
                                             Réserver
                                         </button>
@@ -425,11 +479,13 @@ export default function ClientBooking() {
                         </div>
 
                         {filteredSlots.length === 0 && (
-                            <div className="text-center py-8 text-gray-500">
-                                <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                                <p>Aucun créneau disponible pour les critères sélectionnés</p>
+                            <div className="text-center py-8 sm:py-12 text-gray-500">
+                                <Calendar className="w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-4 opacity-50" />
+                                <p className="text-sm sm:text-base">
+                                    Aucun créneau disponible pour les critères sélectionnés
+                                </p>
                                 {initialSlots.length > 0 && (
-                                    <p className="text-sm mt-2">
+                                    <p className="text-xs sm:text-sm mt-2">
                                         ({initialSlots.length} créneaux au total dans les données)
                                     </p>
                                 )}
@@ -438,7 +494,7 @@ export default function ClientBooking() {
                     </div>
                 </div>
 
-                {/* Booking Modal */}
+                {/* Booking Modal - Responsive */}
                 {isBookingModalOpen && selectedSlot && (
                     <BookingModal
                         slot={selectedSlot}
@@ -455,7 +511,7 @@ export default function ClientBooking() {
     );
 }
 
-// Modal Component
+// Modal Component - Responsive
 function BookingModal({
     slot,
     isOpen,
@@ -485,55 +541,73 @@ function BookingModal({
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl max-w-md w-full p-6">
-                <h2 className="text-xl font-bold text-adawi-brown mb-4">
-                    Confirmer la réservation
-                </h2>
-
-                <div className="bg-adawi-beige rounded-lg p-4 mb-6">
-                    <div className="flex items-center mb-2">
-                        <Calendar className="w-5 h-5 text-adawi-brown mr-2" />
-                        <span className="font-semibold">{formatDate(slot.date)}</span>
-                    </div>
-                    <div className="flex items-center mb-2">
-                        <Clock className="w-5 h-5 text-adawi-brown mr-2" />
-                        <span>{formatTime(slot.start_time)} - {formatTime(slot.end_time)}</span>
-                    </div>
-                    <div className="flex items-center">
-                        <User className="w-5 h-5 text-adawi-brown mr-2" />
-                        <span>{slot.vendor_name}</span>
-                    </div>
-                </div>
-
-                <Form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Notes (optionnel)
-                        </label>
-                        <textarea
-                            name="notes"
-                            rows={3}
-                            placeholder="Ajoutez des notes pour votre rendez-vous..."
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent"
-                        />
-                    </div>
-
-                    <div className="flex gap-3 pt-4">
+            <div className="bg-white rounded-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+                <div className="p-4 sm:p-6">
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-lg sm:text-xl font-bold text-adawi-brown">
+                            Confirmer la réservation
+                        </h2>
                         <button
-                            type="button"
                             onClick={onClose}
-                            className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors"
+                            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
                         >
-                            Annuler
-                        </button>
-                        <button
-                            type="submit"
-                            className="flex-1 bg-adawi-gold hover:bg-adawi-gold/90 text-black px-4 py-2 rounded-lg font-medium transition-colors"
-                        >
-                            Confirmer
+                            <X className="w-5 h-5 text-gray-500" />
                         </button>
                     </div>
-                </Form>
+
+                    {/* Slot Details */}
+                    <div className="bg-adawi-beige rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
+                        <div className="space-y-2">
+                            <div className="flex items-center">
+                                <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-adawi-brown mr-2 flex-shrink-0" />
+                                <span className="font-semibold text-sm sm:text-base">{formatDate(slot.date)}</span>
+                            </div>
+                            <div className="flex items-center">
+                                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-adawi-brown mr-2 flex-shrink-0" />
+                                <span className="text-sm sm:text-base">
+                                    {formatTime(slot.start_time)} - {formatTime(slot.end_time)}
+                                </span>
+                            </div>
+                            <div className="flex items-center">
+                                <User className="w-4 h-4 sm:w-5 sm:h-5 text-adawi-brown mr-2 flex-shrink-0" />
+                                <span className="text-sm sm:text-base break-words">{slot.vendor_name}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Form */}
+                    <Form onSubmit={handleSubmit} className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Notes (optionnel)
+                            </label>
+                            <textarea
+                                name="notes"
+                                rows={3}
+                                placeholder="Ajoutez des notes pour votre rendez-vous..."
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-adawi-gold focus:border-transparent resize-none"
+                            />
+                        </div>
+
+                        {/* Buttons */}
+                        <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className="w-full sm:flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2.5 sm:py-2 rounded-lg font-medium transition-colors text-sm sm:text-base"
+                            >
+                                Annuler
+                            </button>
+                            <button
+                                type="submit"
+                                className="w-full sm:flex-1 bg-adawi-gold hover:bg-adawi-gold/90 text-black px-4 py-2.5 sm:py-2 rounded-lg font-medium transition-colors text-sm sm:text-base"
+                            >
+                                Confirmer
+                            </button>
+                        </div>
+                    </Form>
+                </div>
             </div>
         </div>
     );

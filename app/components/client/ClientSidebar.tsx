@@ -130,7 +130,7 @@ export default function ClientSidebar({ onClose }: ClientSidebarProps) {
               <span className="font-medium truncate">{item.name}</span>
               {item.name === "Crénaux" && (
                 <span className="ml-auto">
-                  <Icon1 className="w-5 h-5 text-red-500" title="Non disponible pour le moment" />
+                  <Icon1 className="w-5 h-5 text-red-500" title="Non disponible pour le moment" />        
                 </span>
               )}
             </Link>
