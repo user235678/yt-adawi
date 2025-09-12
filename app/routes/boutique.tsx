@@ -197,7 +197,7 @@ export default function Boutique() {
             const today = new Date();
             const productDate = new Date(product.date);
             const daysDiff = Math.floor((today.getTime() - productDate.getTime()) / (1000 * 60 * 60 * 24));
-            return daysDiff <= 30;
+            return daysDiff <= 15;
         }
         return product.category === activeCategory;
     });

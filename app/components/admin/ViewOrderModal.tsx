@@ -7,6 +7,7 @@ type OrderItem = {
   color?: string;
   price: number;
   name: string;
+  images: string[];
 };
 
 type Order = {
@@ -124,6 +125,11 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ isOpen, orderId, token,
                 {order.items?.length ? order.items.map((it, i) => (
                   <div key={`${it.product_id}-${i}`} className="p-3 text-sm flex items-center justify-between">
                     <div>
+                      <div>
+                        {it.images && it.images.length > 0 && (
+                          <img src={it.images[0]} alt={it.name} className="w-12 h-12 object-cover rounded mr-3 inline-block" />
+                        )}
+                      </div>
                       <div className="font-medium">{it.name || it.product_id}</div>
                       <div className="text-gray-500">
                         Qté: {it.quantity}

@@ -50,7 +50,7 @@ const ProductGrid = ({ products, selectedSize, selectedColor, onProductClick }: 
     const date = new Date(productDate);
     const diffTime = today.getTime() - date.getTime();
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays <= 30;
+    return diffDays <= 15;
   }
 
   // CSS personnalisé pour les styles complexes

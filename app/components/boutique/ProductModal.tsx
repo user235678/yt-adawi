@@ -4,10 +4,11 @@ import { useToast } from "~/contexts/ToastContext";
 import { Link } from "react-router-dom";
 import {
   User,
+  ShoppingCart,
   ShoppingBag,
   MessageSquare,
   LogOut,
-  X 
+  X
 } from "lucide-react";
 // Interface pour les produits API originaux
 interface ApiProduct {
@@ -130,7 +131,7 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
   function isNewProduct(productDate: Date | string): boolean {
     const today = new Date();
     const date = new Date(productDate);
-    return Math.floor((today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)) <= 30;
+    return Math.floor((today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)) <= 15;
   }
 
   const increaseQuantity = () => setQuantity(prev => prev + 1);
@@ -276,16 +277,14 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
   if (!isOpen || !product) return null;
 
   return (
-    <div 
-      className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4 transition-all duration-300 ${
-        isClosing ? 'opacity-0' : 'opacity-100'
-      }`} 
+    <div
+      className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4 transition-all duration-300 ${isClosing ? 'opacity-0' : 'opacity-100'
+        }`}
       onClick={handleClose}
     >
-      <div 
-        className={`bg-white rounded-xl max-w-7xl w-full max-h-[95vh] overflow-y-auto shadow-2xl transform transition-all duration-300 ${
-          isClosing ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
-        }`} 
+      <div
+        className={`bg-white rounded-xl max-w-7xl w-full max-h-[95vh] overflow-y-auto shadow-2xl transform transition-all duration-300 ${isClosing ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
+          }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header - Sticky sur mobile */}
@@ -302,7 +301,7 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
         {/* Contenu */}
         <div className="p-4 sm:p-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-            
+
             {/* Images - Colonne gauche */}
             <div id="product-modal-images" className="space-y-4 order-1">
               <div className="relative aspect-square bg-gray-100 rounded-xl overflow-hidden group">
@@ -320,7 +319,7 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
                     target.src = '/placeholder-product.png';
                   }}
                 />
-                
+
                 {isNewProduct(product.date) && (
                   <span className="absolute top-3 left-3 z-20 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-pulse">
                     NEW
@@ -355,9 +354,8 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
                     {productImages.map((_, index) => (
                       <div
                         key={index}
-                        className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                          selectedImageIndex === index ? 'bg-white scale-125' : 'bg-white/50'
-                        }`}
+                        className={`w-2 h-2 rounded-full transition-all duration-300 ${selectedImageIndex === index ? 'bg-white scale-125' : 'bg-white/50'
+                          }`}
                       />
                     ))}
                   </div>
@@ -371,11 +369,10 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
                     <button
                       key={index}
                       onClick={() => setSelectedImageIndex(index)}
-                      className={`relative min-w-[4rem] w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 transition-all duration-300 hover:scale-105 active:scale-95 ${
-                        selectedImageIndex === index 
-                          ? 'border-adawi-gold shadow-lg ring-2 ring-adawi-gold/20' 
+                      className={`relative min-w-[4rem] w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 transition-all duration-300 hover:scale-105 active:scale-95 ${selectedImageIndex === index
+                          ? 'border-adawi-gold shadow-lg ring-2 ring-adawi-gold/20'
                           : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                        }`}
                     >
                       <img
                         src={image}
@@ -408,7 +405,7 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
               </div>
 
               {/* Sélection de taille avec animation */}
-              <div className="animate-fade-in-up" style={{animationDelay: '100ms'}}>
+              <div className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                 <h4 className="text-sm font-semibold text-black mb-4">Taille:</h4>
                 <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
                   {allSizes.map((size) => {
@@ -418,13 +415,12 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
                         key={size}
                         onClick={() => isAvailable && setSelectedSize(size)}
                         disabled={!isAvailable}
-                        className={`relative h-12 border-2 text-sm font-semibold transition-all duration-300 rounded-lg hover:scale-105 active:scale-95 ${
-                          selectedSize === size && isAvailable
+                        className={`relative h-12 border-2 text-sm font-semibold transition-all duration-300 rounded-lg hover:scale-105 active:scale-95 ${selectedSize === size && isAvailable
                             ? 'border-black bg-adawi-gold text-white shadow-lg transform scale-105'
                             : isAvailable
                               ? 'border-gray-300 text-black hover:shadow-md'
                               : 'border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50 opacity-60'
-                        }`}
+                          }`}
                       >
                         <span className={!isAvailable ? 'line-through decoration-2 decoration-red-500' : ''}>
                           {size}
@@ -444,7 +440,7 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
               </div>
 
               {/* Sélection de couleur avec animation */}
-              <div className="animate-fade-in-up" style={{animationDelay: '200ms'}}>
+              <div className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
                 <h4 className="text-sm font-semibold text-black mb-4">
                   Couleur: <span className="font-normal">{selectedColor.charAt(0).toUpperCase() + selectedColor.slice(1)}</span>
                 </h4>
@@ -456,15 +452,13 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
                         key={color}
                         onClick={() => isAvailable && setSelectedColor(color)}
                         disabled={!isAvailable}
-                        className={`relative w-12 h-12 rounded-full border-4 transition-all duration-300 hover:scale-110 active:scale-95 ${
-                          getProductColorStyle(color)
-                        } ${
-                          selectedColor === color && isAvailable
+                        className={`relative w-12 h-12 rounded-full border-4 transition-all duration-300 hover:scale-110 active:scale-95 ${getProductColorStyle(color)
+                          } ${selectedColor === color && isAvailable
                             ? 'ring-4 ring-adawi-gold ring-offset-2 shadow-lg transform scale-110'
                             : isAvailable
                               ? 'hover:ring-2 hover:ring-gray-300 hover:ring-offset-2 hover:shadow-md'
                               : 'opacity-40 cursor-not-allowed'
-                        }`}
+                          }`}
                         aria-label={`Sélectionner la couleur ${color}`}
                       >
                         {!isAvailable && (
@@ -487,15 +481,14 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
               </div>
 
               {/* Quantité avec animation */}
-              <div className="animate-fade-in-up" style={{animationDelay: '300ms'}}>
+              <div className="animate-fade-in-up" style={{ animationDelay: '300ms' }}>
                 <h4 className="text-sm font-semibold text-black mb-4">Quantité:</h4>
                 <div className="flex items-center gap-4 bg-gray-50 rounded-xl p-2 w-fit">
                   <button
-                    className={`w-12 h-12 border-2 rounded-xl flex items-center justify-center text-xl font-bold transition-all duration-300 hover:scale-105 active:scale-95 ${
-                      quantity > 1
+                    className={`w-12 h-12 border-2 rounded-xl flex items-center justify-center text-xl font-bold transition-all duration-300 hover:scale-105 active:scale-95 ${quantity > 1
                         ? 'border-gray-300 hover:border-black hover:bg-white text-black hover:shadow-md'
                         : 'border-gray-200 text-gray-400 cursor-not-allowed bg-gray-100'
-                    }`}
+                      }`}
                     onClick={decreaseQuantity}
                     disabled={quantity <= 1}
                     aria-label="Diminuer la quantité"
@@ -518,12 +511,12 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
 
             {/* Actions et informations - Colonne droite */}
             <div className="space-y-4 order-3 lg:order-3">
-              
+
               {/* Bouton d'ajout au panier */}
-              
+
 
               {/* Sections pliables avec animations */}
-              <div className="space-y-3 animate-fade-in-up" style={{animationDelay: '600ms'}}>
+              <div className="space-y-3 animate-fade-in-up" style={{ animationDelay: '600ms' }}>
                 <details className="group bg-gray-50 rounded-xl overflow-hidden hover:bg-gray-100 transition-colors duration-300">
                   <summary className="flex items-center justify-between cursor-pointer py-4 px-5 text-sm font-bold text-black">
                     DESCRIPTION
@@ -570,55 +563,79 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
                     </div>
                   </div>
                 </details>
-                <div className="animate-fade-in-up" style={{animationDelay: '400ms'}}>
-                <button
-                  onClick={handleAddToCart}
-                  disabled={isAddingToCart}
-                  className={`w-full py-4 px-6 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 active:scale-95 ${
-                    isAddingToCart
-                      ? 'bg-adawi-gold text-white cursor-not-allowed scale-95'
-                      : 'bg-gradient-to-r bg-adawi-gold text-white hover:shadow-xl hover:bg-adawi-gold'
-                  }`}
-                >
-                  {isAddingToCart ? (
-                    <span className="flex items-center justify-center">
-                      <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      AJOUT EN COURS...
-                    </span>
-                  ) : (
-                    'AJOUTER AU PANIER'
-                  )}
-                </button>
-              </div>
+                <div className="animate-fade-in-up" style={{ animationDelay: '400ms' }}>
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={isAddingToCart}
+                    className={`
+    w-full py-4 px-6 rounded-2xl font-bold text-lg
+    transition-all duration-300 transform
+    hover:scale-105 active:scale-95 flex items-center justify-center gap-2
+    ${isAddingToCart
+                        ? "bg-adawi-gold text-white cursor-not-allowed scale-95"
+                        : "bg-gradient-to-r bg-adawi-gold text-white hover:shadow-xl hover:bg-adawi-gold"
+                      }
+  `}
+                  >
+                    {isAddingToCart ? (
+                      <>
+                        <svg
+                          className="animate-spin h-6 w-6 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle className="opacity-25" cx="12" cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 
+             12h4zm2 5.291A7.962 7.962 0 014 
+             12H0c0 3.042 1.135 5.824 3 
+             7.938l3-2.647z"
+                          />
+                        </svg>
+                        <span>AJOUT EN COURS...</span>
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart className="w-5 h-5" />
+                        <span>AJOUTER AU PANIER</span>
+                      </>
+                    )}
+                  </button>
 
-              {/* Titre et bouton contact */}
-              <div className="animate-fade-in-up text-center space-y-4" style={{animationDelay: '500ms'}}>
-                <h3 className="text-sm font-medium text-gray-600">Vous ne trouvez pas votre taille/couleur?</h3>
-                <Link
-                  to="/contact"
-                  className="w-full py-4 px-6 rounded-2xl font-bold text-lg transition-all duration-300 bg-adawi-gold border-2 text-white  hover:text-white flex items-center justify-center gap-3 transform hover:scale-105 active:scale-95 hover:shadow-xl"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  COMMANDER SUR MESURE
-                </Link>
-              </div>
-              <div className="animate-fade-in-up text-center space-y-4" style={{animationDelay: '500ms'}}>
-                <h3 className="text-sm font-medium text-gray-600">Voulez-vous prendre rendez-vous?</h3>
-                <Link
-                  to="/client/appointments"
-                  className="w-full py-4 px-6 rounded-2xl font-bold text-lg transition-all duration-300 bg-adawi-gold border-2 text-white  hover:text-white flex items-center justify-center gap-3 transform hover:scale-105 active:scale-95 hover:shadow-xl"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  PRENDRE RENDEZ-VOUS
-                </Link>
-              </div>
+                </div>
+
+                {/* Titre et bouton contact */}
+                <div className="animate-fade-in-up text-center space-y-4" style={{ animationDelay: '500ms' }}>
+                  <h3 className="text-sm font-medium text-gray-600">Vous ne trouvez pas votre taille/couleur?</h3>
+                  <Link
+                    to="/contact"
+                    className="w-full py-4 px-6 rounded-2xl font-bold text-lg transition-all duration-300 bg-adawi-gold border-2 text-white  hover:text-white flex items-center justify-center gap-3 transform hover:scale-105 active:scale-95 hover:shadow-xl"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    COMMANDER SUR MESURE
+                  </Link>
+                </div>
+                <div className="animate-fade-in-up text-center space-y-4" style={{ animationDelay: '500ms' }}>
+                  <h3 className="text-sm font-medium text-gray-600">Voulez-vous prendre rendez-vous?</h3>
+                  <Link
+                    to="/client/appointments"
+                    className="w-full py-4 px-6 rounded-2xl font-bold text-lg transition-all duration-300 bg-adawi-gold border-2 text-white  hover:text-white flex items-center justify-center gap-3 transform hover:scale-105 active:scale-95 hover:shadow-xl"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    PRENDRE RENDEZ-VOUS
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

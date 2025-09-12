@@ -3,9 +3,18 @@ import {
   User,
   ShoppingBag,
   MessageSquare,
+  Clock,
   LogOut,
-  X
+  X,
+  ListCheck,
+  Clock1,
+  TruckElectric,
+  TicketX,
+  Ban,
+  Store,
+  ArrowLeft
 } from "lucide-react";
+
 interface ClientSidebarProps {
   onClose?: () => void;
 }
@@ -25,29 +34,35 @@ export default function ClientSidebar({ onClose }: ClientSidebarProps) {
       icon: ShoppingBag,
     },
     {
-      name: "Support",
+      name: "Tickets",
       href: "/client/tickets",
       icon: MessageSquare,
     },
     {
       name: "Remboursements",
       href: "/client/refund",
-      icon: MessageSquare,
+      icon: TicketX,
     },
     {
       name: "Suivie",
       href: "/client/tracking",
-      icon: MessageSquare,
+      icon: TruckElectric,
     },
     {
       name: "Rendez-vous",
       href: "/client/appointments",
-      icon: MessageSquare,
+      icon: Clock1,
     },
     {
       name: "Mes Rendez-vous",
       href: "/client/list",
-      icon: MessageSquare,
+      icon: ListCheck,
+    },
+    {
+      name: "Crénaux",
+      href: "/client/booking",
+      icon: Clock,
+      icon1: Ban,
     },
   ];
 
@@ -78,10 +93,24 @@ export default function ClientSidebar({ onClose }: ClientSidebarProps) {
         )}
       </div>
 
+      {/* Retour à la boutique */}
+      <div className="p-4 border-b border-gray-200">
+        <Link
+          to="/boutique"
+          onClick={onClose}
+          className="flex items-center space-x-3 w-full px-3 py-3 text-adawi-brown hover:bg-adawi-beige rounded-xl transition-all duration-200 group border border-adawi-gold/20 hover:border-adawi-gold/40"
+        >
+          <ArrowLeft className="w-5 h-5 transition-colors flex-shrink-0 group-hover:text-adawi-gold" />
+          <span className="font-medium truncate">Retour à la boutique</span>
+          <Store className="w-4 h-4 ml-auto text-adawi-gold opacity-70 group-hover:opacity-100 transition-opacity" />
+        </Link>
+      </div>
+
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1">
         {navigation.map((item) => {
           const Icon = item.icon;
+          const Icon1 = item.icon1;
           const active = isActive(item.href);
 
           return (
@@ -99,6 +128,11 @@ export default function ClientSidebar({ onClose }: ClientSidebarProps) {
                 active ? "text-adawi-gold" : "group-hover:text-adawi-gold"
               }`} />
               <span className="font-medium truncate">{item.name}</span>
+              {item.name === "Crénaux" && (
+                <span className="ml-auto">
+                  <Icon1 className="w-5 h-5 text-red-500" title="Non disponible pour le moment" />
+                </span>
+              )}
             </Link>
           );
         })}
