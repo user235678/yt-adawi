@@ -23,6 +23,8 @@ export interface Product {
   sizes?: string;      // Nouveau format: "s,m,l,xl,xxl"
   color?: ProductColor; // Ancien format (gardé pour compatibilité)
   colors?: string;     // Nouveau format: "rouge,marron,noir"
+  stock?: number;      // Quantité en stock
+  inStock?: boolean;   // Indicateur si le produit est en stock
 }
 
 interface ProductGridProps {
@@ -31,7 +33,7 @@ interface ProductGridProps {
   selectedColor?: ProductColor;
   onProductClick?: (product: Product) => void; // Fonction pour gérer le clic
 }
- 
+
 const ProductGrid = ({ products, selectedSize, selectedColor, onProductClick }: ProductGridProps) => {
   // Fonction pour obtenir la couleur de fond basée sur la couleur du produit
   const getColorBadgeStyle = (color: string) => {
@@ -80,17 +82,21 @@ const ProductGrid = ({ products, selectedSize, selectedColor, onProductClick }: 
         {products.map((product) => (
           <div
             key={product.id}
-            onClick={() => onProductClick?.(product)}
-            className="product-card-custom group flex flex-col bg-white overflow-hidden cursor-pointer rounded-lg"
+            onClick={() => product.stock && product.stock > 0 ? onProductClick?.(product) : null}
+            className={`product-card-custom group flex flex-col bg-white overflow-hidden rounded-lg ${
+              product.stock && product.stock > 0 ? "cursor-pointer" : "cursor-not-allowed opacity-80"
+            }`}
             role="button"
-            tabIndex={0}
+            tabIndex={product.stock && product.stock > 0 ? 0 : -1}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
+              if ((e.key === 'Enter' || e.key === ' ') && product.stock && product.stock > 0) {
                 e.preventDefault();
                 onProductClick?.(product);
               }
             }}
-            aria-label={`Voir les détails de ${product.name}`}
+            aria-label={product.stock && product.stock > 0 
+              ? `Voir les détails de ${product.name}` 
+              : `${product.name} - Rupture de stock`}
           >
             {/* Image du produit avec effet de survol */}
             <div className="relative w-full overflow-hidden mx-1 my-1.5 sm:mx-3 sm:my-2 xl:mx-2 xl:my-3 rounded">
@@ -119,10 +125,21 @@ const ProductGrid = ({ products, selectedSize, selectedColor, onProductClick }: 
                   />
                 )}
               </div>
+
+              {/* Badge "Nouveau" */}
               {isNewProduct(product.date) && (
                 <span className="absolute bottom-2 right-2 z-20 bg-adawi-gold-light text-red-500 text-[10px] sm:text-xs font-semibold px-2 py-1 rounded shadow-md uppercase">
                   NEW
                 </span>
+              )}
+
+              {/* Badge "Rupture de stock" */}
+              {(!product.stock || product.stock <= 0) && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-20">
+                  <span className="bg-red-600 text-white text-xs sm:text-sm font-bold px-3 py-1.5 rounded-full transform -rotate-12 shadow-lg">
+                    RUPTURE DE STOCK
+                  </span>
+                </div>
               )}
             </div>
 

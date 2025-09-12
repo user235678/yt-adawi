@@ -97,6 +97,8 @@ export default function Boutique() {
             sizes: apiProduct.sizes.join(","),
             color: apiProduct.colors.length > 0 ? apiProduct.colors[0] as ProductColor : undefined,
             colors: apiProduct.colors.join(","),
+            stock: apiProduct.stock, // Ajout de l'information de stock
+            inStock: apiProduct.stock > 0, // Indicateur si le produit est en stock
         };
     };
 
@@ -148,7 +150,9 @@ export default function Boutique() {
                     size: "xxl",
                     sizes: "s,m,l,xl,xxl",
                     color: "rouge",
-                    colors: "rouge,vert,noir"
+                    colors: "rouge,vert,noir",
+                    stock: 10,
+                    inStock: true
                 },
                 {
                     id: "2",
@@ -164,7 +168,9 @@ export default function Boutique() {
                     size: "m",
                     sizes: "s,m,l,xl",
                     color: "noir",
-                    colors: "noir,blanc,rouge"
+                    colors: "noir,blanc,rouge",
+                    stock: 0,
+                    inStock: false
                 },
                 {
                     id: "3",
@@ -180,7 +186,9 @@ export default function Boutique() {
                     size: "s",
                     sizes: "xs,s,m",
                     color: "blanc",
-                    colors: "blanc,noir,vert"
+                    colors: "blanc,noir,vert",
+                    stock: 5,
+                    inStock: true
                 }
             ]);
         } finally {
@@ -215,13 +223,13 @@ export default function Boutique() {
 
         const sizeMatch = !selectedSize ||
                           (product.size && product.size.toLowerCase() === selectedSize?.toLowerCase()) ||
-                          (product.sizes && product.sizes.length > 0 && product.sizes.split(',').some(s =>
+                          (product.sizes && product.sizes.length > 0 && product.sizes.split(',').some(s => 
                               s.trim().toLowerCase() === selectedSize?.toLowerCase()
                           ));
 
         const colorMatch = !selectedColor ||
                            (product.color && product.color.toLowerCase() === selectedColor?.toLowerCase()) ||
-                           (product.colors && product.colors.length > 0 && product.colors.split(',').some(c =>
+                           (product.colors && product.colors.length > 0 && product.colors.split(',').some(c => 
                                c.trim().toLowerCase() === selectedColor?.toLowerCase()
                            ));
 
@@ -254,6 +262,9 @@ export default function Boutique() {
     const handleSortChange = (option: SortOption) => setSortOption(option);
 
     const handleProductClick = (product: Product) => {
+        // Ne pas ouvrir le modal si le produit n'est pas en stock
+        if (product.stock <= 0) return;
+        
         setSelectedProduct(product);
         setIsModalOpen(true);
     };
