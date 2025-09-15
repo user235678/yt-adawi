@@ -11,7 +11,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 
         { success: false, error: "Non authentifié" },
         { status: 401 },
-      );
+      ); 
     }
 
     // Vérifier que l'utilisateur est bien admin

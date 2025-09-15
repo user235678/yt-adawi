@@ -266,7 +266,6 @@ export default function AdminDashboard() {
       case 'refunds':
         return (
           <div className="space-y-6">
-          
             <RefundStats data={data.refund_stats} />
           </div>
         );

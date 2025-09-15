@@ -44,7 +44,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     }
 
     const notifications = await response.json();
-    console.log(`Notifications récupérées: ${notifications.length} sur 28 attendues`);
+    console.log(`Notifications récupérées: ${notifications.length}`);
 
     return json(notifications);
 
