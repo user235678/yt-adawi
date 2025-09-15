@@ -146,8 +146,8 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
 
   return (
     <>
-      <header className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4 w-full">
-        <div className="flex items-center justify-between">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
+  <div className="flex items-center justify-between">
           {/* Left Section - Menu button + Search */}
           <div className="flex items-center flex-1">
             {/* Menu button pour mobile */}
@@ -162,7 +162,7 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
             )}
 
             {/* Search Bar */}
-            <div className="flex-1 max-w-md">
+            {/* <div className="flex-1 max-w-md">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                 <input
@@ -171,7 +171,7 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
                   className="w-full pl-8 sm:pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none bg-gray-50"
                 />
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Right Section */}

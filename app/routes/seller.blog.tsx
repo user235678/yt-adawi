@@ -191,7 +191,7 @@ export default function SellerBlog() {
           <h1 className="text-2xl font-bold">Gestion des articles de blog</h1>
           <button
             onClick={() => setOpenModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-adawi-gold hover:bg-adawi-brown text-white rounded-lg shadow transition-colors"
           >
             <Plus size={18} /> Créer un post
           </button>

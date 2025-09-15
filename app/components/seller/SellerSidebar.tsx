@@ -8,7 +8,7 @@ import {
   LogOut,
   X,
   Store,
-  ArrowLeft
+  ArrowLeft,
 } from "lucide-react";
 
 interface SellerSidebarProps {
@@ -23,20 +23,17 @@ export default function SellerSidebar({ onClose }: SellerSidebarProps) {
     { id: "produits", label: "Produits", icon: Package, path: "/seller/products" },
     { id: "orders", label: "Commandes", icon: ShoppingCart, path: "/seller/orders" },
     { id: "support", label: "Support", icon: MessageSquare, path: "/seller/support" },
-    { id: "rembourssements", label: "rembourssements", icon: BarChart3, path: "/seller/refund" },
+    { id: "remboursements", label: "Remboursements", icon: BarChart3, path: "/seller/refund" },
   ];
 
   const handleLinkClick = () => {
-    // Close the sidebar on mobile after clicking a link
-    if (onClose) {
-      onClose();
-    }
+    if (onClose) onClose(); // ferme le menu mobile après clic
   };
 
   return (
-    <div className="w-full h-full bg-gray-800 text-white flex flex-col">
-      {/* Header with close button for mobile */}
-      <div className="p-4 sm:p-6 border-b border-gray-700">
+    <div className="h-full w-64 bg-gray-800 text-white flex flex-col">
+      {/* Header avec logo et bouton fermer */}
+      <div className="p-4 border-b border-gray-700">
         <div className="flex items-center justify-between">
           <Link
             to="/seller/dashboard"
@@ -44,12 +41,16 @@ export default function SellerSidebar({ onClose }: SellerSidebarProps) {
             onClick={handleLinkClick}
           >
             <div className="w-8 h-8 rounded overflow-hidden mr-3">
-              <img src="/ADAWI _ LOGO FOND BLANC.jpg" alt="Logo Adawi" className="object-cover w-full h-full" />
+              <img
+                src="/ADAWI _ LOGO FOND BLANC.jpg"
+                alt="Logo Adawi"
+                className="object-cover w-full h-full"
+              />
             </div>
             <span className="text-lg font-semibold">Adawi Vendeur</span>
           </Link>
 
-          {/* Close button visible only on mobile */}
+          {/* Close uniquement sur mobile */}
           {onClose && (
             <button
               onClick={onClose}
@@ -60,15 +61,17 @@ export default function SellerSidebar({ onClose }: SellerSidebarProps) {
           )}
         </div>
       </div>
-      <div className="p-4 border-b border-gray-200">
+
+      {/* Retour boutique */}
+      <div className="p-4 border-b border-gray-700">
         <Link
           to="/boutique"
           onClick={onClose}
-          className="flex items-center space-x-3 w-full px-3 py-3 text-adawi-brown hover:bg-adawi-beige rounded-xl transition-all duration-200 group border border-adawi-gold/20 hover:border-adawi-gold/40"
+          className="flex items-center space-x-3 w-full px-3 py-3 text-adawi-brown bg-gray-900 hover:bg-gray-700 rounded-xl transition-all duration-200 group border border-adawi-gold/20 hover:border-adawi-gold/40"
         >
-          <ArrowLeft className="w-5 h-5 transition-colors flex-shrink-0 group-hover:text-adawi-gold" />
+          <ArrowLeft className="w-5 h-5 flex-shrink-0 group-hover:text-adawi-gold" />
           <span className="font-medium truncate">Retour à la boutique</span>
-          <Store className="w-4 h-4 ml-auto text-adawi-gold opacity-70 group-hover:opacity-100 transition-opacity" />
+          <Store className="w-4 h-4 ml-auto text-adawi-gold opacity-70 group-hover:opacity-100" />
         </Link>
       </div>
 
@@ -84,9 +87,9 @@ export default function SellerSidebar({ onClose }: SellerSidebarProps) {
                 <Link
                   to={item.path}
                   onClick={handleLinkClick}
-                  className={`w-full flex items-center px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-colors duration-200 text-sm sm:text-base ${
+                  className={`flex items-center px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-colors duration-200 text-sm sm:text-base ${
                     isActive
-                      ? "bg-adawi-gold text-black"
+                      ? "bg-adawi-gold text-black font-semibold"
                       : "text-gray-300 hover:bg-gray-700 hover:text-white"
                   }`}
                 >
@@ -99,14 +102,14 @@ export default function SellerSidebar({ onClose }: SellerSidebarProps) {
         </ul>
       </nav>
 
-      {/* Bottom Section */}
-      <div className="p-4 border-t border-gray-200">
+      {/* Déconnexion */}
+      <div className="p-4 border-t border-gray-700">
         <form method="post" action="/logout" className="w-full">
           <button
             type="submit"
-            className="flex items-center space-x-3 w-full px-3 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 group"
+            className="flex items-center space-x-3 w-full px-3 py-3 text-red-500 hover:bg-red-900/20 rounded-xl transition-all duration-200 group"
           >
-            <LogOut className="w-5 h-5 group-hover:scale-110 transition-transform flex-shrink-0" />
+            <LogOut className="w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
             <span className="font-medium truncate">Se déconnecter</span>
           </button>
         </form>

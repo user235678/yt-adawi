@@ -34,8 +34,8 @@ type Order = {
 
 interface ViewOrderModalProps {
   isOpen: boolean;
-  orderId: string | null;   // <-- passe juste l'ID
-  token: string;            // <-- et le token depuis ton loader/parent
+  orderId: string | null;
+  token: string;
   onClose: () => void;
 }
 
@@ -123,29 +123,38 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ isOpen, orderId, token,
               <h3 className="font-medium mb-2">Articles</h3>
               <div className="rounded-lg border divide-y">
                 {order.items?.length ? order.items.map((it, i) => (
-                  <div key={`${it.product_id}-${i}`} className="p-3 text-sm flex items-center justify-between">
-                    <div>
-                      <div>
-                        {it.images && it.images.length > 0 && (
-                          <img src={it.images[0]} alt={it.name} className="w-12 h-12 object-cover rounded mr-3 inline-block" />
-                        )}
-                      </div>
-                      <div className="font-medium">{it.name || it.product_id}</div>
-                      <div className="text-gray-500">
-                        Qté: {it.quantity}
+                  <div key={`${it.product_id}-${i}`} className="p-3 text-sm flex items-start space-x-3">
+                    <div className="flex-shrink-0">
+                      {it.images && it.images.length > 0 ? (
+                        <img 
+                          src={it.images[0]} 
+                          alt={it.name || it.product_id} 
+                          className="w-16 h-16 object-cover rounded-lg border"
+                          onError={(e) => {
+                            // Si l'image ne charge pas, on affiche une image par défaut ou on cache l'élément
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                          <span className="text-gray-400 text-xs">Pas d'image</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900">{it.name || it.product_id}</div>
+                      <div className="text-gray-500 mt-1">
+                        Quantité: {it.quantity}
                         {it.size ? ` • Taille: ${it.size}` : ""}
                         {it.color ? ` • Couleur: ${it.color}` : ""}
                       </div>
                     </div>
-                    <div className="font-medium">{it.price} F CFA</div>
+                    <div className="flex-shrink-0 font-medium text-gray-900">{it.price} F CFA</div>
                   </div>
                 )) : (
                   <div className="p-3 text-sm text-gray-500">Aucun article</div>
                 )}
               </div>
-            </div>
-            <div>
-              
             </div>
           </div>
         )}

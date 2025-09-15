@@ -49,7 +49,7 @@ export default function AdminSidebar({ onClose }: AdminSidebarProps) {
   };
 
   return (
-    <div className="w-full h-full bg-gray-800 text-white flex flex-col">
+    <div className="fixed top-0 left-0 h-screen w-64 bg-gray-800 text-white flex flex-col z-50">
       {/* Header avec bouton de fermeture sur mobile */}
       <div className="p-4 sm:p-6 border-b border-gray-700">
         <div className="flex items-center justify-between">

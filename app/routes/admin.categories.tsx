@@ -57,7 +57,7 @@ export default function AdminCategories() {
 
         try {
             
-            const response = await fetch('/api/categories');
+            const response = await fetch('/api/categories/');
 
             const data = await response.json();
 
@@ -296,7 +296,7 @@ export default function AdminCategories() {
                         className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
                     >
                         Réessayer
-                    </button>
+                    </button> 
                 </div>
             ) : organizedCategories.length === 0 ? (
                 <div className="text-center py-12">

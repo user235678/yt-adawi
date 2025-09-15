@@ -140,8 +140,8 @@ const SellerHeader: React.FC<SellerHeaderProps> = ({ onMenuClick, userName }) =>
 
   return (
     <>
-      <header className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4 w-full">
-        <div className="flex items-center justify-between">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
+  <div className="flex items-center justify-between">
           <button onClick={onMenuClick} className="p-2 text-gray-500 hover:text-gray-700">
             {/* Menu Icon */}
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

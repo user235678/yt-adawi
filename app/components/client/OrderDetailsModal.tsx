@@ -7,6 +7,7 @@ interface OrderItem {
   color: string;
   price: number;
   name: string;
+  images: string[];
 }
 
 interface Address {
@@ -275,6 +276,7 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
                     </tr>
                   ))}
                 </tbody>
+
                 <tfoot className="bg-gray-50">
                   <tr>
                     <td colSpan={3} className="py-3 px-4 text-right font-medium text-gray-900">

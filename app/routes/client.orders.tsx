@@ -1,10 +1,10 @@
- import type { MetaFunction, LoaderFunction } from "@remix-run/node";
- import { json } from "@remix-run/node";
- import { useLoaderData } from "@remix-run/react";
- import { useState } from "react";
+import type { MetaFunction, LoaderFunction } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import { useLoaderData } from "@remix-run/react";
+import { useState } from "react";
 import ClientLayout from "~/components/client/ClientLayout";
 import OrderDetailsModal from "~/components/client/OrderDetailsModal";
-import { Eye, Download, Package, AlertCircle } from "lucide-react";
+import { Eye, Download, Package, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { readToken } from "~/utils/session.server";
 import { API_BASE } from "~/utils/auth.server";
 
@@ -201,6 +201,17 @@ export default function ClientOrders() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [downloadingInvoice, setDownloadingInvoice] = useState<string | null>(null);
+  const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
+
+  const toggleOrderExpansion = (orderId: string) => {
+    const newExpanded = new Set(expandedOrders);
+    if (newExpanded.has(orderId)) {
+      newExpanded.delete(orderId);
+    } else {
+      newExpanded.add(orderId);
+    }
+    setExpandedOrders(newExpanded);
+  };
 
   const handleViewDetails = (order: Order) => {
     setSelectedOrder(order);
@@ -214,7 +225,7 @@ export default function ClientOrders() {
 
   const generateInvoicePDF = (order: Order, user: User | null) => {
     // Créer le contenu HTML de la facture
-  const invoiceHTML = `
+    const invoiceHTML = `
       <!DOCTYPE html>
       <html>
       <head>
@@ -402,7 +413,6 @@ export default function ClientOrders() {
       </html>
     `;
 
-
     return invoiceHTML;
   };
 
@@ -513,199 +523,250 @@ export default function ClientOrders() {
 
   return (
     <ClientLayout userName={user?.full_name}>
-      <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-adawi-brown mb-2">
-            Mes Commandes
-          </h1>
-          <p className="text-gray-600">
-            Consultez l'historique et le statut de vos commandes
-          </p>
-        </div>
-
-        {/* Debug Info (en développement)
-        {debug && process.env.NODE_ENV === 'development' && (
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-            <h4 className="font-medium text-blue-800 mb-2">Debug Info:</h4>
-            <pre className="text-xs text-blue-700 overflow-auto">
-              {JSON.stringify(debug, null, 2)}
-            </pre>
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+          {/* Header - Responsive */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+            <h1 className="text-xl sm:text-2xl font-bold text-adawi-brown mb-2">
+              Mes Commandes
+            </h1>
+            <p className="text-sm sm:text-base text-gray-600">
+              Consultez l'historique et le statut de vos commandes
+            </p>
           </div>
-        )} */}
 
-        {/* Error Message */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-            <div className="flex items-center space-x-2">
-              <AlertCircle className="w-5 h-5 text-red-500" />
-              <div>
-                <p className="text-red-700 font-medium">{error}</p>
-                {debug && (
-                  <details className="mt-2">
-                    <summary className="text-red-600 text-sm cursor-pointer">Détails techniques</summary>
-                    <pre className="text-xs text-red-600 mt-2 overflow-auto bg-red-100 p-2 rounded">
-                      {JSON.stringify(debug, null, 2)}
-                    </pre>
-                  </details>
-                )}
+          {/* Error Message - Responsive */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-red-700 font-medium break-words">{error}</p>
+                  {debug && (
+                    <details className="mt-2">
+                      <summary className="text-red-600 text-sm cursor-pointer">Détails techniques</summary>
+                      <pre className="text-xs text-red-600 mt-2 overflow-auto bg-red-100 p-2 rounded max-w-full">
+                        {JSON.stringify(debug, null, 2)}
+                      </pre>
+                    </details>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Empty State */}
-        {!error && orders.length === 0 && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-            <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Aucune commande trouvée
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Vous n'avez pas encore passé de commande.
-            </p>
-            <a
-              href="/boutique"
-              className="inline-flex items-center px-6 py-3 bg-adawi-gold text-white rounded-lg hover:bg-adawi-gold-light transition-colors"
-            >
-              Découvrir nos produits
-            </a>
-          </div>
-        )}
+          {/* Empty State - Responsive */}
+          {!error && orders.length === 0 && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 sm:p-12 text-center">
+              <Package className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Aucune commande trouvée
+              </h3>
+              <p className="text-gray-600 mb-6 text-sm sm:text-base">
+                Vous n'avez pas encore passé de commande.
+              </p>
+              <a
+                href="/boutique"
+                className="inline-flex items-center px-6 py-3 bg-adawi-gold text-white rounded-lg hover:bg-adawi-gold-light transition-colors text-sm sm:text-base"
+              >
+                Découvrir nos produits
+              </a>
+            </div>
+          )}
 
-        {/* Orders List */}
-        {!error && orders.length > 0 && (
-          <div className="space-y-4">
-            {orders.map((order) => (
-              <div key={order.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                {/* Order Header */}
-                <div className="p-6 border-b border-gray-200">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="p-3 bg-adawi-beige rounded-lg">
-                        <Package className="w-6 h-6 text-adawi-brown" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">#{order.id.slice(-8)}</h3>
-                        <p className="text-sm text-gray-500">Commandé le {formatDate(order.created_at)}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <span className={`px-4 py-2 rounded-full text-sm font-medium border ${getStatusColor(order.status)}`}>
-                        {getStatusLabel(order.status)}
-                      </span>
-                      <div className="text-right">
-                        <p className="text-lg font-bold text-adawi-brown">{formatPrice(order.total)}</p>
-                        <p className="text-sm text-gray-500">{order.items.length} article(s)</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Order Items */}
-                <div className="p-6">
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">Articles commandés :</h4>
-                  <div className="space-y-2">
-                    {order.items.map((item, index) => (
-                      <div key={index} className="flex justify-between items-center py-2 px-3 bg-gray-50 rounded-lg">
-                        <div className="flex items-center space-x-3">
-                          <span className="text-sm font-medium text-gray-900">{item.name}</span>
-                          <div className="flex items-center space-x-2 text-xs text-gray-500">
-                            <span>x{item.quantity}</span>
-                            {item.size && <span>• Taille: {item.size}</span>}
-                            {item.color && <span>• Couleur: {item.color}</span>}
+          {/* Orders List - Responsive Grid */}
+          {!error && orders.length > 0 && (
+            <div className="grid gap-4 sm:gap-6">
+              {orders.map((order) => {
+                const isExpanded = expandedOrders.has(order.id);
+                return (
+                  <div key={order.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    {/* Order Header - Mobile Optimized */}
+                    <div className="p-4 sm:p-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+                        {/* Left section - Order info */}
+                        <div className="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
+                          <div className="p-2 sm:p-3 bg-adawi-beige rounded-lg flex-shrink-0">
+                            <Package className="w-5 h-5 sm:w-6 sm:h-6 text-adawi-brown" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
+                              #{order.id.slice(-8)}
+                            </h3>
+                            <p className="text-xs sm:text-sm text-gray-500">
+                              {formatDate(order.created_at)}
+                            </p>
                           </div>
                         </div>
-                        <span className="text-sm font-medium text-adawi-brown">{formatPrice(item.price)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
 
-                {/* Order Details */}
-                {order.address && (
-                  <div className="px-6 pb-4">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Adresse de livraison :</h4>
-                    <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
-                      <p>{order.address.street}</p>
-                      <p>{order.address.postal_code} {order.address.city}</p>
-                      <p>{order.address.country}</p>
-                      {order.address.phone && <p>Tél: {order.address.phone}</p>}
+                        {/* Right section - Status and Price */}
+                        <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                          <span className={`px-3 py-1 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium border ${getStatusColor(order.status)} text-center sm:text-left`}>
+                            {getStatusLabel(order.status)}
+                          </span>
+                          <div className="text-center sm:text-right">
+                            <p className="text-lg sm:text-xl font-bold text-adawi-brown">
+                              {formatPrice(order.total)}
+                            </p>
+                            <p className="text-xs sm:text-sm text-gray-500">
+                              {order.items.length} article(s)
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Mobile Toggle Button */}
+                      <button
+                        onClick={() => toggleOrderExpansion(order.id)}
+                        className="mt-4 sm:hidden w-full flex items-center justify-center space-x-2 p-2 text-sm text-gray-600 bg-gray-50 rounded-lg"
+                      >
+                        <span>{isExpanded ? 'Masquer les détails' : 'Voir les détails'}</span>
+                        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      </button>
                     </div>
-                  </div>
-                )}
 
-                {/* Payment and Delivery Info */}
-                <div className="px-6 pb-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <span className="font-medium text-gray-700">Paiement: </span>
-                      <span className={`px-2 py-1 rounded text-xs ${ 
-                        order.payment_status === 'paid' || order.payment_status === 'effectue' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-orange-100 text-orange-800'
-                      }`}>
-                        {order.payment_status === 'en_attente' ? 'En attente' : 
-                         order.payment_status === 'paid' ? 'Payé' : order.payment_status}
-                      </span>
-                    </div>
-                    {order.payment_method && (
-                      <div>
-                        <span className="font-medium text-gray-700">Méthode: </span>
-                        <span className="text-gray-600">{order.payment_method}</span>
+                    {/* Expandable Content - Always shown on desktop, toggleable on mobile */}
+                    <div className={`${isExpanded ? 'block' : 'hidden'} sm:block border-t border-gray-200`}>
+                      {/* Order Items - Responsive */}
+                      <div className="p-4 sm:p-6">
+                        <h4 className="text-sm font-medium text-gray-700 mb-3">Articles commandés :</h4>
+                        <div className="space-y-2">
+                          {order.items.map((item, index) => (
+                            <div key={index} className="flex flex-col sm:flex-row sm:justify-between sm:items-center p-3 bg-gray-50 rounded-lg space-y-2 sm:space-y-0">
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-3 min-w-0">
+                                <span className="text-sm font-medium text-gray-900 truncate">{item.name}</span>
+                                <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                                  <span className="bg-white px-2 py-1 rounded">x{item.quantity}</span>
+                                  {item.size && <span className="bg-white px-2 py-1 rounded">Taille: {item.size}</span>}
+                                  {item.color && <span className="bg-white px-2 py-1 rounded">Couleur: {item.color}</span>}
+                                </div>
+                              </div>
+                              <span className="text-sm font-medium text-adawi-brown self-end sm:self-auto">
+                                {formatPrice(item.price)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    )}
-                    {order.delivery_method && (
-                      <div>
-                        <span className="font-medium text-gray-700">Livraison: </span>
-                        <span className="text-gray-600">{order.delivery_method}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
 
-                {/* Order Actions */}
-                <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                  <div className="flex justify-end space-x-3">
-                    <button 
-                      onClick={() => handleViewDetails(order)}
-                      className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      <Eye className="w-4 h-4" />
-                      <span>Détails</span>
-                    </button>
-                    <button 
-                      onClick={() => handleDownloadInvoice(order)}
-                      disabled={downloadingInvoice === order.id}
-                      className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-adawi-brown bg-adawi-beige border border-adawi-gold rounded-lg hover:bg-adawi-beige-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {downloadingInvoice === order.id ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-adawi-brown border-t-transparent rounded-full animate-spin" />
-                          <span>Génération...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Download className="w-4 h-4" />
-                          <span>Facture</span>
-                        </>
+                      {/* Address - Responsive */}
+                      {order.address && (
+                        <div className="px-4 sm:px-6 pb-4">
+                          <h4 className="text-sm font-medium text-gray-700 mb-2">Adresse de livraison :</h4>
+                          <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                            <p className="break-words">{order.address.street}</p>
+                            <p>{order.address.postal_code} {order.address.city}</p>
+                            <p>{order.address.country}</p>
+                            {order.address.phone && <p>Tél: {order.address.phone}</p>}
+                          </div>
+                        </div>
                       )}
-                    </button>
+
+                      {/* Payment and Delivery Info - Responsive Grid */}
+                      <div className="px-4 sm:px-6 pb-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 text-sm">
+                          <div className="bg-gray-50 p-3 rounded-lg">
+                            <span className="font-medium text-gray-700 block mb-1">Paiement:</span>
+                            <span className={`inline-block px-2 py-1 rounded text-xs ${ 
+                              order.payment_status === 'paid' || order.payment_status === 'effectue' 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-orange-100 text-orange-800'
+                            }`}>
+                              {order.payment_status === 'en_attente' ? 'En attente' : 
+                               order.payment_status === 'paid' ? 'Payé' : order.payment_status}
+                            </span>
+                          </div>
+                          {order.payment_method && (
+                            <div className="bg-gray-50 p-3 rounded-lg">
+                              <span className="font-medium text-gray-700 block mb-1">Méthode:</span>
+                              <span className="text-gray-600 break-words">{order.payment_method}</span>
+                            </div>
+                          )}
+                          {order.delivery_method && (
+                            <div className="bg-gray-50 p-3 rounded-lg">
+                              <span className="font-medium text-gray-700 block mb-1">Livraison:</span>
+                              <span className="text-gray-600 break-words">{order.delivery_method}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Order Actions - Responsive */}
+                      <div className="px-4 sm:px-6 py-4 bg-gray-50 border-t border-gray-200">
+                        <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
+                          <button 
+                            onClick={() => handleViewDetails(order)}
+                            className="flex items-center justify-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                          >
+                            <Eye className="w-4 h-4" />
+                            <span>Détails complets</span>
+                          </button>
+                          <button 
+                            onClick={() => handleDownloadInvoice(order)}
+                            disabled={downloadingInvoice === order.id}
+                            className="flex items-center justify-center space-x-2 px-4 py-2 text-sm font-medium text-adawi-brown bg-adawi-beige border border-adawi-gold rounded-lg hover:bg-adawi-beige-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {downloadingInvoice === order.id ? (
+                              <>
+                                <div className="w-4 h-4 border-2 border-adawi-brown border-t-transparent rounded-full animate-spin" />
+                                <span>Génération...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Download className="w-4 h-4" />
+                                <span>Télécharger facture</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Stats Summary - Mobile Optimized */}
+          {!error && orders.length > 0 && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Résumé</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="text-center p-3 bg-gray-50 rounded-lg">
+                  <div className="text-xl sm:text-2xl font-bold text-adawi-brown">{orders.length}</div>
+                  <div className="text-xs sm:text-sm text-gray-600">Commandes</div>
+                </div>
+                <div className="text-center p-3 bg-gray-50 rounded-lg">
+                  <div className="text-xl sm:text-2xl font-bold text-green-600">
+                    {orders.filter(o => o.status === 'livree' || o.status === 'delivered').length}
+                  </div>
+                  <div className="text-xs sm:text-sm text-gray-600">Livrées</div>
+                </div>
+                <div className="text-center p-3 bg-gray-50 rounded-lg">
+                  <div className="text-xl sm:text-2xl font-bold text-blue-600">
+                    {orders.filter(o => o.status === 'en_cours' || o.status === 'processing').length}
+                  </div>
+                  <div className="text-xs sm:text-sm text-gray-600">En cours</div>
+                </div>
+                <div className="text-center p-3 bg-gray-50 rounded-lg">
+                  <div className="text-xl sm:text-2xl font-bold text-adawi-brown">
+                    {formatPrice(orders.reduce((sum, order) => sum + order.total, 0))}
+                  </div>
+                  <div className="text-xs sm:text-sm text-gray-600">Total</div>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          )}
 
-        {/* Modal de détails */}
-        {selectedOrder && (
-          <OrderDetailsModal
-            isOpen={isModalOpen}
-            onClose={handleCloseModal}
-            order={selectedOrder}
-          />
-        )}
+          {/* Modal de détails */}
+          {selectedOrder && (
+            <OrderDetailsModal
+              isOpen={isModalOpen}
+              onClose={handleCloseModal}
+              order={selectedOrder}
+            />
+          )}
+        </div>
       </div>
     </ClientLayout>
   );
