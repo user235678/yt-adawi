@@ -1,4 +1,5 @@
 import { TrendingUp, TrendingDown, Users, Eye, RotateCcw } from "lucide-react";
+import { useState } from "react";
 
 interface StatsCardsProps {
   data: {
@@ -9,47 +10,96 @@ interface StatsCardsProps {
     revenue_growth: number;
     orders_growth: number;
     customers_growth: number;
+    total_visiteurs: number;
+    weekly_revenue: number;
+    weekly_orders: number;
+    weekly_customers: number;
+    total_visiteurs_semaine: number;
+    pourcentage_visiteurs_semaine: number;
+    pourcentage_visiteur_total: number;
+    pourcentage_revenue_semaine: number;
+    total_revenue_semaine: number;
+    weekly_revenue_growth: number;
+    weekly_orders_growth: number;
+    weekly_customers_growth: number;
+    weekly_visitors_growth: number;
   };
 }
 
 export default function StatsCards({ data }: StatsCardsProps) {
-  const formatNumber = (num: number) => {
+  const [showWeekly, setShowWeekly] = useState(true);
+
+  const formatNumber = (num: number | undefined) => {
+    if (num === undefined || num === null) {
+      return "0";
+    }
     return num.toLocaleString();
   };
 
   const stats = [
     {
-      title: "Ventes Totales",
-      value: formatNumber(data.total_revenue),
+      title: showWeekly ? "Ventes Semaine" : "Ventes Totales",
+      value: formatNumber(showWeekly ? data.total_revenue_semaine : data.total_revenue),
       unit: "F CFA",
-      change: `+${data.revenue_growth}%`,
-      changeValue: "+347k cette semaine",
-      trend: "up",
+      change: showWeekly
+        ? `${data.pourcentage_revenue_semaine >= 0 ? '+' : ''}${data.pourcentage_revenue_semaine}%`
+        : `${data.revenue_growth >= 0 ? '+' : ''}${data.revenue_growth}%`,
+      changeValue: showWeekly ? "+347k cette semaine" : "+347k cette semaine",
+      trend: showWeekly
+        ? (data.pourcentage_revenue_semaine >= 0 ? "up" : "down")
+        : (data.revenue_growth >= 0 ? "up" : "down"),
       icon: TrendingUp,
       bgColor: "bg-gray-800",
-      textColor: "text-white"
+      textColor: "text-white",
+      hasWeeklyData: true
     },
     {
-      title: "Commandes",
-      value: formatNumber(data.total_orders),
-      subtitle: "Total des commandes",
-      change: `+${data.orders_growth}%`,
-      changeValue: "+120 cette semaine",
-      trend: "up",
+      title: showWeekly ? "Commandes Semaine" : "Commandes",
+      value: formatNumber(showWeekly ? data.weekly_orders : data.total_orders),
+      subtitle: showWeekly ? "Commandes cette semaine" : "Total des commandes",
+      change: showWeekly
+        ? `${data.weekly_orders_growth >= 0 ? '+' : ''}${data.weekly_orders_growth}%`
+        : `${data.orders_growth >= 0 ? '+' : ''}${data.orders_growth}%`,
+      changeValue: showWeekly ? "+120 cette semaine" : "+120 cette semaine",
+      trend: showWeekly
+        ? (data.weekly_orders_growth >= 0 ? "up" : "down")
+        : (data.orders_growth >= 0 ? "up" : "down"),
       icon: Users,
       bgColor: "bg-white",
-      textColor: "text-gray-900"
+      textColor: "text-gray-900",
+      hasWeeklyData: true
     },
     {
-      title: "Clients",
-      value: formatNumber(data.total_customers),
-      subtitle: "Nombre de clients",
-      change: `+${data.customers_growth}%`,
-      changeValue: "+1.2k cette semaine",
-      trend: "up",
+      title: showWeekly ? "Clients Semaine" : "Clients",
+      value: formatNumber(showWeekly ? data.weekly_customers : data.total_customers),
+      subtitle: showWeekly ? "Clients cette semaine" : "Nombre de clients",
+      change: showWeekly
+        ? `${data.weekly_customers_growth >= 0 ? '+' : ''}${data.weekly_customers_growth}%`
+        : `${data.customers_growth >= 0 ? '+' : ''}${data.customers_growth}%`,
+      changeValue: showWeekly ? "+1.2k cette semaine" : "+1.2k cette semaine",
+      trend: showWeekly
+        ? (data.weekly_customers_growth >= 0 ? "up" : "down")
+        : (data.customers_growth >= 0 ? "up" : "down"),
       icon: Eye,
       bgColor: "bg-white",
-      textColor: "text-gray-900"
+      textColor: "text-gray-900",
+      hasWeeklyData: true
+    },
+    {
+      title: showWeekly ? "Visiteurs Semaine" : "Visiteurs Totaux",
+      value: formatNumber(showWeekly ? data.total_visiteurs_semaine : data.total_visiteurs),
+      subtitle: showWeekly ? "Visiteurs cette semaine" : "Nombre de visiteurs",
+      change: showWeekly
+        ? `${data.pourcentage_visiteurs_semaine >= 0 ? '+' : ''}${data.pourcentage_visiteurs_semaine}%`
+        : `${data.pourcentage_visiteur_total >= 0 ? '+' : ''}${data.pourcentage_visiteur_total}%`,
+      changeValue: showWeekly ? "+500 cette semaine" : "+500 cette semaine",
+      trend: showWeekly
+        ? (data.pourcentage_visiteurs_semaine >= 0 ? "up" : "down")
+        : (data.pourcentage_visiteur_total >= 0 ? "up" : "down"),
+      icon: Eye,
+      bgColor: "bg-white",
+      textColor: "text-gray-900",
+      hasWeeklyData: true
     },
     {
       title: "Remboursements",
@@ -60,7 +110,8 @@ export default function StatsCards({ data }: StatsCardsProps) {
       trend: "down",
       icon: RotateCcw,
       bgColor: "bg-white",
-      textColor: "text-gray-900"
+      textColor: "text-gray-900",
+      hasWeeklyData: false
     }
   ];
 
@@ -79,11 +130,16 @@ export default function StatsCards({ data }: StatsCardsProps) {
               <div className={`p-1.5 sm:p-2 rounded-lg ${stat.bgColor === 'bg-gray-800' ? 'bg-gray-700' : 'bg-gray-100'}`}>
                 <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${stat.bgColor === 'bg-gray-800' ? 'text-white' : 'text-gray-600'}`} />
               </div>
-              <button className={`${stat.textColor} hover:opacity-70`}>
-                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg> 
-              </button>
+              {stat.hasWeeklyData && (
+                <button
+                  onClick={() => setShowWeekly(!showWeekly)}
+                  className={`${stat.textColor} hover:opacity-70 transition-opacity`}
+                >
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              )}
             </div>
 
             <div className="mb-2">

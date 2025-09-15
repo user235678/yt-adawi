@@ -3,6 +3,7 @@ import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { useState, useRef, useEffect } from "react";
 import StatsCards from "~/components/admin/StatsCards";
+import TopCategories from "~/components/admin/TopCategories";
 import SalesChart from "~/components/admin/SalesChart";
 import InventoryAlerts from "~/components/admin/InventoryAlerts";
 import { readToken } from "~/utils/session.server";
@@ -60,6 +61,17 @@ export const loader: LoaderFunction = async ({ request }) => {
       revenue_growth: 0,
       orders_growth: 0,
       customers_growth: 0,
+      total_visitors: 0,
+      weekly_revenue: 0,
+      weekly_orders: 0,
+      weekly_customers: 0,
+      weekly_visitors: 0,
+      weekly_revenue_growth: 0,
+      weekly_orders_growth: 0,
+      weekly_customers_growth: 0,
+      weekly_visitors_growth: 0,
+      top_categorie: "",
+      top_categorie_revenue: 0,
       revenue_evolution: [],
       cost_revenue_evolution: [],
       sales_by_category: [],
@@ -188,47 +200,51 @@ export default function AdminDashboard() {
   const renderContent = () => {
     switch (activeSection) {
       case 'overview':
-        return (
-          <div className="space-y-6">
-            <StatsCards data={data} />
-            <div className="grid lg:grid-cols-2 gap-6">
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Résumé rapide</h3>
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Commandes en attente:</span>
-                    <span className="font-medium">{data.pending_orders?.length || 0}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Produits en rupture:</span>
-                    <span className="font-medium text-red-600">{data.low_stock_products}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Marge brute:</span>
-                    <span className="font-medium text-green-600">{data.gross_margin_percent?.toFixed(1)}%</span>
-                  </div>
+      return (
+        <div className="space-y-6">
+          <StatsCards data={data} />
+          <div className="grid lg:grid-cols-3 gap-6">
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Top Catégories</h3>
+              <TopCategories data={data} />
+            </div>
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Résumé rapide</h3>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Commandes en attente:</span>
+                  <span className="font-medium">{data.pending_orders?.length || 0}</span>
                 </div>
-              </div>
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Actions rapides</h3>
-                <div className="space-y-2">
-                  <button
-                    onClick={() => setActiveSection('inventory')}
-                    className="w-full text-left px-3 py-2 bg-red-50 hover:bg-red-100 rounded-lg text-red-700 text-sm transition-colors"
-                  >
-                    ⚠️ Vérifier les stocks faibles ({data.low_stock_products})
-                  </button>
-                  <button
-                    onClick={() => setActiveSection('refunds')}
-                    className="w-full text-left px-3 py-2 bg-yellow-50 hover:bg-yellow-100 rounded-lg text-yellow-700 text-sm transition-colors"
-                  >
-                    🔄 Gérer les remboursements ({data.refund_stats.pending_refunds})
-                  </button>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Produits en rupture:</span>
+                  <span className="font-medium text-red-600">{data.low_stock_products}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Marge brute:</span>
+                  <span className="font-medium text-green-600">{data.gross_margin_percent?.toFixed(1)}%</span>
                 </div>
               </div>
             </div>
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Actions rapides</h3>
+              <div className="space-y-2">
+                <button
+                  onClick={() => setActiveSection('inventory')}
+                  className="w-full text-left px-3 py-2 bg-red-50 hover:bg-red-100 rounded-lg text-red-700 text-sm transition-colors"
+                >
+                  ⚠️ Vérifier les stocks faibles ({data.low_stock_products})
+                </button>
+                <button
+                  onClick={() => setActiveSection('refunds')}
+                  className="w-full text-left px-3 py-2 bg-yellow-50 hover:bg-yellow-100 rounded-lg text-yellow-700 text-sm transition-colors"
+                >
+                  🔄 Gérer les remboursements ({data.refund_stats.pending_refunds})
+                </button>
+              </div>
+            </div>
           </div>
-        );
+        </div>
+      );
 
       case 'sales':
         return (
@@ -250,6 +266,7 @@ export default function AdminDashboard() {
       case 'refunds':
         return (
           <div className="space-y-6">
+          
             <RefundStats data={data.refund_stats} />
           </div>
         );
@@ -395,12 +412,26 @@ export default function AdminDashboard() {
                   <span className="text-gray-600">Nouveaux clients</span>
                   <span className="font-semibold text-blue-600">{data.total_customers}</span>
                 </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Visiteurs</span>
+                  <span className="font-semibold text-purple-600">{data.total_visitors}</span>
+                </div>
                 <div className="h-px bg-gray-200 my-3"></div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Croissance revenus</span>
                   <span className={`font-semibold ${data.revenue_growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                     {data.revenue_growth >= 0 ? '+' : ''}{data.revenue_growth?.toFixed(1)}%
                   </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Croissance hebdomadaire</span>
+                  <span className={`font-semibold ${data.weekly_revenue_growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {data.weekly_revenue_growth >= 0 ? '+' : ''}{data.weekly_revenue_growth?.toFixed(1)}%
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Visiteurs hebdomadaires</span>
+                  <span className="font-semibold text-purple-600">{data.weekly_visitors}</span>
                 </div>
               </div>
             </div>

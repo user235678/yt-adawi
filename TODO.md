@@ -1,12 +1,10 @@
-# TODO: Integrate Availability Management into Admin
+# Admin Dashboard Update Tasks
 
-## Current Status
-- [x] Analyzed existing admin structure and patterns
-- [x] Confirmed plan with user
-- [x] Create admin.availability.tsx route file
-- [x] Add "Disponibilités" menu item to AdminSidebar
-- [x] Implement loader function for fetching availabilities
-- [x] Implement action functions for CRUD operations
-- [x] Create UI components for availability management
-- [ ] Test API integration and UI functionality
-- [ ] Prepare for vendor integration (future task)
+## Completed Tasks
+- [x] Update loader fallback in admin.dashboard.tsx to include new API fields (total_visitors, weekly_revenue, weekly_orders, weekly_customers, weekly_visitors, top_categorie, top_categorie_revenue)
+
+## Pending Tasks
+- [x] Modify StatsCards.tsx interface and component to add new stats cards for total visitors, weekly revenue, weekly orders using new percentage fields
+- [x] Integrate TopCategories component into the overview section of admin.dashboard.tsx
+- [x] Update the quick stats sidebar in admin.dashboard.tsx to display weekly data and visitor stats
+- [ ] Test the integration to ensure percentages and weekly data are displayed accurately
