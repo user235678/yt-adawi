@@ -14,7 +14,14 @@ export const action: ActionFunction = async ({ request }) => {
         if (!sessionData?.access_token) {
             console.log("❌ Pas de token d'authentification");
             return json({ 
-                error: "Vous devez être connecté pour ajouter des produits au panier" 
+                success: false,
+                error: "Vous devez être connecté pour ajouter des produits au panier",
+                errorType: "auth_required",
+                title: "Connexion requise",
+                message: "Pour ajouter des produits à votre panier, vous devez d'abord vous connecter à votre compte.",
+                showLoginButton: true,
+                loginUrl: "/login",
+                buttonText: "Se connecter"
             }, { status: 401 });
         }
 
@@ -62,7 +69,13 @@ export const action: ActionFunction = async ({ request }) => {
                 if (response.status === 401) {
                     return json({ 
                         success: false, 
-                        error: "Session expirée, veuillez vous reconnecter" 
+                        error: "Session expirée, veuillez vous reconnecter",
+                        errorType: "session_expired",
+                        title: "Session expirée",
+                        message: "Votre session a expiré. Veuillez vous reconnecter pour continuer vos achats.",
+                        showLoginButton: true,
+                        loginUrl: "/login",
+                        buttonText: "Se reconnecter"
                     }, { status: 401 });
                 }
 

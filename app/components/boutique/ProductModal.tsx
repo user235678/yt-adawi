@@ -10,6 +10,7 @@ import {
   LogOut,
   X
 } from "lucide-react";
+
 // Interface pour les produits API originaux
 interface ApiProduct {
   id: string;
@@ -175,6 +176,45 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
       console.log('Réponse brute de l\'API:', responseText);
 
       if (!response.ok) {
+        const result = JSON.parse(responseText);
+        
+        // Gérer le cas où l'utilisateur n'est pas connecté
+        if (result.errorType === 'auth_required' || result.errorType === 'session_expired') {
+          // Créer un ID unique pour ce toast
+          const toastId = `auth-toast-${Date.now()}`;
+          
+          // Afficher un toast personnalisé avec bouton de connexion
+          showToast(
+            <div className="flex flex-col space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.876c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.062 15.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                  <span className="font-semibold text-gray-800">{result.title}</span>
+                </div>
+              </div>
+              <p className="text-sm text-gray-600">{result.message}</p>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => window.location.href = result.loginUrl}
+                  className="px-4 py-2 bg-adawi-gold text-white rounded-lg hover:bg-adawi-brown transition-colors text-sm font-medium"
+                >
+                  {result.buttonText}
+                </button>
+                <button
+                  onClick={() => {/* Le bouton X du toast fermera automatiquement */}}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+                >
+                  Plus tard
+                </button>
+              </div>
+            </div>,
+            15000 // 15 secondes - assez long pour que l'utilisateur puisse lire et agir
+          );
+          return;
+        }
+
         throw new Error(`Erreur ${response.status}: ${responseText}`);
       }
 
@@ -200,7 +240,8 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
       showToast(
         error instanceof Error
           ? `Erreur: ${error.message}`
-          : 'Erreur lors de l\'ajout au panier'
+          : 'Erreur lors de l\'ajout au panier',
+        6000 // 6 secondes pour les erreurs
       );
     } finally {
       setIsAddingToCart(false);
@@ -514,7 +555,6 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
 
               {/* Bouton d'ajout au panier */}
 
-
               {/* Sections pliables avec animations */}
               <div className="space-y-3 animate-fade-in-up" style={{ animationDelay: '600ms' }}>
                 <details className="group bg-gray-50 rounded-xl overflow-hidden hover:bg-gray-100 transition-colors duration-300">
@@ -567,8 +607,7 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
                   <button
                     onClick={handleAddToCart}
                     disabled={isAddingToCart}
-                    className={`
-    w-full py-4 px-6 rounded-2xl font-bold text-lg
+                    className={`\n    w-full py-4 px-6 rounded-2xl font-bold text-lg
     transition-all duration-300 transform
     hover:scale-105 active:scale-95 flex items-center justify-center gap-2
     ${isAddingToCart
@@ -608,7 +647,6 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
                       </>
                     )}
                   </button>
-
                 </div>
 
                 {/* Titre et bouton contact */}
@@ -642,50 +680,7 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
         </div>
       </div>
 
-      <style >{`
-        @keyframes fade-in-up {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        
-        .animate-fade-in-up {
-          animation: fade-in-up 0.6s ease-out forwards;
-        }
-        
-        .animate-fade-in {
-          animation: fade-in 0.3s ease-out;
-        }
-        
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-        
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        
-        @media (max-width: 1024px) {
-          .order-1 { order: 1; }
-          .order-2 { order: 2; }
-          .order-3 { order: 3; }
-        }
-      `}</style>
+      <style>{`\n        @keyframes fade-in-up {\n          from {\n            opacity: 0;\n            transform: translateY(20px);\n          }\n          to {\n            opacity: 1;\n            transform: translateY(0);\n          }\n        }\n        \n        @keyframes fade-in {\n          from {\n            opacity: 0;\n          }\n          to {\n            opacity: 1;\n          }\n        }\n        \n        .animate-fade-in-up {\n          animation: fade-in-up 0.6s ease-out forwards;\n        }\n        \n        .animate-fade-in {\n          animation: fade-in 0.3s ease-out;\n        }\n        \n        .scrollbar-hide {\n          -ms-overflow-style: none;\n          scrollbar-width: none;\n        }\n        \n        .scrollbar-hide::-webkit-scrollbar {\n          display: none;\n        }\n        \n        @media (max-width: 1024px) {\n          .order-1 { order: 1; }\n          .order-2 { order: 2; }\n          .order-3 { order: 3; }\n        }\n      `}</style>
     </div>
   );
 }

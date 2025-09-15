@@ -5,9 +5,10 @@ import {
   ShoppingCart,
   MessageSquare,
   BarChart3,
-  Settings,
   LogOut,
   X,
+  Store,
+  ArrowLeft
 } from "lucide-react";
 
 interface SellerSidebarProps {
@@ -58,6 +59,17 @@ export default function SellerSidebar({ onClose }: SellerSidebarProps) {
             </button>
           )}
         </div>
+      </div>
+      <div className="p-4 border-b border-gray-200">
+        <Link
+          to="/boutique"
+          onClick={onClose}
+          className="flex items-center space-x-3 w-full px-3 py-3 text-adawi-brown hover:bg-adawi-beige rounded-xl transition-all duration-200 group border border-adawi-gold/20 hover:border-adawi-gold/40"
+        >
+          <ArrowLeft className="w-5 h-5 transition-colors flex-shrink-0 group-hover:text-adawi-gold" />
+          <span className="font-medium truncate">Retour à la boutique</span>
+          <Store className="w-4 h-4 ml-auto text-adawi-gold opacity-70 group-hover:opacity-100 transition-opacity" />
+        </Link>
       </div>
 
       {/* Navigation */}

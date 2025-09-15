@@ -10,7 +10,6 @@ import { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import TopBanner from "~/components/TopBanner";
 import Footer from "~/components/Footer";
-import CompactHeader from "~/components/CompactHeader";
 import { API_BASE } from "~/utils/auth.server";
 import { commitToken, readToken } from "~/utils/session.server";
 import { getUserProfile } from "~/utils/auth.server";
@@ -31,7 +30,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   }
 
   // choisir la bonne route selon le rôle
-  let target = "/client/user";
+  let target = "/boutique"; // par défaut pour les clients
   switch (user.role?.toLowerCase()) {
     case "admin":
       target = "/admin/dashboard";
@@ -40,6 +39,12 @@ export const loader: LoaderFunction = async ({ request }) => {
     case "seller":
       target = "/seller/dashboard";
       break;
+    case "client":
+    case "customer":
+      target = "/boutique"; // ✅ Changé de "/boutique" vers "/client/user"
+      break;
+    default:
+      target = "/boutique";
   }
 
   throw redirect(target);
@@ -88,6 +93,46 @@ export const action: ActionFunction = async ({ request }) => {
     console.log("✅ Token reçu:", !!token);
     console.log("✅ Session ID reçu:", !!sessionId);
 
+    // Récupérer les informations utilisateur avec le token
+    let redirectTarget = "/boutique"; // Par défaut pour les clients
+
+    try {
+      const userRes = await fetch(`${API_BASE}/auth/me`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (userRes.ok) {
+        const userProfile = await userRes.json();
+        console.log("👤 Profil utilisateur:", userProfile);
+
+        // Déterminer la route selon le rôle
+        const userRole = userProfile.role?.toLowerCase();
+        switch (userRole) {
+          case "admin":
+            redirectTarget = "/admin/dashboard";
+            break;
+          case "vendeur":
+          case "seller":
+            redirectTarget = "/seller/dashboard";
+            break;
+          case "client":
+          case "customer":
+            redirectTarget = "/boutique";
+            break;
+          default:
+            redirectTarget = "/boutique";
+        }
+
+        console.log("🎯 Redirection vers:", redirectTarget, "pour le rôle:", userRole);
+      } else {
+        console.log("⚠️ Impossible de récupérer le profil utilisateur, redirection par défaut");
+      }
+    } catch (profileError) {
+      console.log("⚠️ Erreur lors de la récupération du profil:", profileError);
+      // En cas d'erreur, on garde la redirection par défaut vers /boutique
+    }
+
     // Créer un objet avec les informations de session
     const sessionData = {
       access_token: token,
@@ -95,8 +140,8 @@ export const action: ActionFunction = async ({ request }) => {
       token_type: data?.token_type || "bearer"
     };
 
-    // Écrit les données de session dans un cookie HttpOnly et redirige vers boutique
-    return redirect("/boutique", {
+    // Écrit les données de session dans un cookie HttpOnly et redirige vers la bonne route
+    return redirect(redirectTarget, {
       headers: await commitToken(JSON.stringify(sessionData)),
     });
   } catch (e: any) {
@@ -217,8 +262,11 @@ export default function Login() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`w-full h-[60px] mt-6 rounded-full text-white text-[20px] font-bold bg-gradient-to-r from-adawi-brown via-adawi-brown-light to-adawi-gold-light shadow-md transition duration-500 hover:bg-right flex items-center justify-center ${isSubmitting ? "opacity-70 cursor-not-allowed" : ""
-                }`}
+              className={`w-full h-[60px] mt-6 rounded-full text-white text-[20px] font-bold bg-gradient-to-r from-adawi-brown via-adawi-brown-light to-adawi-gold-light shadow-md transition duration-500 hover:bg-right flex items-center justify-center ${
+                isSubmitting
+                  ? "opacity-70 cursor-not-allowed"
+                  : ""
+              }`}
             >
               {isSubmitting ? (
                 <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin" />
@@ -238,7 +286,6 @@ export default function Login() {
             <a href="/signup" className="text-adawi-gold underline hover:text-black">
               S'inscrire
             </a>
-
           </div>
           <div className="text-center text-sm text-gray-400 mt-4">
             <a href="/support" className="text-adawi-gold underline hover:text-black">
