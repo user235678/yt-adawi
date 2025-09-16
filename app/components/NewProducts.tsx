@@ -17,11 +17,11 @@ const NewProducts: React.FC = () => {
   const sectionRef = useRef<HTMLElement>(null);
 
   const products: Product[] = [
-    { id: 1, name: "Costume Élégant", image: "/0.png",  isNew: true, badge: "Nouveau" },
-    { id: 2, name: "Chemise Premium", image: "/5.png",  },
-    { id: 3, name: "Pantalon Classique", image: "/6.png",  isNew: true },
-    { id: 4, name: "Veste Tendance", image: "/8.png",  originalPrice: "279FCFA" },
-    { id: 5, name: "Accessoire Mode", image: "/9.png",  badge: "Best" },
+    { id: 1, name: "_BLM0581", image: "/01/_BLM0581.png",  isNew: true, badge: "Nouveau" },
+    { id: 2, name: "_BLM0647", image: "/01/_BLM0647.png",  },
+    { id: 3, name: "_BLM0593", image: "/01/_BLM0593.png",  isNew: true },
+    { id: 4, name: "_BLM0517", image: "/02/_BLM0517.jpg",  originalPrice: "279FCFA" },
+    { id: 5, name: "IMG_8545", image: "/03/IMG_8545.jpg",  badge: "Best" },
   ];
 
   useEffect(() => {
@@ -174,10 +174,10 @@ const NewProducts: React.FC = () => {
                   )}
                   
                   {/* Indicateur de disponibilité */}
-                  <div className="flex items-center text-xs text-green-600">
+                  {/* <div className="flex items-center text-xs text-green-600">
                     <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
                     En stock
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>
