@@ -189,7 +189,7 @@ export default function BlogSlug() {
     };
   }, [zoomedImage, zoomScale]);
 
-  // Ajouter les boutons loupe aux images après le rendu du contenu
+  // Ajouter les boutons loupe aux images après le rendu du contenu - amélioré pour mobile
   useEffect(() => {
     if (post && isVisible) {
       const images = document.querySelectorAll('.article-content img');
@@ -219,15 +219,18 @@ export default function BlogSlug() {
         const zoomButton = document.createElement('button');
         zoomButton.className = 'zoom-button';
         zoomButton.innerHTML = `
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/>
           </svg>
         `;
         zoomButton.title = 'Agrandir l\'image';
+        zoomButton.setAttribute('aria-label', 'Agrandir l\'image');
+        
+        // Styles améliorés pour mobile
         zoomButton.style.cssText = `
           position: absolute;
-          top: 0.75rem;
-          right: 0.75rem;
+          top: 0.5rem;
+          right: 0.5rem;
           background: rgba(0, 0, 0, 0.7);
           color: white;
           border: none;
@@ -238,30 +241,54 @@ export default function BlogSlug() {
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          opacity: 0;
+          opacity: 0.8;
           transition: all 0.3s ease;
           z-index: 10;
           backdrop-filter: blur(4px);
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
         `;
 
-        // Ajouter les événements hover sur le conteneur
-        container.addEventListener('mouseenter', () => {
-          zoomButton.style.opacity = '1';
-        });
+        // Détection d'appareil tactile
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
-        container.addEventListener('mouseleave', () => {
+        if (!isTouchDevice) {
+          // Comportement desktop : apparition au hover
           zoomButton.style.opacity = '0';
-        });
+          
+          container.addEventListener('mouseenter', () => {
+            zoomButton.style.opacity = '1';
+          });
 
-        // Ajouter l'événement click sur le bouton
-        zoomButton.addEventListener('click', (e) => {
+          container.addEventListener('mouseleave', () => {
+            zoomButton.style.opacity = '0';
+          });
+        }
+
+        // Événements de clic améliorés pour mobile
+        const handleZoomClick = (e: Event) => {
           e.preventDefault();
           e.stopPropagation();
           openZoom(imgElement.src);
-        });
+        };
+
+        zoomButton.addEventListener('click', handleZoomClick);
+        zoomButton.addEventListener('touchend', handleZoomClick);
 
         // Ajouter le bouton au conteneur
         container.appendChild(zoomButton);
+
+        // Rendre l'image elle-même cliquable pour zoomer
+        imgElement.style.cursor = 'zoom-in';
+        imgElement.style.touchAction = 'manipulation';
+        
+        const handleImageClick = (e: Event) => {
+          e.preventDefault();
+          openZoom(imgElement.src);
+        };
+
+        imgElement.addEventListener('click', handleImageClick);
+        imgElement.addEventListener('touchend', handleImageClick);
       });
     }
   }, [post, isVisible]);
@@ -431,7 +458,7 @@ export default function BlogSlug() {
                 </div>
 
                 {/* Bouton loupe pour agrandir l'image de couverture - visible sur mobile, apparaît au survol sur desktop */}
-                <div className="absolute top-3 sm:top-6 left-3 sm:left-6 r">
+                {/* <div className="absolute top-3 sm:top-6 left-3 sm:left-6 r">
                   <button
                     onClick={() => openZoom(post.cover_image!)}
                     className="bg-white/20 backdrop-blur-sm text-white p-2 sm:p-3 rounded-full hover:bg-white/30 hover:scale-110 transition-all duration-300 shadow-lg md:opacity-0 md:group-hover:opacity-100"
@@ -441,7 +468,7 @@ export default function BlogSlug() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
                     </svg>
                   </button>
-                </div>
+                </div> */}
 
                 {/* Overlay cliquable pour zoomer sur toute l'image */}
                 <div
@@ -1452,6 +1479,100 @@ export default function BlogSlug() {
             transform: translateX(0);
           }
         }
+          /* Améliorations pour les appareils tactiles */
+@media (hover: none) and (pointer: coarse) {
+  /* Bouton loupe toujours visible sur mobile */
+  .zoom-button {
+    opacity: 0.8 !important;
+  }
+  
+  /* Amélioration de la zone tactile */
+  .zoom-button {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    width: 2.75rem !important;
+    height: 2.75rem !important;
+  }
+  
+  /* Suppression des effets hover sur mobile */
+  .zoom-button:hover {
+    transform: none !important;
+    background: rgba(0, 0, 0, 0.7) !important;
+  }
+  
+  /* Images plus facilement cliquables sur mobile */
+  .article-content img {
+    cursor: zoom-in;
+    touch-action: manipulation;
+  }
+  
+  /* Amélioration du bouton sur l'image de couverture */
+  .group .opacity-80 {
+    opacity: 0.9 !important;
+  }
+}
+
+/* Suppression du highlight tactile sur tous les navigateurs */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Permettre la sélection de texte dans le contenu */
+.article-content,
+.article-content p,
+.article-content h1,
+.article-content h2,
+.article-content h3,
+.article-content h4,
+.article-content h5,
+.article-content h6 {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+/* Amélioration des boutons tactiles */
+button {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Zone tactile minimale recommandée (44px) */
+@media (max-width: 640px) {
+  .zoom-button {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    width: 2.75rem !important;
+    height: 2.75rem !important;
+    top: 0.75rem !important;
+    right: 0.75rem !important;
+  }
+  
+  .zoom-button svg {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+  }
+}
+
+/* Amélioration de l'accessibilité tactile */
+@media (max-width: 480px) {
+  .image-zoom-container {
+    position: relative;
+    touch-action: manipulation;
+  }
+  
+  .article-content img {
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+}
 
         /* Effet parallax léger sur les images */
         @media (min-width: 1024px) {

@@ -40,6 +40,32 @@ export default function ZoomModal({
     };
   }, []);
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1 && zoomScale > 1) {
+      const touch = e.touches[0];
+      setIsDragging(true);
+      setDragStart({
+        x: touch.clientX - zoomPosition.x,
+        y: touch.clientY - zoomPosition.y,
+      });
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (isDragging && e.touches.length === 1 && zoomScale > 1) {
+      e.preventDefault();
+      const touch = e.touches[0];
+      setZoomPosition({
+        x: touch.clientX - dragStart.x,
+        y: touch.clientY - dragStart.y,
+      });
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center">
       {/* Overlay pour fermer */}
@@ -155,28 +181,23 @@ export default function ZoomModal({
       <div className="relative max-w-full max-h-full overflow-hidden">
         <img
           src={zoomedImage}
-          alt="Image zoomée"
-          className={`max-w-none transition-transform duration-200 ${
+          alt="Image agrandie"
+          className={`max-w-none max-h-none object-contain transition-transform duration-200 select-none ${
             isDragging ? 'cursor-grabbing' : zoomScale > 1 ? 'cursor-grab' : 'cursor-zoom-in'
           }`}
           style={{
             transform: `scale(${zoomScale}) translate(${zoomPosition.x / zoomScale}px, ${zoomPosition.y / zoomScale}px)`,
             transformOrigin: 'center',
+            touchAction: 'none'
           }}
           draggable="false"
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            onMouseDown(e);
-          }}
-          onMouseMove={(e) => {
-            e.stopPropagation();
-            onMouseMove(e);
-          }}
-          onMouseUp={(e) => {
-            e.stopPropagation();
-            onMouseUp();
-          }}
+          onMouseDown={onMouseDown}
+          onMouseMove={onMouseMove}
+          onMouseUp={onMouseUp}
           onMouseLeave={onMouseUp}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         />
       </div>
 
