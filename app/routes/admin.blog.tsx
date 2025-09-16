@@ -90,10 +90,10 @@ export const action: ActionFunction = async ({ request }) => {
         const intent = formData.get("intent");
 
         if (intent === "delete") {
-            const postId = formData.get("postId");
-            
+            const slug = formData.get("slug");
+
             const res = await fetch(
-                `https://showroom-backend-2x3g.onrender.com/admin/content/blog/posts/${postId}`,
+                `https://showroom-backend-2x3g.onrender.com/admin/content/blog/posts/${slug}/hard-delete`,
                 {
                     method: "DELETE",
                     headers: {
@@ -107,7 +107,7 @@ export const action: ActionFunction = async ({ request }) => {
                 return json({ error: errorText }, { status: res.status });
             }
 
-            return json({ success: true, message: "Post supprimé avec succès" });
+            return json({ success: true, message: "Post supprimé définitivement avec succès" });
         }
 
         // Création de post (existant)
@@ -153,17 +153,17 @@ export default function AdminBlog() {
     const [openUpdateModal, setOpenUpdateModal] = useState(false);
     const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
 
-    const handleDelete = (postId: string) => {
-        if (confirm("Êtes-vous sûr de vouloir supprimer cet article ?")) {
+    const handleDelete = (slug: string) => {
+        if (confirm("Êtes-vous sûr de vouloir supprimer définitivement cet article ? Cette action est irréversible.")) {
             const form = new FormData();
             form.append("intent", "delete");
-            form.append("postId", postId);
-            
+            form.append("slug", slug);
+
             // Soumettre le formulaire
             const formElement = document.createElement('form');
             formElement.method = 'POST';
             formElement.style.display = 'none';
-            
+
             form.forEach((value, key) => {
                 const input = document.createElement('input');
                 input.type = 'hidden';
@@ -171,7 +171,7 @@ export default function AdminBlog() {
                 input.value = value.toString();
                 formElement.appendChild(input);
             });
-            
+
             document.body.appendChild(formElement);
             formElement.submit();
         }
@@ -294,9 +294,9 @@ export default function AdminBlog() {
                                                 <Edit size={16} />
                                             </button>
                                             <button
-                                                onClick={() => handleDelete(post.id)}
+                                                onClick={() => handleDelete(post.slug)}
                                                 className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
-                                                title="Supprimer le post"
+                                                title="Supprimer définitivement le post"
                                             >
                                                 <Trash2 size={16} />
                                             </button>

@@ -5,6 +5,7 @@ import TopBanner from "~/components/TopBanner";
 import Header from "~/components/CompactHeader";
 import Footer from "~/components/Footer";
 import Newsletter from "~/components/Newsletter";
+import ZoomModal from "~/components/blog/ZoomModal";
 
 export const meta: MetaFunction = ({ params }) => {
   return [
@@ -40,13 +41,14 @@ export default function BlogSlug() {
   const [error, setError] = useState<string | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [readingProgress, setReadingProgress] = useState(0);
-  
-  // États pour le zoom d'images
+
+  // États pour le modal de zoom
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
   const [zoomScale, setZoomScale] = useState(1);
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [showControls, setShowControls] = useState(true);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -93,46 +95,19 @@ export default function BlogSlug() {
     return () => window.removeEventListener('scroll', updateReadingProgress);
   }, []);
 
-  // Gestion du zoom d'images
-  useEffect(() => {
-    const handleImageClick = (e: Event) => {
-      const target = e.target as HTMLElement;
-      if (target.tagName === 'IMG' && target.closest('.article-content')) {
-        e.preventDefault();
-        const img = target as HTMLImageElement;
-        setZoomedImage(img.src);
-        setZoomScale(1);
-        setZoomPosition({ x: 0, y: 0 });
-      }
-    };
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (zoomedImage) {
-        if (e.key === 'Escape') {
-          closeZoom();
-        } else if (e.key === '+' || e.key === '=') {
-          e.preventDefault();
-          setZoomScale(prev => Math.min(prev + 0.2, 3));
-        } else if (e.key === '-') {
-          e.preventDefault();
-          setZoomScale(prev => Math.max(prev - 0.2, 0.5));
-        }
-      }
-    };
-
-    document.addEventListener('click', handleImageClick);
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('click', handleImageClick);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [zoomedImage]);
+  // Gestion du modal de zoom
+  const openZoom = (imageSrc: string) => {
+    setZoomedImage(imageSrc);
+    setZoomScale(1);
+    setZoomPosition({ x: 0, y: 0 });
+    setShowControls(true);
+  };
 
   const closeZoom = () => {
     setZoomedImage(null);
     setZoomScale(1);
     setZoomPosition({ x: 0, y: 0 });
+    setIsDragging(false);
   };
 
   const handleZoomIn = () => {
@@ -171,14 +146,125 @@ export default function BlogSlug() {
     setIsDragging(false);
   };
 
-  const handleWheel = (e: React.WheelEvent) => {
-    e.preventDefault();
-    if (e.deltaY < 0) {
-      handleZoomIn();
-    } else {
-      handleZoomOut();
-    }
+  const toggleControls = () => {
+    setShowControls(prev => !prev);
   };
+
+  // Gestion des événements clavier et molette pour le zoom
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (zoomedImage) {
+        if (e.key === 'Escape') {
+          closeZoom();
+        } else if (e.key === '+' || e.key === '=') {
+          e.preventDefault();
+          handleZoomIn();
+        } else if (e.key === '-') {
+          e.preventDefault();
+          handleZoomOut();
+        } else if (e.key === '0') {
+          e.preventDefault();
+          handleZoomReset();
+        }
+      }
+    };
+
+    const handleWheel = (e: WheelEvent) => {
+      if (zoomedImage) {
+        e.preventDefault();
+        if (e.deltaY < 0) {
+          handleZoomIn();
+        } else {
+          handleZoomOut();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('wheel', handleWheel);
+    };
+  }, [zoomedImage, zoomScale]);
+
+  // Ajouter les boutons loupe aux images après le rendu du contenu
+  useEffect(() => {
+    if (post && isVisible) {
+      const images = document.querySelectorAll('.article-content img');
+
+      images.forEach((img) => {
+        const imgElement = img as HTMLImageElement;
+
+        // Vérifier si le bouton loupe n'existe pas déjà
+        if (imgElement.parentElement?.querySelector('.zoom-button')) {
+          return;
+        }
+
+        // Créer un conteneur pour l'image et le bouton
+        const container = document.createElement('div');
+        container.className = 'image-zoom-container';
+        container.style.position = 'relative';
+        container.style.display = 'inline-block';
+        container.style.width = '100%';
+
+        // Insérer le conteneur avant l'image
+        imgElement.parentNode?.insertBefore(container, imgElement);
+
+        // Déplacer l'image dans le conteneur
+        container.appendChild(imgElement);
+
+        // Créer le bouton loupe
+        const zoomButton = document.createElement('button');
+        zoomButton.className = 'zoom-button';
+        zoomButton.innerHTML = `
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/>
+          </svg>
+        `;
+        zoomButton.title = 'Agrandir l\'image';
+        zoomButton.style.cssText = `
+          position: absolute;
+          top: 0.75rem;
+          right: 0.75rem;
+          background: rgba(0, 0, 0, 0.7);
+          color: white;
+          border: none;
+          border-radius: 50%;
+          width: 2.5rem;
+          height: 2.5rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          opacity: 0;
+          transition: all 0.3s ease;
+          z-index: 10;
+          backdrop-filter: blur(4px);
+        `;
+
+        // Ajouter les événements hover sur le conteneur
+        container.addEventListener('mouseenter', () => {
+          zoomButton.style.opacity = '1';
+        });
+
+        container.addEventListener('mouseleave', () => {
+          zoomButton.style.opacity = '0';
+        });
+
+        // Ajouter l'événement click sur le bouton
+        zoomButton.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          openZoom(imgElement.src);
+        });
+
+        // Ajouter le bouton au conteneur
+        container.appendChild(zoomButton);
+      });
+    }
+  }, [post, isVisible]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("fr-FR", {
@@ -201,7 +287,7 @@ export default function BlogSlug() {
       <div className="min-h-screen bg-white">
         <TopBanner />
         <Header />
-        
+
         <div className="bg-adawi-beige-dark py-2 sm:py-4"></div>
         <div className="bg-gray-200 py-1 sm:py-2"></div>
 
@@ -230,7 +316,7 @@ export default function BlogSlug() {
       <div className="min-h-screen bg-white">
         <TopBanner />
         <Header />
-        
+
         <div className="bg-adawi-beige-dark py-2 sm:py-4"></div>
         <div className="bg-gray-200 py-1 sm:py-2"></div>
 
@@ -244,7 +330,7 @@ export default function BlogSlug() {
                 L'article que vous recherchez n'existe pas ou a été supprimé.
               </p>
             </div>
-            
+
             <Link
               to="/blog"
               className="inline-flex items-center bg-adawi-gold text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg hover:bg-adawi-gold/90 transition-all duration-300 transform hover:scale-105 shadow-lg text-sm sm:text-base"
@@ -264,108 +350,44 @@ export default function BlogSlug() {
     <div className="min-h-screen bg-white">
       {/* Reading Progress Bar */}
       <div className="fixed top-0 left-0 w-full h-1 bg-gray-200 z-50">
-        <div 
+        <div
           className="h-full bg-gradient-to-r from-adawi-gold to-yellow-500 transition-all duration-200 ease-out"
           style={{ width: `${readingProgress}%` }}
         />
       </div>
 
-      {/* Modal de zoom d'image */}
-      {zoomedImage && (
-        <div 
-          className="fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center"
-          onClick={closeZoom}
-        >
-          {/* Contrôles de zoom */}
-          <div className="absolute top-4 right-4 flex space-x-2 z-[10000]">
-            <button
-              onClick={(e) => { e.stopPropagation(); handleZoomOut(); }}
-              className="bg-white/10 backdrop-blur-sm text-white p-3 rounded-full hover:bg-white/20 transition-all duration-200"
-              title="Zoom arrière (- ou molette)"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-              </svg>
-            </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); handleZoomReset(); }}
-              className="bg-white/10 backdrop-blur-sm text-white p-3 rounded-full hover:bg-white/20 transition-all duration-200"
-              title="Réinitialiser le zoom"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); handleZoomIn(); }}
-              className="bg-white/10 backdrop-blur-sm text-white p-3 rounded-full hover:bg-white/20 transition-all duration-200"
-              title="Zoom avant (+ ou molette)"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-            </button>
-            <button
-              onClick={closeZoom}
-              className="bg-white/10 backdrop-blur-sm text-white p-3 rounded-full hover:bg-white/20 transition-all duration-200"
-              title="Fermer (Échap)"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-
-          {/* Indicateur de zoom */}
-          <div className="absolute bottom-4 left-4 bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm z-[10000]">
-            Zoom: {Math.round(zoomScale * 100)}%
-          </div>
-
-          {/* Instructions */}
-          <div className="absolute bottom-4 right-4 bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded-full text-xs z-[10000]">
-            {zoomScale > 1 ? 'Glisser pour déplacer' : 'Molette ou +/- pour zoomer'}
-          </div>
-
-          {/* Image zoomée */}
-          <div 
-            className="relative max-w-[95vw] max-h-[95vh] cursor-grab active:cursor-grabbing select-none"
-            style={{ 
-              cursor: zoomScale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in'
-            }}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            onWheel={handleWheel}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img
-              src={zoomedImage}
-              alt="Image zoomée"
-              className="max-w-none transition-transform duration-300 ease-out"
-              style={{
-                transform: `scale(${zoomScale}) translate(${zoomPosition.x / zoomScale}px, ${zoomPosition.y / zoomScale}px)`,
-                transformOrigin: 'center center'
-              }}
-              draggable={false}
-            />
-          </div>
-        </div>
-      )}
-
       <TopBanner />
       <Header />
-      
+
       <div className="bg-adawi-beige-dark py-2 sm:py-4"></div>
       <div className="bg-gray-200 py-1 sm:py-2"></div>
+
+      {/* Modal de zoom */}
+      {zoomedImage && (
+        <ZoomModal
+          zoomedImage={zoomedImage}
+          zoomScale={zoomScale}
+          zoomPosition={zoomPosition}
+          isDragging={isDragging}
+          showControls={showControls}
+          onClose={closeZoom}
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
+          onZoomReset={handleZoomReset}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onToggleControls={toggleControls}
+        />
+      )}
 
       <main className="max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {/* Breadcrumb */}
         <nav className={`mb-4 sm:mb-8 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} aria-label="Breadcrumb">
           <ol className="flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm text-gray-500 overflow-x-auto whitespace-nowrap pb-2">
             <li className="flex-shrink-0">
-              <Link 
-                to="/" 
+              <Link
+                to="/"
                 className="hover:text-adawi-gold transition-colors duration-200"
               >
                 Accueil
@@ -373,8 +395,8 @@ export default function BlogSlug() {
             </li>
             <li className="text-gray-300 flex-shrink-0">/</li>
             <li className="flex-shrink-0">
-              <Link 
-                to="/blog" 
+              <Link
+                to="/blog"
                 className="hover:text-adawi-gold transition-colors duration-200"
               >
                 Blog
@@ -390,47 +412,59 @@ export default function BlogSlug() {
         <article className={`bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-2xl overflow-hidden border border-gray-100 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           {/* Article Header */}
           <header className="relative">
-            {/* Image de couverture avec effet parallax et zoom */}
+            {/* Image de couverture */}
             {post.cover_image && (
               <div className="relative h-48 sm:h-64 md:h-80 lg:h-96 overflow-hidden group">
                 <img
                   src={post.cover_image}
                   alt={post.title}
-                  className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700 cursor-zoom-in"
+                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
                   loading="lazy"
-                  onClick={() => {
-                    setZoomedImage(post.cover_image!);
-                    setZoomScale(1);
-                    setZoomPosition({ x: 0, y: 0 });
-                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
-                
-                {/* Indicateur de zoom sur l'image de couverture */}
-                <div className="absolute top-3 left-3 bg-black/20 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  🔍 Cliquer pour zoomer
-                </div>
-                
+
                 {/* Badge de statut */}
                 <div className="absolute top-3 sm:top-6 right-3 sm:right-6">
                   <span className="bg-adawi-gold text-white px-2 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-medium shadow-lg backdrop-blur-sm animate-fade-in">
                     {post.status === 'published' ? '✓ Publié' : '📝 Brouillon'}
                   </span>
                 </div>
+
+                {/* Bouton loupe pour agrandir l'image de couverture - visible sur mobile, apparaît au survol sur desktop */}
+                <div className="absolute top-3 sm:top-6 left-3 sm:left-6 r">
+                  <button
+                    onClick={() => openZoom(post.cover_image!)}
+                    className="bg-white/20 backdrop-blur-sm text-white p-2 sm:p-3 rounded-full hover:bg-white/30 hover:scale-110 transition-all duration-300 shadow-lg md:opacity-0 md:group-hover:opacity-100"
+                    title="Agrandir l'image de couverture"
+                  >
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 " fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Overlay cliquable pour zoomer sur toute l'image */}
+                <div
+                  className="absolute inset-0 cursor-zoom-in"
+                  onClick={() => openZoom(post.cover_image!)}
+                  aria-label="Agrandir l'image"
+                ></div>
               </div>
             )}
-            
+
             {/* Contenu du header avec design moderne */}
             <div className={`${post.cover_image ? 'absolute bottom-0 left-0 right-0 text-white p-4 sm:p-6 md:p-8 lg:p-12' : 'p-4 sm:p-6 md:p-8 lg:p-12 pb-4 sm:pb-6 bg-gradient-to-br from-gray-50 to-white'}`}>
               <div className="max-w-4xl">
-                {/* Métadonnées avec icônes modernes */}
-                <div className="flex flex-wrap items-center gap-2 sm:gap-4 lg:gap-6 text-xs sm:text-sm mb-4 sm:mb-6">
+
+                {/* Métadonnées avec icônes modernes - version plus responsive */}
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 md:gap-4 text-xs sm:text-sm mb-4 sm:mb-6">
                   <div className="flex items-center group">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-r from-adawi-gold to-yellow-500 rounded-full flex items-center justify-center mr-2 sm:mr-3 shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                      <span className="text-white font-bold text-sm sm:text-base lg:text-lg">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 bg-gradient-to-r from-adawi-gold to-yellow-500 rounded-full flex items-center justify-center mr-2 sm:mr-3 shadow-lg group-hover:shadow-xl transition-shadow duration-300">
+                      <span className="text-white font-bold text-xs sm:text-sm md:text-base lg:text-lg">
                         {post.author_name.charAt(0).toUpperCase()}
                       </span>
                     </div>
+
                     <div>
                       <span className={`font-semibold ${post.cover_image ? 'text-white' : 'text-adawi-gold'} block text-xs sm:text-sm`}>
                         {post.author_name}
@@ -440,10 +474,10 @@ export default function BlogSlug() {
                       </span>
                     </div>
                   </div>
-                  
+
                   {post.published_at && (
-                    <div className="flex items-center bg-black/20 rounded-full px-2 sm:px-3 lg:px-4 py-1 sm:py-2 backdrop-blur-sm">
-                      <svg className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 mr-1 sm:mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <div className="flex items-center bg-black/20 rounded-full px-2 sm:px-3 py-1 sm:py-2 backdrop-blur-sm">
+                      <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
                       </svg>
                       <span className={`${post.cover_image ? 'text-white/90' : 'text-gray-600'} text-xs sm:text-sm`}>
@@ -452,9 +486,9 @@ export default function BlogSlug() {
                       </span>
                     </div>
                   )}
-                  
-                  <div className="flex items-center bg-black/20 rounded-full px-2 sm:px-3 lg:px-4 py-1 sm:py-2 backdrop-blur-sm">
-                    <svg className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 mr-1 sm:mr-2" fill="currentColor" viewBox="0 0 20 20">
+
+                  <div className="flex items-center bg-black/20 rounded-full px-2 sm:px-3 py-1 sm:py-2 backdrop-blur-sm">
+                    <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
                       <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
                     </svg>
@@ -494,7 +528,7 @@ export default function BlogSlug() {
                 <div className="h-px bg-gradient-to-r from-adawi-gold via-adawi-gold to-transparent w-16 sm:w-24 lg:w-32"></div>
               </div>
             )}
-            
+
             {/* Zone de lecture avec focus */}
             <div className="article-content-wrapper max-w-4xl mx-auto animate-fade-in-up-delayed">
               <div
@@ -528,11 +562,11 @@ export default function BlogSlug() {
           </div>
         </article>
 
-        {/* Footer de l'article */}
+        {/* Footer de l'article - version plus responsive */}
         <footer className={`mt-6 sm:mt-8 lg:mt-12 pt-4 sm:pt-6 lg:pt-8 border-t border-gray-200 transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 sm:gap-4">
-            <div className="text-xs sm:text-sm text-gray-500 order-2 lg:order-1">
-              <p className="flex items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
+            <div className="text-xs sm:text-sm text-gray-500 text-center sm:text-left w-full sm:w-auto order-2 sm:order-1">
+              <p className="flex items-center justify-center sm:justify-start">
                 <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
                 </svg>
@@ -542,18 +576,18 @@ export default function BlogSlug() {
                 Article créé le {formatShortDate(post.created_at)}
               </p>
             </div>
-            
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 lg:gap-4 w-full sm:w-auto order-1 lg:order-2">
+
+            <div className="flex flex-row gap-2 sm:gap-3 lg:gap-4 w-full sm:w-auto order-1 sm:order-2 justify-center sm:justify-end">
               <Link
                 to="/blog"
-                className="inline-flex items-center justify-center bg-adawi-gold text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-adawi-gold/90 transition-all duration-300 transform hover:scale-105 shadow-md text-sm sm:text-base"
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center bg-adawi-gold text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-adawi-gold/90 transition-all duration-300 transform hover:scale-105 shadow-md text-xs sm:text-sm"
               >
                 ← Retour au blog
               </Link>
-              
+
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className="inline-flex items-center justify-center bg-gray-100 text-gray-700 px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-gray-200 transition-all duration-300 text-sm sm:text-base"
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center bg-gray-100 text-gray-700 px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-gray-200 transition-all duration-300 text-xs sm:text-sm"
               >
                 ↑ Haut de page
               </button>
@@ -566,7 +600,7 @@ export default function BlogSlug() {
       <Footer />
 
       {/* Styles CSS intégrés pour le contenu et les animations */}
-      <style jsx>{`
+      <style>{`
         /* === ANIMATIONS === */
         @keyframes fadeIn {
           from { opacity: 0; }
@@ -653,7 +687,7 @@ export default function BlogSlug() {
           word-wrap: break-word;
         }
 
-        /* === STYLES SPÉCIAUX POUR LES IMAGES ZOOMABLES === */
+        /* === STYLES POUR LES IMAGES AVEC BOUTON LOUPE === */
         .article-content img {
           max-width: 100%;
           height: auto;
@@ -662,8 +696,6 @@ export default function BlogSlug() {
           border-radius: 0.5rem;
           box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
           transition: all 0.3s ease;
-          cursor: zoom-in;
-          position: relative;
         }
 
         @media (min-width: 640px) {
@@ -674,96 +706,50 @@ export default function BlogSlug() {
           }
         }
 
-        .article-content img:hover {
+        .article-content .image-zoom-container:hover img {
           transform: scale(1.02);
           box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
 
-        /* Effet overlay sur les images */
-        .article-content img::after {
-          content: '🔍 Cliquer pour agrandir';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.7);
-          color: white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          opacity: 0;
-          transition: opacity 0.3s ease;
-          border-radius: inherit;
-          font-size: 0.875rem;
-          font-weight: 500;
+        /* Styles pour le conteneur d'image avec bouton zoom */
+        .article-content .image-zoom-container {
+          position: relative !important;
+          display: inline-block !important;
+          width: 100% !important;
+          margin: 2rem auto !important;
         }
 
         @media (min-width: 640px) {
-          .article-content img::after {
-            font-size: 1rem;
+          .article-content .image-zoom-container {
+            margin: 3rem auto !important;
           }
         }
 
-        .article-content img:hover::after {
-          opacity: 1;
+        /* Animation hover pour le bouton loupe */
+        .zoom-button:hover {
+          background: rgba(212, 175, 55, 0.9) !important;
+          transform: scale(1.1) !important;
         }
 
-        /* Conteneur d'image avec effet zoom */
-        .article-content .image-container {
-          position: relative;
-          display: inline-block;
-          margin: 2rem auto;
-          border-radius: 0.5rem;
-          overflow: hidden;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-          transition: all 0.3s ease;
-        }
-
-        @media (min-width: 640px) {
-          .article-content .image-container {
-            margin: 3rem auto;
-            border-radius: 1rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        /* Responsive pour le bouton loupe */
+        @media (max-width: 640px) {
+          .zoom-button {
+            width: 2rem !important;
+            height: 2rem !important;
+            top: 0.5rem !important;
+            right: 0.5rem !important;
+          }
+          
+          .zoom-button svg {
+            width: 1rem !important;
+            height: 1rem !important;
           }
         }
 
-        .article-content .image-container:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-        }
-
-        .article-content .image-container .zoom-overlay {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: linear-gradient(45deg, rgba(212, 175, 55, 0.9), rgba(184, 148, 31, 0.9));
-          color: white;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          opacity: 0;
-          transition: opacity 0.3s ease;
-          cursor: zoom-in;
-        }
-
-        .article-content .image-container:hover .zoom-overlay {
-          opacity: 1;
-        }
-
-        .article-content .image-container .zoom-overlay svg {
-          width: 2rem;
-          height: 2rem;
-          margin-bottom: 0.5rem;
-        }
-
-        @media (min-width: 640px) {
-          .article-content .image-container .zoom-overlay svg {
-            width: 2.5rem;
-            height: 2.5rem;
+        /* Affichage permanent du bouton sur mobile */
+        @media (hover: none) and (pointer: coarse) {
+          .zoom-button {
+            opacity: 0.8 !important;
           }
         }
 
@@ -851,6 +837,54 @@ export default function BlogSlug() {
             font-size: 1.6rem;
           }
         }
+          /* Améliorations pour les petits écrans mobiles */
+@media (max-width: 360px) {
+  .article-content h1 {
+    font-size: 1.5rem;
+  }
+  
+  .article-content h2 {
+    font-size: 1.3rem;
+  }
+  
+  .article-content p:first-of-type::first-letter {
+    font-size: 2.5rem;
+    line-height: 2rem;
+  }
+  
+  .article-content blockquote {
+    margin: 1.5rem -0.5rem;
+    padding: 0.75rem;
+  }
+  
+  .article-content blockquote::before {
+    font-size: 2rem;
+  }
+}
+
+/* Amélioration de l'affichage des images sur mobile */
+@media (max-width: 640px) {
+  .article-content .image-zoom-container {
+    margin: 1.5rem auto !important;
+  }
+  
+  /* Toujours afficher le bouton zoom sur mobile */
+  .zoom-button {
+    opacity: 0.8 !important;
+    width: 2rem !important;
+    height: 2rem !important;
+  }
+}
+
+/* Amélioration de la navigation sur mobile */
+@media (max-width: 480px) {
+  .breadcrumb-item {
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
 
         .article-content h4 {
           font-size: 1.125rem;
@@ -1188,41 +1222,6 @@ export default function BlogSlug() {
           animation: fadeInUp 0.8s ease-out;
         }
 
-        /* === STYLES POUR LE MODAL DE ZOOM === */
-        .zoom-modal {
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-        }
-
-        .zoom-controls {
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
-        }
-
-        /* Animation d'ouverture du modal */
-        @keyframes zoomModalOpen {
-          from {
-            opacity: 0;
-            transform: scale(0.8);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-
-        .zoom-modal-enter {
-          animation: zoomModalOpen 0.3s ease-out;
-        }
-
-        /* Styles pour le drag */
-        .zoom-image-dragging {
-          user-select: none;
-          -webkit-user-select: none;
-          -moz-user-select: none;
-          -ms-user-select: none;
-        }
-
         /* Améliorations pour mobile */
         @media (max-width: 640px) {
           .article-content {
@@ -1285,16 +1284,6 @@ export default function BlogSlug() {
           .article-content td {
             padding: 0.5rem;
           }
-
-          /* Contrôles de zoom mobiles */
-          .zoom-controls {
-            flex-direction: column;
-            gap: 0.5rem;
-          }
-
-          .zoom-controls button {
-            padding: 0.75rem;
-          }
         }
 
         /* Améliorations pour tablettes */
@@ -1342,11 +1331,6 @@ export default function BlogSlug() {
             max-width: 100% !important;
             box-shadow: none !important;
             break-inside: avoid;
-            cursor: default !important;
-          }
-          
-          .article-content img::after {
-            display: none !important;
           }
           
           .article-content blockquote {
@@ -1369,11 +1353,6 @@ export default function BlogSlug() {
             break-after: avoid;
             color: black !important;
           }
-
-          /* Masquer le modal de zoom en impression */
-          .zoom-modal {
-            display: none !important;
-          }
         }
 
         /* Améliorations pour l'accessibilité */
@@ -1384,14 +1363,12 @@ export default function BlogSlug() {
           .animate-fade-in-delayed,
           .animate-fade-in-up-delayed,
           .animate-slide-up,
-          .animate-bounce-in,
-          .zoom-modal-enter {
+          .animate-bounce-in {
             animation: none;
           }
           
           .article-content img:hover,
-          .article-content a,
-          .article-content .image-container:hover {
+          .article-content a {
             transform: none;
             transition: none;
           }
@@ -1485,124 +1462,18 @@ export default function BlogSlug() {
           .article-content img:hover {
             transform: translateY(-5px) scale(1.02);
           }
-
-          .article-content .image-container:hover {
-            transform: translateY(-5px);
-          }
-        }
-
-        /* Curseurs personnalisés */
-        .cursor-zoom-in {
-          cursor: zoom-in;
-        }
-
-        .cursor-zoom-out {
-          cursor: zoom-out;
-        }
-
-        .cursor-grab {
-          cursor: grab;
-        }
-
-        .cursor-grabbing {
-          cursor: grabbing;
-        }
-
-        /* Styles pour les touches de raccourci */
-        .zoom-shortcut-hint {
-          position: absolute;
-          bottom: 80px;
-          left: 50%;
-          transform: translateX(-50%);
-          background: rgba(0, 0, 0, 0.8);
-          color: white;
-          padding: 0.5rem 1rem;
-          border-radius: 0.5rem;
-          font-size: 0.75rem;
-          opacity: 0;
-          animation: fadeInUp 0.5s ease-out 1s both;
-        }
-
-        @media (min-width: 640px) {
-          .zoom-shortcut-hint {
-            font-size: 0.875rem;
-            padding: 0.75rem 1.5rem;
-          }
-        }
-
-        /* Animation fluide pour les transformations */
-        .smooth-transform {
-          transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* Styles pour les contrôles tactiles */
-        @media (hover: none) and (pointer: coarse) {
-          .article-content img::after {
-            content: '👆 Toucher pour agrandir';
-          }
-
-          .zoom-controls {
-            padding: 1rem;
-            gap: 1rem;
-          }
-
-          .zoom-controls button {
-            min-width: 3rem;
-            min-height: 3rem;
-            font-size: 1.2rem;
-          }
         }
 
         /* Protection contre le débordement */
-        .zoom-container {
-          overflow: hidden;
-          will-change: transform;
-        }
-
-        /* Optimisation des performances */
-        .article-content img,
-        .zoom-modal {
+        .article-content img {
           will-change: transform;
           backface-visibility: hidden;
         }
 
-        /* Styles pour la mise en surbrillance de l'image active */
-        .article-content img.zoom-ready {
-          box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3), 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Effet de pulse subtil */
-        @keyframes subtlePulse {
-          0%, 100% {
-            box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4);
-          }
-          50% {
-            box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
-          }
-        }
-
-        .article-content img:hover {
-          animation: subtlePulse 2s infinite;
-        }
-
-        /* Styles pour l'indicateur de chargement */
-        .zoom-loading {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          color: white;
-          font-size: 1rem;
-        }
-
-        @keyframes spin {
-          to {
-            transform: rotate(360deg);
-          }
-        }
-
-        .zoom-loading svg {
-          animation: spin 1s linear infinite;
+        /* Optimisation des performances */
+        .article-content {
+          will-change: transform;
+          backface-visibility: hidden;
         }
       `}</style>
     </div>

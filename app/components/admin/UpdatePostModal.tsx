@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Dialog } from "@headlessui/react";
 import { X, Upload, Tag, Save } from "lucide-react";
 
@@ -48,6 +48,9 @@ export default function UpdatePostModal({
     tags: [] as string[],
     status: "draft" as "draft" | "published"
   });
+
+  const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Test de connexion à l'API
   const testConnection = async () => {
@@ -154,6 +157,7 @@ export default function UpdatePostModal({
       setPost(null);
       setError(null);
       setNewTag("");
+      setCoverImageFile(null);
       setFormData({
         title: "",
         excerpt: "",
@@ -193,6 +197,25 @@ export default function UpdatePostModal({
     }));
   };
 
+  // Gérer le clic sur le bouton upload
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  // Gérer la sélection de fichier
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setCoverImageFile(file);
+      // Créer une URL d'aperçu pour le fichier sélectionné
+      const previewUrl = URL.createObjectURL(file);
+      setFormData(prev => ({
+        ...prev,
+        cover_image: previewUrl
+      }));
+    }
+  };
+
   // Soumettre les modifications
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -204,23 +227,28 @@ export default function UpdatePostModal({
     try {
       // Validation côté client
       if (!formData.title.trim() || !formData.excerpt.trim() || !formData.content.trim()) {
-      throw new Error("Les champs titre, résumé et contenu sont obligatoires");
-    }
+        throw new Error("Les champs titre, résumé et contenu sont obligatoires");
+      }
 
-      // Préparer les données à envoyer
-      const updateData = {
-      title: formData.title.trim(),
-      slug: slug, // <-- Correction ici
-      excerpt: formData.excerpt.trim(),
-      content: formData.content.trim(),
-      cover_image: formData.cover_image.trim() || null,
-      tags: formData.tags.filter(tag => tag.trim() !== ""),
-      status: formData.status
-    };
+      // Préparer les données à envoyer en multipart/form-data
+      const formPayload = new FormData();
+      formPayload.append('title', formData.title.trim());
+      formPayload.append('excerpt', formData.excerpt.trim());
+      formPayload.append('content', formData.content.trim());
+      formPayload.append('status', formData.status);
+      formData.tags.filter(tag => tag.trim() !== "").forEach(tag => {
+        formPayload.append('tags', tag);
+      });
 
-      console.log('Tentative de mise à jour avec:', updateData);
+      if (coverImageFile) {
+        formPayload.append('cover_image', coverImageFile);
+      } else if (formData.cover_image.trim() === '') {
+        // If cover_image URL is empty string, send null to clear it
+        formPayload.append('cover_image', '');
+      }
 
-      // Première tentative avec timeout court
+      console.log('Tentative de mise à jour avec FormData');
+
       let response;
       let attempt = 1;
       const maxAttempts = 3;
@@ -238,10 +266,10 @@ export default function UpdatePostModal({
               method: 'PUT',
               headers: {
                 'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
+                // Do NOT set Content-Type header for multipart/form-data; browser sets it automatically with boundary
                 'Accept': 'application/json'
               },
-              body: JSON.stringify(updateData),
+              body: formPayload,
               signal: controller.signal
             }
           );
@@ -250,11 +278,11 @@ export default function UpdatePostModal({
           break; // Sortir de la boucle si la requête réussit
         } catch (fetchError: any) {
           console.error(`Échec tentative ${attempt}:`, fetchError);
-          
+
           if (attempt === maxAttempts) {
             throw fetchError; // Relancer l'erreur à la dernière tentative
           }
-          
+
           // Attendre avant la prochaine tentative
           await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
           attempt++;
@@ -286,16 +314,16 @@ export default function UpdatePostModal({
       } catch (parseError) {
         console.warn('Impossible de parser la réponse JSON, mais la requête semble avoir réussi');
         // Si on ne peut pas parser le JSON mais que le status est OK, on considère que ça a marché
-        updatedPost = { ...post, ...updateData };
+        updatedPost = { ...post, ...formData };
       }
 
       setPost(updatedPost);
-      
+
       // Appeler le callback de succès si fourni
       if (onSuccess) {
         onSuccess();
       }
-      
+
       // Fermer le modal après un court délai
       setTimeout(() => {
         onClose();
@@ -453,7 +481,7 @@ export default function UpdatePostModal({
                 {/* Image de couverture */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Image de couverture (URL)
+                    Image de couverture (URL ou fichier)
                   </label>
                   <div className="flex gap-2">
                     <input
@@ -466,12 +494,21 @@ export default function UpdatePostModal({
                     />
                     <button
                       type="button"
+                      onClick={handleUploadClick}
                       className="px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
                       title="Upload image"
                     >
                       <Upload size={18} />
                     </button>
                   </div>
+                  {/* Hidden file input */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
                   {formData.cover_image && (
                     <div className="mt-2">
                       <img

@@ -90,10 +90,10 @@ export const action: ActionFunction = async ({ request }) => {
     const intent = formData.get("intent");
 
     if (intent === "delete") {
-      const postId = formData.get("postId");
+      const slug = formData.get("slug");
 
       const res = await fetch(
-        `https://showroom-backend-2x3g.onrender.com/admin/content/blog/posts/${postId}`,
+        `https://showroom-backend-2x3g.onrender.com/admin/content/blog/posts/${slug}`,
         {
           method: "DELETE",
           headers: {
@@ -154,11 +154,11 @@ export default function SellerBlog() {
   const [openUpdateModal, setOpenUpdateModal] = useState(false);
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
 
-  const handleDelete = (postId: string) => {
+  const handleDelete = (slug: string) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer cet article ?")) {
       const form = new FormData();
       form.append("intent", "delete");
-      form.append("postId", postId);
+      form.append("slug", slug);
 
       // Soumettre le formulaire
       const formElement = document.createElement("form");
@@ -293,7 +293,7 @@ export default function SellerBlog() {
                           <Edit size={16} />
                         </button>
                         <button
-                          onClick={() => handleDelete(post.id)}
+                          onClick={() => handleDelete(post.slug)}
                           className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
                           title="Supprimer le post"
                         >
