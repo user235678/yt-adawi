@@ -284,7 +284,7 @@ export default function AdminDashboard() {
             Bienvenue, Administrateur
           </h1>
           <p className="text-gray-600">
-            Voici les statistiques d'aujourd'hui de votre boutique en ligne !
+            Voici les statistiques de la semaine de votre boutique en ligne !
           </p>
         </div>
       </div>
@@ -394,7 +394,7 @@ export default function AdminDashboard() {
             <div className="p-4">
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Revenus du jour</span>
+                  <span className="text-gray-600">Revenus de la semaine</span>
                   <span className="font-semibold text-green-600">
                     {new Intl.NumberFormat('fr-FR', {
                       style: 'currency',

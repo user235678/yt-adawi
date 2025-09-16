@@ -39,7 +39,7 @@ export default function AdminLayout() {
         </div>
 
         {/* Contenu scrollable */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto pt-16">
           <div className="p-4 sm:p-6">
             <div className="max-w-7xl mx-auto">
               <Outlet />
