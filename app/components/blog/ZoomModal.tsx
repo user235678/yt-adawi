@@ -1,5 +1,5 @@
 import React from "react";
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 interface ZoomModalProps {
   zoomedImage: string;
@@ -15,6 +15,8 @@ interface ZoomModalProps {
   onMouseMove: (e: React.MouseEvent) => void;
   onMouseUp: () => void;
   onToggleControls: () => void;
+  onSetDragging: (dragging: boolean) => void;
+  onSetZoomPosition: (position: { x: number; y: number }) => void;
 }
 
 export default function ZoomModal({
@@ -31,7 +33,11 @@ export default function ZoomModal({
   onMouseMove,
   onMouseUp,
   onToggleControls,
+  onSetDragging,
+  onSetZoomPosition,
 }: ZoomModalProps) {
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
   // Empêcher le scroll du body quand le modal est ouvert
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -40,10 +46,53 @@ export default function ZoomModal({
     };
   }, []);
 
+  // Gestion des touches clavier
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case 'Escape':
+          onClose();
+          break;
+        case '+':
+        case '=':
+          e.preventDefault();
+          onZoomIn();
+          break;
+        case '-':
+          e.preventDefault();
+          onZoomOut();
+          break;
+        case '0':
+          e.preventDefault();
+          onZoomReset();
+          break;
+        case 'h':
+        case 'H':
+          e.preventDefault();
+          onToggleControls();
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [onClose, onZoomIn, onZoomOut, onZoomReset, onToggleControls]);
+
+  // Gestion de la molette de la souris
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault();
+    if (e.deltaY < 0) {
+      onZoomIn();
+    } else {
+      onZoomOut();
+    }
+  }, [onZoomIn, onZoomOut]);
+
+  // Gestion du touch pour mobile
   const handleTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length === 1 && zoomScale > 1) {
       const touch = e.touches[0];
-      setIsDragging(true);
+      onSetDragging(true);
       setDragStart({
         x: touch.clientX - zoomPosition.x,
         y: touch.clientY - zoomPosition.y,
@@ -55,7 +104,7 @@ export default function ZoomModal({
     if (isDragging && e.touches.length === 1 && zoomScale > 1) {
       e.preventDefault();
       const touch = e.touches[0];
-      setZoomPosition({
+      onSetZoomPosition({
         x: touch.clientX - dragStart.x,
         y: touch.clientY - dragStart.y,
       });
@@ -63,30 +112,34 @@ export default function ZoomModal({
   };
 
   const handleTouchEnd = () => {
-    setIsDragging(false);
+    onSetDragging(false);
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center">
+    <div 
+      className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center"
+      onWheel={handleWheel}
+    >
       {/* Overlay pour fermer */}
       <div
         className="absolute inset-0 cursor-pointer"
         onClick={onClose}
       />
 
-      {/* Contrôles */}
+      {/* Contrôles - Responsive */}
       {showControls && (
-        <div className="absolute top-4 right-4 z-10 flex items-center space-x-2">
+        <div className="absolute top-2 right-2 md:top-4 md:right-4 z-10 flex items-center space-x-1 md:space-x-2">
           <button
             onClick={(e) => {
               e.stopPropagation();
               onZoomOut();
             }}
-            className="bg-white/10 backdrop-blur-sm text-white p-3 rounded-full hover:bg-white/20 transition-all duration-200"
+            className="bg-white/10 backdrop-blur-sm text-white p-2 md:p-3 rounded-full hover:bg-white/20 transition-all duration-200 touch-manipulation"
             title="Zoom arrière (- ou molette)"
+            aria-label="Zoom arrière"
           >
             <svg
-              className="w-5 h-5"
+              className="w-4 h-4 md:w-5 md:h-5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -100,11 +153,12 @@ export default function ZoomModal({
               e.stopPropagation();
               onZoomReset();
             }}
-            className="bg-white/10 backdrop-blur-sm text-white p-3 rounded-full hover:bg-white/20 transition-all duration-200"
+            className="bg-white/10 backdrop-blur-sm text-white p-2 md:p-3 rounded-full hover:bg-white/20 transition-all duration-200 touch-manipulation"
             title="Réinitialiser le zoom (0)"
+            aria-label="Réinitialiser le zoom"
           >
             <svg
-              className="w-5 h-5"
+              className="w-4 h-4 md:w-5 md:h-5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -118,11 +172,12 @@ export default function ZoomModal({
               e.stopPropagation();
               onZoomIn();
             }}
-            className="bg-white/10 backdrop-blur-sm text-white p-3 rounded-full hover:bg-white/20 transition-all duration-200"
+            className="bg-white/10 backdrop-blur-sm text-white p-2 md:p-3 rounded-full hover:bg-white/20 transition-all duration-200 touch-manipulation"
             title="Zoom avant (+ ou molette)"
+            aria-label="Zoom avant"
           >
             <svg
-              className="w-5 h-5"
+              className="w-4 h-4 md:w-5 md:h-5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -136,11 +191,12 @@ export default function ZoomModal({
               e.stopPropagation();
               onClose();
             }}
-            className="bg-white/10 backdrop-blur-sm text-white p-3 rounded-full hover:bg-white/20 transition-all duration-200"
+            className="bg-white/10 backdrop-blur-sm text-white p-2 md:p-3 rounded-full hover:bg-white/20 transition-all duration-200 touch-manipulation"
             title="Fermer (Échap)"
+            aria-label="Fermer"
           >
             <svg
-              className="w-5 h-5"
+              className="w-4 h-4 md:w-5 md:h-5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -157,28 +213,33 @@ export default function ZoomModal({
           e.stopPropagation();
           onToggleControls();
         }}
-        className="absolute top-4 left-4 z-10 bg-white/10 backdrop-blur-sm text-white p-3 rounded-full hover:bg-white/20 transition-all duration-200"
-        title="Masquer/Afficher les contrôles"
+        className="absolute top-2 left-2 md:top-4 md:left-4 z-10 bg-white/10 backdrop-blur-sm text-white p-2 md:p-3 rounded-full hover:bg-white/20 transition-all duration-200 touch-manipulation"
+        title="Masquer/Afficher les contrôles (H)"
+        aria-label="Basculer l'affichage des contrôles"
       >
         <svg
-          className="w-5 h-5"
+          className="w-4 h-4 md:w-5 md:h-5"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+          {showControls ? (
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+          ) : (
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          )}
         </svg>
       </button>
 
       {/* Indicateur de zoom */}
       {showControls && (
-        <div className="absolute bottom-4 left-4 z-10 bg-white/10 backdrop-blur-sm text-white px-3 py-2 rounded-full text-sm">
+        <div className="absolute bottom-2 left-2 md:bottom-4 md:left-4 z-10 bg-white/10 backdrop-blur-sm text-white px-2 py-1 md:px-3 md:py-2 rounded-full text-xs md:text-sm">
           {Math.round(zoomScale * 100)}%
         </div>
       )}
 
-      {/* Image zoomable */}
-      <div className="relative max-w-full max-h-full overflow-hidden">
+      {/* Container de l'image avec gestion du overflow */}
+      <div className="relative w-full h-full flex items-center justify-center overflow-hidden p-2 md:p-4">
         <img
           src={zoomedImage}
           alt="Image agrandie"
@@ -188,7 +249,9 @@ export default function ZoomModal({
           style={{
             transform: `scale(${zoomScale}) translate(${zoomPosition.x / zoomScale}px, ${zoomPosition.y / zoomScale}px)`,
             transformOrigin: 'center',
-            touchAction: 'none'
+            touchAction: 'none',
+            maxWidth: zoomScale === 1 ? '100%' : 'none',
+            maxHeight: zoomScale === 1 ? '100%' : 'none',
           }}
           draggable="false"
           onMouseDown={onMouseDown}
@@ -201,10 +264,15 @@ export default function ZoomModal({
         />
       </div>
 
-      {/* Instructions */}
+      {/* Instructions - Responsive */}
       {showControls && (
-        <div className="absolute bottom-4 right-4 z-10 bg-white/10 backdrop-blur-sm text-white px-3 py-2 rounded-full text-xs">
-          {zoomScale > 1 ? "Glisser pour déplacer" : "Molette ou +/- pour zoomer"}
+        <div className="absolute bottom-2 right-2 md:bottom-4 md:right-4 z-10 bg-white/10 backdrop-blur-sm text-white px-2 py-1 md:px-3 md:py-2 rounded-full text-xs">
+          <span className="hidden sm:inline">
+            {zoomScale > 1 ? "Glisser pour déplacer" : "Molette ou +/- pour zoomer"}
+          </span>
+          <span className="sm:hidden">
+            {zoomScale > 1 ? "Glisser" : "Pincer pour zoomer"}
+          </span>
         </div>
       )}
     </div>

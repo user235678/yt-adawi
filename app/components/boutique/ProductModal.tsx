@@ -583,26 +583,116 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
 
                 <details className="group bg-gray-50 rounded-xl overflow-hidden hover:bg-gray-100 transition-colors duration-300">
                   <summary className="flex items-center justify-between cursor-pointer py-4 px-5 text-sm font-bold text-black">
-                    LIVRAISON
+                    GUIDE DES TAILLES
                     <svg className="w-5 h-5 transition-transform duration-300 group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </summary>
-                  <div className="px-5 pb-4 text-sm text-gray-700 animate-fade-in">
-                    <div className="space-y-2">
-                      <p className="flex items-center gap-2">
-                        <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                        <span className="font-medium">Retrait disponible à Kiawah - Retail Store</span>
-                      </p>
-                      <p className="text-xs text-gray-500 ml-4">Généralement prêt en 24 heures</p>
-                      <p className="flex items-center gap-2 mt-3">
-                        <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                        <span className="font-medium">Livraison standard: 3-5 jours ouvrés</span>
-                      </p>
-                      <p className="text-xs text-gray-500 ml-4">Gratuite à partir de 75FCFA</p>
+                  <div className="px-5 pb-4 animate-fade-in">
+                    <div className="space-y-6">
+                      {/* Hauts & Robes (Femme) */}
+                      <div className="bg-white rounded-lg p-4 border border-gray-200">
+                        <h4 className="text-sm font-bold text-black mb-3 text-center">Hauts & Robes (Femme)</h4>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs text-gray-700 border-collapse">
+                            <thead>
+                              <tr className="bg-gray-50">
+                                <th className="border border-gray-300 px-2 py-2 text-center font-semibold">Taille</th>
+                                <th className="border border-gray-300 px-2 py-2 text-center font-semibold">Tour de poitrine(cm)</th>
+                                <th className="border border-gray-300 px-2 py-2 text-center font-semibold">Tour de taille(cm)</th>
+                                <th className="border border-gray-300 px-2 py-2 text-center font-semibold">Tour de hanches(cm)</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr><td className="border border-gray-300 px-2 py-1 text-center">XS</td><td className="border border-gray-300 px-2 py-1 text-center">82-86</td><td className="border border-gray-300 px-2 py-1 text-center">62-66</td><td className="border border-gray-300 px-2 py-1 text-center">88-92</td></tr>
+                              <tr className="bg-gray-50"><td className="border border-gray-300 px-2 py-1 text-center">S</td><td className="border border-gray-300 px-2 py-1 text-center">86-90</td><td className="border border-gray-300 px-2 py-1 text-center">66-70</td><td className="border border-gray-300 px-2 py-1 text-center">92-96</td></tr>
+                              <tr><td className="border border-gray-300 px-2 py-1 text-center">M</td><td className="border border-gray-300 px-2 py-1 text-center">90-94</td><td className="border border-gray-300 px-2 py-1 text-center">70-74</td><td className="border border-gray-300 px-2 py-1 text-center">96-100</td></tr>
+                              <tr className="bg-gray-50"><td className="border border-gray-300 px-2 py-1 text-center">L</td><td className="border border-gray-300 px-2 py-1 text-center">94-98</td><td className="border border-gray-300 px-2 py-1 text-center">74-78</td><td className="border border-gray-300 px-2 py-1 text-center">100-104</td></tr>
+                              <tr><td className="border border-gray-300 px-2 py-1 text-center">XL</td><td className="border border-gray-300 px-2 py-1 text-center">98-102</td><td className="border border-gray-300 px-2 py-1 text-center">78-82</td><td className="border border-gray-300 px-2 py-1 text-center">104-108</td></tr>
+                              <tr className="bg-gray-50"><td className="border border-gray-300 px-2 py-1 text-center">XXL</td><td className="border border-gray-300 px-2 py-1 text-center">102-106</td><td className="border border-gray-300 px-2 py-1 text-center">82-86</td><td className="border border-gray-300 px-2 py-1 text-center">108-112</td></tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      {/* Pantalons & Jupes (Femme) */}
+                      <div className="bg-white rounded-lg p-4 border border-gray-200">
+                        <h4 className="text-sm font-bold text-black mb-3 text-center">Pantalons & Jupes (Femme)</h4>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs text-gray-700 border-collapse">
+                            <thead>
+                              <tr className="bg-gray-50">
+                                <th className="border border-gray-300 px-2 py-2 text-center font-semibold">Taille</th>
+                                <th className="border border-gray-300 px-2 py-2 text-center font-semibold">Tour de taille(cm)</th>
+                                <th className="border border-gray-300 px-2 py-2 text-center font-semibold">Tour de hanches(cm)</th>
+                                <th className="border border-gray-300 px-2 py-2 text-center font-semibold">Longueur jambe(cm)</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr><td className="border border-gray-300 px-2 py-1 text-center">34</td><td className="border border-gray-300 px-2 py-1 text-center">62-66</td><td className="border border-gray-300 px-2 py-1 text-center">88-92</td><td className="border border-gray-300 px-2 py-1 text-center">76</td></tr>
+                              <tr className="bg-gray-50"><td className="border border-gray-300 px-2 py-1 text-center">36</td><td className="border border-gray-300 px-2 py-1 text-center">66-70</td><td className="border border-gray-300 px-2 py-1 text-center">92-96</td><td className="border border-gray-300 px-2 py-1 text-center">78</td></tr>
+                              <tr><td className="border border-gray-300 px-2 py-1 text-center">38</td><td className="border border-gray-300 px-2 py-1 text-center">70-74</td><td className="border border-gray-300 px-2 py-1 text-center">96-100</td><td className="border border-gray-300 px-2 py-1 text-center">80</td></tr>
+                              <tr className="bg-gray-50"><td className="border border-gray-300 px-2 py-1 text-center">40</td><td className="border border-gray-300 px-2 py-1 text-center">74-78</td><td className="border border-gray-300 px-2 py-1 text-center">100-104</td><td className="border border-gray-300 px-2 py-1 text-center">82</td></tr>
+                              <tr><td className="border border-gray-300 px-2 py-1 text-center">42</td><td className="border border-gray-300 px-2 py-1 text-center">78-82</td><td className="border border-gray-300 px-2 py-1 text-center">104-108</td><td className="border border-gray-300 px-2 py-1 text-center">84</td></tr>
+                              <tr className="bg-gray-50"><td className="border border-gray-300 px-2 py-1 text-center">44</td><td className="border border-gray-300 px-2 py-1 text-center">82-86</td><td className="border border-gray-300 px-2 py-1 text-center">108-112</td><td className="border border-gray-300 px-2 py-1 text-center">86</td></tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      {/* Chemises & T-shirts (Homme) */}
+                      <div className="bg-white rounded-lg p-4 border border-gray-200">
+                        <h4 className="text-sm font-bold text-black mb-3 text-center">Chemises & T-shirts (Homme)</h4>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs text-gray-700 border-collapse">
+                            <thead>
+                              <tr className="bg-gray-50">
+                                <th className="border border-gray-300 px-2 py-2 text-center font-semibold">Taille</th>
+                                <th className="border border-gray-300 px-2 py-2 text-center font-semibold">Tour de poitrine(cm)</th>
+                                <th className="border border-gray-300 px-2 py-2 text-center font-semibold">Tour de taille(cm)</th>
+                                <th className="border border-gray-300 px-2 py-2 text-center font-semibold">Longueur dos(cm)</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr><td className="border border-gray-300 px-2 py-1 text-center">S</td><td className="border border-gray-300 px-2 py-1 text-center">88-92</td><td className="border border-gray-300 px-2 py-1 text-center">76-80</td><td className="border border-gray-300 px-2 py-1 text-center">68</td></tr>
+                              <tr className="bg-gray-50"><td className="border border-gray-300 px-2 py-1 text-center">M</td><td className="border border-gray-300 px-2 py-1 text-center">92-96</td><td className="border border-gray-300 px-2 py-1 text-center">80-84</td><td className="border border-gray-300 px-2 py-1 text-center">70</td></tr>
+                              <tr><td className="border border-gray-300 px-2 py-1 text-center">L</td><td className="border border-gray-300 px-2 py-1 text-center">96-100</td><td className="border border-gray-300 px-2 py-1 text-center">84-88</td><td className="border border-gray-300 px-2 py-1 text-center">72</td></tr>
+                              <tr className="bg-gray-50"><td className="border border-gray-300 px-2 py-1 text-center">XL</td><td className="border border-gray-300 px-2 py-1 text-center">100-104</td><td className="border border-gray-300 px-2 py-1 text-center">88-92</td><td className="border border-gray-300 px-2 py-1 text-center">74</td></tr>
+                              <tr><td className="border border-gray-300 px-2 py-1 text-center">XXL</td><td className="border border-gray-300 px-2 py-1 text-center">104-108</td><td className="border border-gray-300 px-2 py-1 text-center">92-96</td><td className="border border-gray-300 px-2 py-1 text-center">76</td></tr>
+                              <tr className="bg-gray-50"><td className="border border-gray-300 px-2 py-1 text-center">XXXL</td><td className="border border-gray-300 px-2 py-1 text-center">108-112</td><td className="border border-gray-300 px-2 py-1 text-center">96-100</td><td className="border border-gray-300 px-2 py-1 text-center">78</td></tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      {/* Pantalons (Homme) */}
+                      <div className="bg-white rounded-lg p-4 border border-gray-200">
+                        <h4 className="text-sm font-bold text-black mb-3 text-center">Pantalons (Homme)</h4>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs text-gray-700 border-collapse">
+                            <thead>
+                              <tr className="bg-gray-50">
+                                <th className="border border-gray-300 px-2 py-2 text-center font-semibold">Taille</th>
+                                <th className="border border-gray-300 px-2 py-2 text-center font-semibold">Tour de taille(cm)</th>
+                                <th className="border border-gray-300 px-2 py-2 text-center font-semibold">Tour de hanches(cm)</th>
+                                <th className="border border-gray-300 px-2 py-2 text-center font-semibold">Longueur jambe(cm)</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr><td className="border border-gray-300 px-2 py-1 text-center">44</td><td className="border border-gray-300 px-2 py-1 text-center">76-80</td><td className="border border-gray-300 px-2 py-1 text-center">92-96</td><td className="border border-gray-300 px-2 py-1 text-center">82</td></tr>
+                              <tr className="bg-gray-50"><td className="border border-gray-300 px-2 py-1 text-center">46</td><td className="border border-gray-300 px-2 py-1 text-center">80-84</td><td className="border border-gray-300 px-2 py-1 text-center">96-100</td><td className="border border-gray-300 px-2 py-1 text-center">84</td></tr>
+                              <tr><td className="border border-gray-300 px-2 py-1 text-center">48</td><td className="border border-gray-300 px-2 py-1 text-center">84-88</td><td className="border border-gray-300 px-2 py-1 text-center">100-104</td><td className="border border-gray-300 px-2 py-1 text-center">86</td></tr>
+                              <tr className="bg-gray-50"><td className="border border-gray-300 px-2 py-1 text-center">50</td><td className="border border-gray-300 px-2 py-1 text-center">88-92</td><td className="border border-gray-300 px-2 py-1 text-center">104-108</td><td className="border border-gray-300 px-2 py-1 text-center">88</td></tr>
+                              <tr><td className="border border-gray-300 px-2 py-1 text-center">52</td><td className="border border-gray-300 px-2 py-1 text-center">92-96</td><td className="border border-gray-300 px-2 py-1 text-center">108-112</td><td className="border border-gray-300 px-2 py-1 text-center">90</td></tr>
+                              <tr className="bg-gray-50"><td className="border border-gray-300 px-2 py-1 text-center">54</td><td className="border border-gray-300 px-2 py-1 text-center">96-100</td><td className="border border-gray-300 px-2 py-1 text-center">112-116</td><td className="border border-gray-300 px-2 py-1 text-center">92</td></tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </details>
+
                 <div className="animate-fade-in-up" style={{ animationDelay: '400ms' }}>
                   <button
                     onClick={handleAddToCart}
