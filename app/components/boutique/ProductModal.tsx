@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import type { Product } from "./ProductGrid";
 import { useToast } from "~/contexts/ToastContext";
 import { Link } from "react-router-dom";
+import ZoomModal from "../blog/ZoomModal";
 import {
   User,
   ShoppingCart,
@@ -57,7 +58,66 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
   const [animationDirection, setAnimationDirection] = useState<"next" | "prev" | null>(null);
   const [isClosing, setIsClosing] = useState(false);
 
+  // Zoom modal state
+  const [zoomModalOpen, setZoomModalOpen] = useState(false);
+  const [zoomedImage, setZoomedImage] = useState('');
+  const [zoomScale, setZoomScale] = useState(1);
+  const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [showControls, setShowControls] = useState(true);
+
+
   const { showToast } = useToast();
+
+  // Zoom modal handlers
+  const openZoomModal = (image: string) => {
+    setZoomedImage(image);
+    setZoomScale(1);
+    setZoomPosition({ x: 0, y: 0 });
+    setZoomModalOpen(true);
+    setShowControls(true);
+  };
+
+  const closeZoomModal = () => {
+    setZoomModalOpen(false);
+  };
+
+  const zoomIn = () => {
+    setZoomScale((prev) => Math.min(prev + 0.25, 5));
+  };
+
+  const zoomOut = () => {
+    setZoomScale((prev) => Math.max(prev - 0.25, 1));
+    setZoomPosition({ x: 0, y: 0 });
+  };
+
+  const zoomReset = () => {
+    setZoomScale(1);
+    setZoomPosition({ x: 0, y: 0 });
+  };
+
+  const toggleControls = () => {
+    setShowControls((prev) => !prev);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (zoomScale <= 1) return;
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    setZoomPosition((prev) => ({
+      x: prev.x + e.movementX,
+      y: prev.y + e.movementY,
+    }));
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
 
   // Animation d'ouverture/fermeture
   const handleClose = () => {
@@ -258,6 +318,13 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
 
   const currentImage = productImages[selectedImageIndex] || '/placeholder-product.png';
 
+  // Open zoom modal on image click
+  const handleImageClick = () => {
+    if (currentImage) {
+      openZoomModal(currentImage);
+    }
+  };
+
   const availableSizes = product ? getAvailableSizes(product) : [];
   const availableColors = product ? getAvailableColors(product) : [];
   const allSizes = ['XXL', 'XL', 'L', 'M', 'S', 'XS'];
@@ -350,10 +417,11 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
                   key={selectedImageIndex}
                   src={currentImage}
                   alt={product.name}
+                  onClick={handleImageClick}
                   className={`w-full h-full object-cover transition-all duration-300 ease-out transform
                     ${animationDirection === "next" ? "translate-x-10 opacity-0 scale-110" : ""}
                     ${animationDirection === "prev" ? "-translate-x-10 opacity-0 scale-110" : ""}
-                    group-hover:scale-105
+                    group-hover:scale-105 cursor-zoom-in
                   `}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
@@ -769,6 +837,26 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
           </div>
         </div>
       </div>
+
+      {zoomModalOpen && (
+        <ZoomModal
+          zoomedImage={zoomedImage}
+          zoomScale={zoomScale}
+          zoomPosition={zoomPosition}
+          isDragging={isDragging}
+          showControls={showControls}
+          onClose={closeZoomModal}
+          onZoomIn={zoomIn}
+          onZoomOut={zoomOut}
+          onZoomReset={zoomReset}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onToggleControls={toggleControls}
+          onSetDragging={setIsDragging}
+          onSetZoomPosition={setZoomPosition}
+        />
+      )}
 
       <style>{`\n        @keyframes fade-in-up {\n          from {\n            opacity: 0;\n            transform: translateY(20px);\n          }\n          to {\n            opacity: 1;\n            transform: translateY(0);\n          }\n        }\n        \n        @keyframes fade-in {\n          from {\n            opacity: 0;\n          }\n          to {\n            opacity: 1;\n          }\n        }\n        \n        .animate-fade-in-up {\n          animation: fade-in-up 0.6s ease-out forwards;\n        }\n        \n        .animate-fade-in {\n          animation: fade-in 0.3s ease-out;\n        }\n        \n        .scrollbar-hide {\n          -ms-overflow-style: none;\n          scrollbar-width: none;\n        }\n        \n        .scrollbar-hide::-webkit-scrollbar {\n          display: none;\n        }\n        \n        @media (max-width: 1024px) {\n          .order-1 { order: 1; }\n          .order-2 { order: 2; }\n          .order-3 { order: 3; }\n        }\n      `}</style>
     </div>
