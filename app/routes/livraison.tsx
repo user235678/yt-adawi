@@ -1,4 +1,6 @@
 import type { MetaFunction } from "@remix-run/node";
+import { json, type ActionFunctionArgs } from "@remix-run/node";
+import { Form, useActionData, useNavigation } from "@remix-run/react";
 import { useState } from "react";
 import TopBanner from "~/components/TopBanner";
 import Header from "~/components/CompactHeader";
@@ -11,7 +13,8 @@ import {
   Package,
   CreditCard,
   Shield,
-  CheckCircle
+  CheckCircle,
+  AlertCircle
 } from "lucide-react";
 
 export const meta: MetaFunction = () => {
@@ -21,8 +24,126 @@ export const meta: MetaFunction = () => {
   ];
 };
 
+interface TrackingStep {
+  status: string;
+  label: string;
+  reached: boolean;
+  date: string | null;
+}
+
+interface TrackingHistory {
+  status: string;
+  changed_at: string;
+  comment: string;
+}
+
+interface TrackingResponse {
+  order_id: string;
+  current_status: string;
+  steps: TrackingStep[];
+  history: TrackingHistory[];
+}
+
+interface ActionData {
+  trackingData?: TrackingResponse;
+  error?: string;
+}
+
+import { readToken } from "~/utils/session.server";
+
+export async function action({ request }: ActionFunctionArgs) {
+  const formData = await request.formData();
+  const orderId = formData.get("orderId") as string;
+
+  if (!orderId || !orderId.trim()) {
+    return json<ActionData>({
+      error: "Veuillez saisir un ID de commande"
+    }, { status: 400 });
+  }
+
+  try {
+    // Récupérer le token pour l'action
+    const token = await readToken(request);
+
+    if (!token) {
+      return json<ActionData>({
+        error: "Non authentifié"
+      }, { status: 401 });
+    }
+
+    const response = await fetch(
+      `https://showroom-backend-2x3g.onrender.com/orders/${orderId.trim()}/tracking`,
+      {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+
+    if (!response.ok) {
+      return json<ActionData>({
+        error: `Erreur ${response.status}: ${response.statusText}`
+      }, { status: response.status });
+    }
+
+    const trackingData: TrackingResponse = await response.json();
+    return json<ActionData>({ trackingData });
+
+  } catch (error) {
+    return json<ActionData>({
+      error: error instanceof Error ? error.message : 'Une erreur est survenue'
+    }, { status: 500 });
+  }
+}
+
+function getStatusIcon(status: string, reached: boolean) {
+  if (!reached) return <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />;
+
+  switch (status) {
+    case 'en_cours':
+      return <Package className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" />;
+    case 'expediee':
+      return <Truck className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" />;
+    case 'livree':
+      return <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />;
+    default:
+      return <Package className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />;
+  }
+}
+
+function formatDate(dateString: string | null) {
+  if (!dateString) return 'En attente';
+  return new Date(dateString).toLocaleString('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+function getStatusColor(status: string) {
+  switch (status) {
+    case 'en_cours':
+      return 'bg-blue-100 text-blue-800';
+    case 'en_preparation':
+      return 'bg-blue-100 text-blue-800';
+    case 'expediee':
+      return 'bg-orange-100 text-orange-800';
+    case 'livree':
+      return 'bg-green-100 text-green-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
+  }
+}
+
 export default function Livraison() {
   const [activeSection, setActiveSection] = useState<string | null>(null);
+  const actionData = useActionData<ActionData>();
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
 
   const toggleSection = (section: string) => {
     setActiveSection(activeSection === section ? null : section);
@@ -338,17 +459,177 @@ export default function Livraison() {
               <p className="text-xl text-black mb-8 max-w-2xl mx-auto">
                 Entrez votre numéro de commande pour connaître le statut de votre livraison en temps réel
               </p>
-              
-              <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
-                <input
-                  type="text"
-                  placeholder="Numéro de commande"
-                  className="flex-1 px-4 py-3 border-2 border-adawi-gold/30 rounded-full focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent bg-white text-adawi-brown placeholder-black/25"
-                />
-                <button className="bg-adawi-gold text-white px-8 py-3 rounded-full font-semibold hover:bg-adawi-brown transition-colors duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
-                  Suivre
-                </button>
-              </div>
+
+              {/* Erreur de l'action */}
+              {actionData?.error && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                  <span className="text-red-700 text-sm">{actionData.error}</span>
+                </div>
+              )}
+
+              <Form method="post" className="mb-8">
+                <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
+                  <div className="flex-1">
+                    <label htmlFor="orderId" className="block text-sm font-medium text-gray-700 mb-2">
+                      ID de Commande
+                    </label>
+                    <input
+                      type="text"
+                      id="orderId"
+                      name="orderId"
+                      placeholder="Ex: CMD-123456"
+                      className="w-full px-4 py-3 border-2 border-adawi-gold/30 rounded-full focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent bg-white text-adawi-brown placeholder-black/25"
+                      required
+                    />
+                  </div>
+                  <div className="sm:pt-7">
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full sm:w-auto px-8 py-3 bg-adawi-gold text-white rounded-full font-semibold hover:bg-adawi-brown disabled:bg-adawi-brown-light disabled:cursor-not-allowed transition-colors duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                          Recherche...
+                        </>
+                      ) : (
+                        'Suivre'
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </Form>
+
+              {/* Résultats du tracking */}
+              {actionData?.trackingData && (
+                <div className="space-y-6">
+
+                  {/* En-tête de commande */}
+                  <div className="bg-gray-50 rounded-xl p-6 border border-adawi-gold/20">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div className="min-w-0">
+                        <h3 className="text-lg font-semibold text-adawi-brown truncate">
+                          Commande #{actionData.trackingData?.order_id}
+                        </h3>
+                        <p className="text-sm text-gray-500 mt-1">
+                          Statut mis à jour en temps réel
+                        </p>
+                      </div>
+                      <div className="flex-shrink-0">
+                        <span className={`inline-flex items-center px-3 py-2 rounded-full text-sm font-medium ${getStatusColor(actionData.trackingData?.current_status || '')}`}>
+                          <div className="w-2 h-2 rounded-full bg-current mr-2 animate-pulse"></div>
+                          {actionData.trackingData?.current_status === 'en_cours' ? 'En cours' :
+                            actionData.trackingData?.current_status === 'expediee' ? 'Expédiée' :
+                              actionData.trackingData?.current_status === 'livree' ? 'Livrée' : actionData.trackingData?.current_status}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Étapes de suivi */}
+                  <div className="bg-gray-50 rounded-xl p-6 border border-adawi-gold/20">
+                    <h4 className="text-lg font-semibold text-adawi-brown mb-6 flex items-center">
+                      <Package className="w-5 h-5 mr-2 text-adawi-gold" />
+                      Progression de la commande
+                    </h4>
+
+                    <div className="space-y-4">
+                      {actionData.trackingData?.steps.map((step, index) => (
+                        <div key={index} className="flex items-start gap-4">
+                          <div className="flex-shrink-0 mt-1">
+                            {getStatusIcon(step.status, step.reached)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                              <h5 className={`font-medium text-sm sm:text-base ${step.reached ? 'text-gray-900' : 'text-gray-500'}`}>
+                                {step.label}
+                              </h5>
+                              <span className={`text-xs sm:text-sm flex-shrink-0 ${step.reached ? 'text-gray-600' : 'text-gray-400'}`}>
+                                {formatDate(step.date)}
+                              </span>
+                            </div>
+                            {index < (actionData.trackingData?.steps.length || 0) - 1 && (
+                              <div className={`w-px h-4 mt-2 ml-2.5 ${step.reached ? 'bg-gray-300' : 'bg-gray-200'}`} />
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Historique */}
+                  <div className="bg-gray-50 rounded-xl p-6 border border-adawi-gold/20">
+                    <h4 className="text-lg font-semibold text-adawi-brown mb-6 flex items-center">
+                      <Clock className="w-5 h-5 mr-2 text-adawi-gold" />
+                      Historique détaillé
+                    </h4>
+
+                    <div className="space-y-3">
+                      {actionData.trackingData?.history && actionData.trackingData.history.length > 0 ? (
+                        actionData.trackingData.history.map((entry, index) => (
+                          <div key={index} className="border-l-4 border-adawi-gold/30 pl-4 py-3 bg-white/50 rounded-r-lg">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-gray-900 text-sm sm:text-base break-words">
+                                  {entry.comment}
+                                </p>
+                                <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                                  Statut: {entry.status === 'en_cours' ? 'En cours' :
+                                    entry.status === 'expediee' ? 'Expédiée' :
+                                      entry.status === 'livree' ? 'Livrée' : entry.status}
+                                </p>
+                              </div>
+                              <span className="text-xs sm:text-sm text-gray-500 flex-shrink-0">
+                                {formatDate(entry.changed_at)}
+                              </span>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-6 text-gray-500">
+                          <Clock className="w-8 h-8 mx-auto mb-3 opacity-50" />
+                          <p className="text-sm">Aucun historique disponible pour le moment</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Informations supplémentaires */}
+                  <div className="bg-gradient-to-r from-adawi-beige to-adawi-beige-dark rounded-xl p-6 border border-adawi-gold/20">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0">
+                        <div className="w-10 h-10 bg-adawi-gold rounded-full flex items-center justify-center">
+                          <AlertCircle className="w-5 h-5 text-white" />
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-adawi-brown text-base mb-2">
+                          Besoin d'aide ?
+                        </h4>
+                        <p className="text-sm text-gray-700 mb-4">
+                          Si vous avez des questions concernant votre commande, n'hésitez pas à nous contacter.
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <a
+                            href="/support"
+                            className="px-4 py-2 bg-adawi-gold text-white text-center rounded-lg text-sm font-medium hover:bg-adawi-brown transition-colors"
+                          >
+                            Contacter le support
+                          </a>
+                          <a
+                            href="/livraison"
+                            className="px-4 py-2 bg-adawi-gold text-white text-center rounded-lg text-sm font-medium hover:bg-adawi-brown transition-colors"
+                          >
+                            FAQ Livraison
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </section>
