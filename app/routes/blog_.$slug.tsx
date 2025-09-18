@@ -150,6 +150,14 @@ export default function BlogSlug() {
     setShowControls(prev => !prev);
   };
 
+  const handleSetDragging = (dragging: boolean) => {
+    setIsDragging(dragging);
+  };
+
+  const handleSetZoomPosition = (position: { x: number; y: number }) => {
+    setZoomPosition(position);
+  };
+
   // Gestion des événements clavier et molette pour le zoom
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -405,6 +413,8 @@ export default function BlogSlug() {
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onToggleControls={toggleControls}
+          onSetDragging={handleSetDragging}
+          onSetZoomPosition={handleSetZoomPosition}
         />
       )}
 
@@ -441,38 +451,25 @@ export default function BlogSlug() {
           <header className="relative">
             {/* Image de couverture */}
             {post.cover_image && (
-              <div className="relative h-48 sm:h-64 md:h-80 lg:h-96 overflow-hidden group">
+              <div className="relative h-48 sm:h-64 md:h-80 lg:h-96 overflow-hidden group rounded-t-xl">
                 <img
                   src={post.cover_image}
                   alt={post.title}
-                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
+                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 rounded-t-xl"
                   loading="lazy"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent rounded-t-xl"></div>
 
                 {/* Badge de statut */}
-                <div className="absolute top-3 sm:top-6 right-3 sm:right-6">
+                <div className="absolute top-3 sm:top-6 right-3 sm:right-6 z-10">
                   <span className="bg-adawi-gold text-white px-2 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-medium shadow-lg backdrop-blur-sm animate-fade-in">
                     {post.status === 'published' ? '✓ Publié' : '📝 Brouillon'}
                   </span>
                 </div>
 
-                {/* Bouton loupe pour agrandir l'image de couverture - visible sur mobile, apparaît au survol sur desktop */}
-                {/* <div className="absolute top-3 sm:top-6 left-3 sm:left-6 r">
-                  <button
-                    onClick={() => openZoom(post.cover_image!)}
-                    className="bg-white/20 backdrop-blur-sm text-white p-2 sm:p-3 rounded-full hover:bg-white/30 hover:scale-110 transition-all duration-300 shadow-lg md:opacity-0 md:group-hover:opacity-100"
-                    title="Agrandir l'image de couverture"
-                  >
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5 " fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                    </svg>
-                  </button>
-                </div> */}
-
                 {/* Overlay cliquable pour zoomer sur toute l'image */}
                 <div
-                  className="absolute inset-0 cursor-zoom-in"
+                  className="absolute inset-0 cursor-zoom-in rounded-t-xl"
                   onClick={() => openZoom(post.cover_image!)}
                   aria-label="Agrandir l'image"
                 ></div>
@@ -480,11 +477,11 @@ export default function BlogSlug() {
             )}
 
             {/* Contenu du header avec design moderne */}
-            <div className={`${post.cover_image ? 'absolute bottom-0 left-0 right-0 text-white p-4 sm:p-6 md:p-8 lg:p-12' : 'p-4 sm:p-6 md:p-8 lg:p-12 pb-4 sm:pb-6 bg-gradient-to-br from-gray-50 to-white'}`}>
-              <div className="max-w-4xl">
+            <div className={`${post.cover_image ? 'p-6 sm:p-8 md:p-10 lg:p-12 bg-white rounded-b-xl shadow-md -mt-6 max-w-4xl mx-auto' : 'p-4 sm:p-6 md:p-8 lg:p-12 pb-4 sm:pb-6 bg-gradient-to-br from-gray-50 to-white'}`}>
+              <div>
 
                 {/* Métadonnées avec icônes modernes - version plus responsive */}
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3 md:gap-4 text-xs sm:text-sm mb-4 sm:mb-6">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 md:gap-4 text-xs sm:text-sm mb-4 sm:mb-6 text-gray-700">
                   <div className="flex items-center group">
                     <div className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 bg-gradient-to-r from-adawi-gold to-yellow-500 rounded-full flex items-center justify-center mr-2 sm:mr-3 shadow-lg group-hover:shadow-xl transition-shadow duration-300">
                       <span className="text-white font-bold text-xs sm:text-sm md:text-base lg:text-lg">
@@ -493,52 +490,49 @@ export default function BlogSlug() {
                     </div>
 
                     <div>
-                      <span className={`font-semibold ${post.cover_image ? 'text-white' : 'text-adawi-gold'} block text-xs sm:text-sm`}>
+                      <span className="font-semibold text-adawi-gold block text-xs sm:text-sm">
                         {post.author_name}
                       </span>
-                      <span className={`text-xs ${post.cover_image ? 'text-white/80' : 'text-gray-500'}`}>
+                      <span className="text-xs text-gray-500">
                         Auteur
                       </span>
                     </div>
                   </div>
 
                   {post.published_at && (
-                    <div className="flex items-center bg-black/20 rounded-full px-2 sm:px-3 py-1 sm:py-2 backdrop-blur-sm">
-                      <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <div className="flex items-center bg-gray-100 rounded-full px-2 sm:px-3 py-1 sm:py-2">
+                      <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-adawi-gold" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
                       </svg>
-                      <span className={`${post.cover_image ? 'text-white/90' : 'text-gray-600'} text-xs sm:text-sm`}>
+                      <span className="text-xs sm:text-sm text-adawi-gold">
                         <span className="hidden sm:inline">{formatDate(post.published_at)}</span>
                         <span className="sm:hidden">{formatShortDate(post.published_at)}</span>
                       </span>
                     </div>
                   )}
 
-                  <div className="flex items-center bg-black/20 rounded-full px-2 sm:px-3 py-1 sm:py-2 backdrop-blur-sm">
-                    <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <div className="flex items-center bg-gray-100 rounded-full px-2 sm:px-3 py-1 sm:py-2">
+                    <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-adawi-gold" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
                       <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
                     </svg>
-                    <span className={`${post.cover_image ? 'text-white/90' : 'text-gray-600'} text-xs sm:text-sm`}>
+                    <span className="text-xs sm:text-sm text-adawi-gold">
                       {post.views_count.toLocaleString()} vues
                     </span>
                   </div>
                 </div>
 
                 {/* Titre avec animation */}
-                <h1 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black leading-tight mb-3 sm:mb-4 lg:mb-6 ${post.cover_image ? 'text-white' : 'text-gray-900'} transform hover:scale-[1.02] transition-transform duration-300 animate-slide-up`}>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black leading-tight mb-3 sm:mb-4 lg:mb-6 text-gray-900 transform hover:scale-[1.02] transition-transform duration-300 animate-slide-up">
                   {post.title}
                 </h1>
 
                 {/* Excerpt avec style élégant */}
                 {(post.excerpt || post.meta_description) && (
                   <div className="relative animate-fade-in-delayed">
-                    <p className={`text-base sm:text-lg lg:text-xl leading-relaxed font-light ${post.cover_image ? 'text-white/95' : 'text-gray-600'} max-w-4xl`}>
+                    <p className="text-base sm:text-lg lg:text-xl leading-relaxed font-light text-gray-600 max-w-4xl">
                       {post.excerpt || post.meta_description}
                     </p>
-                    {!post.cover_image && (
-                      <div className="absolute -left-3 sm:-left-6 top-0 w-1 h-full bg-gradient-to-b from-adawi-gold to-transparent rounded-full"></div>
-                    )}
                   </div>
                 )}
               </div>
