@@ -107,6 +107,10 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ isOpen, orderId, token,
               <div><span className="text-gray-500">Méthode :</span> <span className="font-medium">{order.payment_method || "—"}</span></div>
               <div><span className="text-gray-500">Livraison :</span> <span className="font-medium">{order.delivery_method || "—"}</span></div>
               <div><span className="text-gray-500">Statut livraison :</span> <span className="font-medium">{order.delivery_status || "—"}</span></div>
+              <div><span className="text-gray-500">Type livraison :</span> <span className="font-medium">{(order as any).delivery_type || "—"}</span></div>
+              <div><span className="text-gray-500">Date livraison :</span> <span className="font-medium">{(order as any).delivery_date ? new Date((order as any).delivery_date).toLocaleDateString("fr-FR") : "—"}</span></div>
+              <div><span className="text-gray-500">Taille actuelle :</span> <span className="font-medium">{(order as any).current_size || "—"}</span></div>
+              <div className="col-span-2"><span className="text-gray-500">Description :</span> <span className="font-medium">{(order as any).description || "—"}</span></div>
             </div>
 
             <div>

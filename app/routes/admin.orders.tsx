@@ -277,9 +277,10 @@ const getPayementInfo = (status: string) => {
       <table className="w-full mt-4 border-collapse border border-gray-200">
         <thead className="bg-gray-50">
           <tr>
-            <th className="border px-4 py-2 text-left">ID</th> 
+            <th className="border px-4 py-2 text-left">ID</th>
             <th className="border px-4 py-2 text-left">Statut</th>
             <th className="border px-4 py-2 text-left">Paiement</th>
+            <th className="border px-4 py-2 text-left">Méthode</th>
             <th className="border px-4 py-2 text-left">Date</th>
             <th className="border px-4 py-2 text-left">Total</th>
             <th className="border px-4 py-2 text-left">Actions</th>
@@ -303,6 +304,7 @@ const getPayementInfo = (status: string) => {
                     {payementInfo.icon}<span className="ml-1">{order.payment_status}</span>
                   </span>
                 </td>
+                <td className="border px-4 py-2">{order.payment_method}</td>
                 <td className="border px-4 py-2">{new Date(order.created_at).toLocaleDateString("fr-FR")}</td>
                 <td className="border px-4 py-2">{order.total} F CFA</td>
                 <td className="border px-4 py-2 flex gap-2">
@@ -313,7 +315,7 @@ const getPayementInfo = (status: string) => {
             );
           }) : (
             <tr>
-              <td colSpan={6} className="text-center py-4">Aucune commande trouvée</td>
+              <td colSpan={7} className="text-center py-4">Aucune commande trouvée</td>
             </tr>
           )}
         </tbody>
