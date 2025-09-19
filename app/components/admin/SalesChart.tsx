@@ -6,9 +6,10 @@ interface SalesChartProps {
     revenue_evolution: Array<{ date: string; revenue: number; orders_count: number }>;
     cost_revenue_evolution: Array<{ date: string; cost: number }>;
   };
+  token: string;
 }
 
-export default function SalesChart({ data }: SalesChartProps) {
+export default function SalesChart({ data, token }: SalesChartProps) {
   const [timeRange, setTimeRange] = useState("14-days");
 
   // Combine revenue and cost data
@@ -59,12 +60,12 @@ export default function SalesChart({ data }: SalesChartProps) {
     const days = daysMap[timeRange] || 30;
 
     try {
-      const response = await fetch(`/api.admin.export.sales?range_days=${days}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+    const response = await fetch(`/api.admin.export.sales?range_days=${days}`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      },
+    });
       if (!response.ok) {
         throw new Error("Failed to export CSV");
       }

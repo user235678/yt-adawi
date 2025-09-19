@@ -40,7 +40,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     }
 
     const data = await response.json();
-    return json({ ...data, user });
+    return json({ ...data, user, token });
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
     // Return empty data or handle error
