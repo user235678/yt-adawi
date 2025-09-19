@@ -5,7 +5,7 @@ import { useState } from "react";
 // Types d'attributs pour les produits
 export type ProductSize = "xxl" | "xl" | "l" | "m" | "s" | "xs" | "unique";
 export type ProductColor = "blanc" | "noir" | "rouge" | "vert" | "marron";
-export type ProductCategory = "vedette" | "nouveaute" | "homme" | "femme" | "enfant" | "montre";
+export type ProductCategory = "vedette" | "nouveaute" | "homme" | "femme" | "enfant" | "couple";
 
 // Interface complète pour un produit avec attributs
 export interface Product {

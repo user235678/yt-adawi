@@ -77,8 +77,8 @@ export default function Boutique() {
                 category = "femme";
             } else if (categoryName.includes("enfant") || categoryName.includes("kids") || categoryName.includes("children")) {
                 category = "enfant";
-            } else if (categoryName.includes("montre") || categoryName.includes("watch")) {
-                category = "montre";
+            } else if (categoryName.includes("couple") || categoryName.includes("couples")) {
+                category = "couple";
             }
         }
 
@@ -183,6 +183,24 @@ export default function Boutique() {
                     image2: "/14.png",
                     date: new Date(2023, 7, 5),
                     category: "enfant",
+                    size: "s",
+                    sizes: "xs,s,m",
+                    color: "blanc",
+                    colors: "blanc,noir,vert",
+                    stock: 5,
+                    inStock: true
+                },
+                {
+                    id: "4",
+                    name: "T-shirt COUPLE",
+                    price: "5000 F CFA",
+                    priceValue: 5000,
+                    image: "/tshirt_enfant.jpg",
+                    hoverImage: "/12.png",
+                    image1: "/13.png",
+                    image2: "/14.png",
+                    date: new Date(2023, 7, 5),
+                    category: "couple",
                     size: "s",
                     sizes: "xs,s,m",
                     color: "blanc",

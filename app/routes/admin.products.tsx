@@ -1233,7 +1233,7 @@ export default function AdminProducts() {
       {selectedProduct && (
         <EditProductModal
           isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
+          onClose={() => { setIsEditModalOpen(false); setSelectedProduct(null); }}
           product={selectedProduct}
           onEditProduct={handleEditProduct}
           categories={categories}
@@ -1245,7 +1245,7 @@ export default function AdminProducts() {
       {selectedProduct && (
         <DeleteConfirmationModal
           isOpen={isDeleteModalOpen}
-          onClose={() => setIsDeleteModalOpen(false)}
+          onClose={() => { setIsDeleteModalOpen(false); setSelectedProduct(null); }}
           onConfirm={handleDeleteProduct}
           itemName={selectedProduct.name}
           itemType="produit"
@@ -1256,7 +1256,7 @@ export default function AdminProducts() {
       {selectedProduct && (
         <ViewProductModal
           isOpen={isViewModalOpen}
-          onClose={() => setIsViewModalOpen(false)}
+          onClose={() => { setIsViewModalOpen(false); setSelectedProduct(null); }}
           product={selectedProduct}
         />
       )}

@@ -277,7 +277,7 @@ const getPayementInfo = (status: string) => {
       <table className="w-full mt-4 border-collapse border border-gray-200">
         <thead className="bg-gray-50">
           <tr>
-            <th className="border px-4 py-2 text-left">ID</th>
+            <th className="border px-4 py-2 text-left">ID</th> 
             <th className="border px-4 py-2 text-left">Statut</th>
             <th className="border px-4 py-2 text-left">Paiement</th>
             <th className="border px-4 py-2 text-left">Date</th>

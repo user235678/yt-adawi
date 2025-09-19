@@ -123,7 +123,8 @@ export default function AddProductModal({
   const addSize = () => {
     const input = sizeInputRef.current;
     if (input && input.value.trim()) {
-      setSizes(prev => [...prev, input.value.trim()]);
+      const newSizes = input.value.split(',').map(s => s.trim()).filter(s => s);
+      setSizes(prev => [...prev, ...newSizes]);
       input.value = "";
     }
   };
@@ -135,7 +136,8 @@ export default function AddProductModal({
   const addColor = () => {
     const input = colorInputRef.current;
     if (input && input.value.trim()) {
-      setColors(prev => [...prev, input.value.trim()]);
+      const newColors = input.value.split(',').map(c => c.trim()).filter(c => c);
+      setColors(prev => [...prev, ...newColors]);
       input.value = "";
     }
   };
@@ -147,7 +149,8 @@ export default function AddProductModal({
   const addTag = () => {
     const input = tagInputRef.current;
     if (input && input.value.trim()) {
-      setTags(prev => [...prev, input.value.trim()]);
+      const newTags = input.value.split(',').map(t => t.trim()).filter(t => t);
+      setTags(prev => [...prev, ...newTags]);
       input.value = "";
     }
   };
@@ -188,7 +191,7 @@ export default function AddProductModal({
       });
 
       const response = await fetch("/api/products/create", {
-        method: "POST",
+        method: "POST",  
         body: submitData,
         headers: {
           Authorization: `Bearer ${token}`,
@@ -343,12 +346,13 @@ export default function AddProductModal({
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <FileText className="w-4 h-4 inline mr-1" />
-                Description
+                Description *
               </label>
               <textarea
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
+                required
                 disabled={isSubmitting}
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent disabled:opacity-50"
