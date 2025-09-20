@@ -5,6 +5,7 @@ import { useLoaderData, useFetcher } from "@remix-run/react";
 import { Plus, Search, Filter, Edit, Trash2, Eye, X, AlertCircle, Loader2, Upload, Image, PlusIcon } from "lucide-react";
 import AddProductModal from "~/components/admin/AddProductModal";
 import ViewProductModal from "~/components/admin/ViewProductModal";
+import AdminAddToCartModal from "~/components/admin/AdminAddToCartModal";
 import { readToken } from "~/utils/session.server";
 import { requireAdmin } from "~/utils/auth.server";
 
@@ -717,6 +718,7 @@ export default function AdminProducts() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isAddToCartModalOpen, setIsAddToCartModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   // État pour la recherche
@@ -1163,9 +1165,12 @@ export default function AdminProducts() {
                       <td className="py-4 px-4">
                         <div className="flex items-center space-x-2">
                           <button
-                            onClick={() => openViewModal(product)}
+                            onClick={() => {
+                              setSelectedProduct(product);
+                              setIsAddToCartModalOpen(true);
+                            }}
                             className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
-                            title="Voir détails"
+                            title="Ajouter au panier"
                           >
                             <Plus className="w-4 h-4" />
                           </button>
@@ -1267,6 +1272,13 @@ export default function AdminProducts() {
           product={selectedProduct}
         />
       )}
+
+      {/* AdminAddToCartModal */}
+      <AdminAddToCartModal
+        isOpen={isAddToCartModalOpen}
+        onClose={() => { setIsAddToCartModalOpen(false); setSelectedProduct(null); }}
+        product={selectedProduct}
+      />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import {
 } from "@remix-run/react";
 import type { LinksFunction } from "@remix-run/node";
 import { CartProvider } from "~/contexts/CartContext";
+import { ToastProvider } from "~/contexts/ToastContext";
 
 import "./tailwind.css";
 
@@ -44,8 +45,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <CartProvider>
-      <Outlet />
-    </CartProvider>
+    <ToastProvider>
+      <CartProvider>
+        <Outlet />
+      </CartProvider>
+    </ToastProvider>
   );
 }

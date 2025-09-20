@@ -178,14 +178,12 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
           <div className="flex items-center space-x-2 sm:space-x-4 ml-4">
             <Link
               to="/admin/panier"
-              className="text-adawi-brown hover:text-adawi-gold transition-all duration-200 p-1.5 rounded-full hover:bg-adawi-beige/50 relative inline-flex items-center justify-center group"
-              aria-label="Panier"
+              className="hidden sm:inline-flex text-gray-400 hover:text-gray-600 transition-colors duration-200 p-2 rounded-full hover:bg-adawi-beige/50 relative"
             >
-              <svg className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2 4h12m-8 4a1 1 0 11-2 0 1 1 0 012 0zm8 0a1 1 0 11-2 0 1 1 0 012 0z" />
               </svg>
-
             </Link>
             {/* Notifications */}
             <div className="relative" ref={notificationRef}>
