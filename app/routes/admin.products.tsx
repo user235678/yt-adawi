@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import type { MetaFunction, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData, useFetcher } from "@remix-run/react";
-import { Plus, Search, Filter, Edit, Trash2, Eye, X, AlertCircle, Loader2, Upload, Image } from "lucide-react";
+import { Plus, Search, Filter, Edit, Trash2, Eye, X, AlertCircle, Loader2, Upload, Image, PlusIcon } from "lucide-react";
 import AddProductModal from "~/components/admin/AddProductModal";
 import ViewProductModal from "~/components/admin/ViewProductModal";
 import { readToken } from "~/utils/session.server";
@@ -1162,6 +1162,13 @@ export default function AdminProducts() {
                       </td>
                       <td className="py-4 px-4">
                         <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => openViewModal(product)}
+                            className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
+                            title="Voir détails"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
                           <button
                             onClick={() => openViewModal(product)}
                             className="p-2 text-gray-400 hover:text-blue-600 transition-colors"

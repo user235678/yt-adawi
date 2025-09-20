@@ -251,7 +251,7 @@ export default function AdminDashboard() {
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Performance des ventes</h3>
-              <SalesChart data={data} />
+              <SalesChart data={data} token={data.token} />
             </div>
           </div>
         );

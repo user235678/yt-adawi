@@ -7,6 +7,7 @@ import Header from "~/components/CompactHeader";
 import Footer from "~/components/Footer";
 import { readSessionData } from "~/utils/session.server";
 
+
 export const meta: MetaFunction = () => {
     return [
         { title: "Panier - Adawi" },
@@ -32,6 +33,10 @@ interface LoaderData {
   isLoggedIn: boolean;
   error?: string;
   debugInfo?: any;
+  sessionData?: {
+    session_id: string;
+    access_token: string;
+  };
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -117,6 +122,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
       cartItems,
       total,
       isLoggedIn: true,
+      sessionData: {
+        session_id: sessionData.session_id,
+        access_token: sessionData.access_token
+      },
       debugInfo: {
         sessionData: { session_id: sessionData.session_id, hasToken: !!sessionData.access_token },
         apiResponse: { status: response.status, itemsCount: cartItems.length }
@@ -137,7 +146,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function panier() {
-    const { cartItems, total, isLoggedIn, error, debugInfo } = useLoaderData<LoaderData>();
+    const { cartItems, total, isLoggedIn, error, debugInfo, sessionData } = useLoaderData<LoaderData>();
     const navigate = useNavigate();
     const [orderNote, setOrderNote] = useState('');
     const [isUpdating, setIsUpdating] = useState<string | null>(null);
@@ -226,40 +235,70 @@ export default function panier() {
             removeItem(itemId);
             return;
         }
-        
+
         setIsUpdating(itemId);
         setAnimatingItems(prev => new Set(prev).add(itemId));
-        
+
         try {
             console.log('🔄 Mise à jour quantité:', { itemId, newQuantity });
-            
-            const response = await fetch('/api/cart/update', {
-                method: 'POST',
+
+            const apiBaseUrl = 'https://showroom-backend-2x3g.onrender.com';
+            // ✅ Utiliser PUT au lieu de POST pour la mise à jour
+            const apiUrl = `${apiBaseUrl}/cart/update`;
+            console.log('📡 Appel API update:', apiUrl);
+
+            const response = await fetch(apiUrl, {
+                method: 'PUT', // ✅ Changé de POST à PUT
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionData?.access_token || ''}`,
                 },
-                credentials: 'include',
                 body: JSON.stringify({
+                    session_id: sessionData?.session_id,
                     product_id: itemId,
                     quantity: newQuantity
                 }),
             });
 
+            console.log('📥 Réponse update:', {
+                status: response.status,
+                statusText: response.statusText,
+                ok: response.ok
+            });
+
+            if (!response.ok) {
+                let errorMessage = `Erreur ${response.status}`;
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.detail || errorData.message || errorMessage;
+                } catch {
+                    const errorText = await response.text();
+                    errorMessage = errorText || errorMessage;
+                }
+                throw new Error(errorMessage);
+            }
+
             const result = await response.json();
-            console.log('📥 Réponse update:', result);
+            console.log('✅ Résultat update:', result);
 
             if (result.success) {
-                // Animation de succès
                 setTimeout(() => {
                     window.location.reload();
                 }, 300);
             } else {
                 console.error('❌ Erreur lors de la mise à jour:', result.error);
-                alert(`Erreur: ${result.error}`);
+                alert(`Erreur: ${result.error || 'Erreur lors de la mise à jour'}`);
             }
         } catch (error) {
             console.error('❌ Erreur réseau:', error);
-            alert('Erreur de connexion. Veuillez réessayer.');
+            const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+            
+            if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
+                alert("Votre session a expiré. Veuillez vous reconnecter.");
+                navigate('/login');
+            } else {
+                alert(`Erreur de connexion: ${errorMessage}. Veuillez réessayer.`);
+            }
         } finally {
             setTimeout(() => {
                 setIsUpdating(null);
@@ -275,36 +314,62 @@ export default function panier() {
     const removeItem = async (itemId: string) => {
         setIsUpdating(itemId);
         setAnimatingItems(prev => new Set(prev).add(itemId));
-        
+
         try {
             console.log('🗑️ Suppression produit:', { itemId });
-            
-            const response = await fetch('/api/cart/remove', {
-                method: 'POST',
+
+            const apiBaseUrl = 'https://showroom-backend-2x3g.onrender.com';
+            // ✅ Utiliser le bon endpoint : /cart/remove/{product_id}
+            const apiUrl = `${apiBaseUrl}/cart/remove/${itemId}`;
+            console.log('📡 Appel API remove:', apiUrl);
+
+            const response = await fetch(apiUrl, {
+                method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionData?.access_token || ''}`,
+                    // ✅ Envoyer session-id dans les headers au lieu du body
+                    'session-id': sessionData?.session_id || '',
                 },
-                credentials: 'include',
-                body: JSON.stringify({
-                    product_id: itemId
-                }),
+                // ✅ Pas de body nécessaire selon la documentation
             });
 
-            const result = await response.json();
-            console.log('📥 Réponse remove:', result);
+            console.log('📥 Réponse remove:', {
+                status: response.status,
+                statusText: response.statusText,
+                ok: response.ok
+            });
 
-            if (result.success) {
-                // Animation de suppression
-                setTimeout(() => {
-                    window.location.reload();
-                }, 300);
-            } else {
-                console.error('❌ Erreur lors de la suppression:', result.error);
-                alert(`Erreur: ${result.error}`);
+            if (!response.ok) {
+                let errorMessage = `Erreur ${response.status}`;
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.detail || errorData.message || errorMessage;
+                } catch {
+                    const errorText = await response.text();
+                    errorMessage = errorText || errorMessage;
+                }
+                throw new Error(errorMessage);
             }
+
+            const result = await response.json();
+            console.log('✅ Résultat remove:', result);
+
+            // ✅ L'API retourne directement le panier mis à jour
+            setTimeout(() => {
+                window.location.reload();
+            }, 300);
+
         } catch (error) {
             console.error('❌ Erreur réseau:', error);
-            alert('Erreur de connexion. Veuillez réessayer.');
+            const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+            
+            if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
+                alert("Votre session a expiré. Veuillez vous reconnecter.");
+                navigate('/login');
+            } else {
+                alert(`Erreur de connexion: ${errorMessage}. Veuillez réessayer.`);
+            }
         } finally {
             setTimeout(() => {
                 setIsUpdating(null);
@@ -323,53 +388,99 @@ export default function panier() {
         }
 
         setIsClearing(true);
-        
+
         try {
             console.log('🗑️ Vidage du panier');
-            
-            const response = await fetch('/api/cart/clear', {
-                method: 'POST',
+
+            const apiBaseUrl = 'https://showroom-backend-2x3g.onrender.com';
+            // ✅ Utiliser le bon endpoint : /cart/clear
+            const apiUrl = `${apiBaseUrl}/cart/clear`;
+            console.log('📡 Appel API clear:', apiUrl);
+
+            const response = await fetch(apiUrl, {
+                method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionData?.access_token || ''}`,
+                    // ✅ Envoyer session-id dans les headers au lieu du body
+                    'session-id': sessionData?.session_id || '',
                 },
-                credentials: 'include',
+                // ✅ Pas de body nécessaire selon la documentation
             });
 
-            const result = await response.json();
-            console.log('📥 Réponse clear:', result);
+            console.log('📥 Réponse clear:', {
+                status: response.status,
+                statusText: response.statusText,
+                ok: response.ok
+            });
 
-            if (result.success) {
-                setTimeout(() => {
-                    window.location.reload();
-                }, 500);
-            } else {
-                console.error('❌ Erreur lors du vidage:', result.error);
-                alert(`Erreur: ${result.error}`);
+            if (!response.ok) {
+                let errorMessage = `Erreur ${response.status}`;
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.detail || errorData.message || errorMessage;
+                } catch {
+                    const errorText = await response.text();
+                    errorMessage = errorText || errorMessage;
+                }
+                throw new Error(errorMessage);
             }
+
+            const result = await response.json();
+            console.log('✅ Résultat clear:', result);
+
+            // ✅ L'API retourne directement le panier vide
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+
         } catch (error) {
             console.error('❌ Erreur réseau:', error);
-            alert('Erreur de connexion. Veuillez réessayer.');
+            const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+            
+            if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
+                alert("Votre session a expiré. Veuillez vous reconnecter.");
+                navigate('/login');
+            } else {
+                alert(`Erreur de connexion: ${errorMessage}. Veuillez réessayer.`);
+            }
         } finally {
             setIsClearing(false);
         }
     };
 
-    const handleCheckout = () => {
+    const handlePhysicalSale = async () => {
         if (!cartItems || cartItems.length === 0) {
             alert("Votre panier est vide");
             return;
         }
 
-        const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        navigate(`/checkout-new?total=${total}`);
+        try {
+            const response = await fetch('https://showroom-backend-2x3g.onrender.com/orders/physical-sale', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${sessionData?.access_token}`,
+                },
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                alert(`✅ Vente créée! Commande: ${result.identifier}`);
+                navigate('/admin/orders');
+            } else {
+                const errorText = await response.text();
+                alert(`Erreur ${response.status}: ${errorText}`);
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+            alert(`Erreur: ${error.message}`);
+        }
     };
 
     // Vérifications de sécurité pour l'état du panier
     if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
         return (
             <div className="min-h-screen bg-white">
-                <TopBanner />
-                <Header />
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-16 text-center">
                     <div className={`transform transition-all duration-700 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
                         <h1 className="text-2xl sm:text-3xl font-bold text-black mb-6 sm:mb-8">PANIER</h1>
@@ -385,7 +496,7 @@ export default function panier() {
                                 to="/boutique" 
                                 className="inline-block bg-adawi-gold hover:bg-adawi-gold/90 text-white font-medium py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
                             >
-                                Continuer les achats
+                                Découvrir nos produits
                             </Link>
                         </div>
                     </div>
@@ -397,8 +508,6 @@ export default function panier() {
 
     return (
         <div className="min-h-screen bg-white">
-            <TopBanner />
-            <Header />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
                 {/* Titre avec compteur d'articles et bouton vider */}
@@ -701,7 +810,7 @@ export default function panier() {
 
                                 {/* Bouton checkout avec animation de pulse */}
                                 <button
-                                    onClick={handleCheckout}
+                                    onClick={handlePhysicalSale}
                                     disabled={isClearing}
                                     className={`w-full bg-gradient-to-r from-adawi-gold to-adawi-gold text-white font-medium py-4 px-6 text-base rounded-full hover:bg-adawi-gold transition-all duration-300 tracking-wider transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl ${
                                         isClearing ? 'opacity-50 cursor-not-allowed' : 'animate-pulse hover:animate-none'
@@ -711,7 +820,7 @@ export default function panier() {
                                         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                         </svg>
-                                        FINALISER LA COMMANDE
+                                        VENDRE
                                     </span>
                                 </button>
 
@@ -782,7 +891,6 @@ export default function panier() {
                 </div>
             </div>
 
-            <Footer />
         </div>
     );
 }

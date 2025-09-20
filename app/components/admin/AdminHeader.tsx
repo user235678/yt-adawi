@@ -2,7 +2,7 @@ import { Search, Bell, ChevronDown, Menu } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import NotificationDropdown from "./NotificationDropdown";
 import NotificationDetailsModal from "./NotificationDetailsModal";
-
+import { Link } from "@remix-run/react";
 interface AdminHeaderProps {
   onMenuClick?: () => void;
 }
@@ -29,11 +29,11 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-   
+
   // États pour le modal
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+
   const notificationRef = useRef<HTMLDivElement>(null);
 
   // Fermer le dropdown quand on clique ailleurs
@@ -57,7 +57,7 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
 
     try {
       console.log('Récupération des notifications via API locale...');
-      
+
       // Demander plus de notifications (limite à 100)
       const response = await fetch('/api/notifications?limit=100&offset=0');
 
@@ -97,8 +97,8 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
       });
 
       if (response.ok) {
-        setNotifications(prev => 
-          prev.map(notif => 
+        setNotifications(prev =>
+          prev.map(notif =>
             notif.id === notificationId ? { ...notif, read: true } : notif
           )
         );
@@ -147,7 +147,7 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
-  <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between">
           {/* Left Section - Menu button + Search */}
           <div className="flex items-center flex-1">
             {/* Menu button pour mobile */}
@@ -176,9 +176,20 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
 
           {/* Right Section */}
           <div className="flex items-center space-x-2 sm:space-x-4 ml-4">
+            <Link
+              to="/admin/panier"
+              className="text-adawi-brown hover:text-adawi-gold transition-all duration-200 p-1.5 rounded-full hover:bg-adawi-beige/50 relative inline-flex items-center justify-center group"
+              aria-label="Panier"
+            >
+              <svg className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2 4h12m-8 4a1 1 0 11-2 0 1 1 0 012 0zm8 0a1 1 0 11-2 0 1 1 0 012 0z" />
+              </svg>
+
+            </Link>
             {/* Notifications */}
             <div className="relative" ref={notificationRef}>
-              <button 
+              <button
                 onClick={handleNotificationToggle}
                 className="relative p-2 text-gray-400 hover:text-gray-600 transition-colors"
               >
