@@ -41,10 +41,10 @@ export default function StatsCards({ data }: StatsCardsProps) {
       title: showWeekly ? "Ventes Semaine" : "Ventes Totales",
       value: formatNumber(showWeekly ? data.total_revenue_semaine : data.total_revenue),
       unit: "F CFA",
-      change: showWeekly
-        ? `${data.pourcentage_revenue_semaine >= 0 ? '+' : ''}${data.pourcentage_revenue_semaine}%`
-        : `${data.revenue_growth >= 0 ? '+' : ''}${data.revenue_growth}%`,
-      changeValue: showWeekly ? "+347k cette semaine" : "+347k cette semaine",
+      // change: showWeekly
+      //   ? `${data.pourcentage_revenue_semaine >= 0 ? '+' : ''}${data.pourcentage_revenue_semaine}%`
+      //   : `${data.revenue_growth >= 0 ? '+' : ''}${data.revenue_growth}%`,
+      // changeValue: showWeekly ? "+347k cette semaine" : "+347k cette semaine",
       trend: showWeekly
         ? (data.pourcentage_revenue_semaine >= 0 ? "up" : "down")
         : (data.revenue_growth >= 0 ? "up" : "down"),
@@ -57,10 +57,10 @@ export default function StatsCards({ data }: StatsCardsProps) {
       title: showWeekly ? "Commandes Semaine" : "Commandes",
       value: formatNumber(showWeekly ? data.weekly_orders : data.total_orders),
       subtitle: showWeekly ? "Commandes cette semaine" : "Total des commandes",
-      change: showWeekly
-        ? `${data.weekly_orders_growth >= 0 ? '+' : ''}${data.weekly_orders_growth}%`
-        : `${data.orders_growth >= 0 ? '+' : ''}${data.orders_growth}%`,
-      changeValue: showWeekly ? "+120 cette semaine" : "+120 cette semaine",
+      // change: showWeekly
+      //   ? `${data.weekly_orders_growth >= 0 ? '+' : ''}${data.weekly_orders_growth}%`
+      //   : `${data.orders_growth >= 0 ? '+' : ''}${data.orders_growth}%`,
+      // changeValue: showWeekly ? "+120 cette semaine" : "+120 cette semaine",
       trend: showWeekly
         ? (data.weekly_orders_growth >= 0 ? "up" : "down")
         : (data.orders_growth >= 0 ? "up" : "down"),
@@ -73,10 +73,10 @@ export default function StatsCards({ data }: StatsCardsProps) {
       title: showWeekly ? "Clients Semaine" : "Clients",
       value: formatNumber(showWeekly ? data.weekly_customers : data.total_customers),
       subtitle: showWeekly ? "Clients cette semaine" : "Nombre de clients",
-      change: showWeekly
-        ? `${data.weekly_customers_growth >= 0 ? '+' : ''}${data.weekly_customers_growth}%`
-        : `${data.customers_growth >= 0 ? '+' : ''}${data.customers_growth}%`,
-      changeValue: showWeekly ? "+1.2k cette semaine" : "+1.2k cette semaine",
+      // change: showWeekly
+      //   ? `${data.weekly_customers_growth >= 0 ? '+' : ''}${data.weekly_customers_growth}%`
+      //   : `${data.customers_growth >= 0 ? '+' : ''}${data.customers_growth}%`,
+      // changeValue: showWeekly ? "+1.2k cette semaine" : "+1.2k cette semaine",
       trend: showWeekly
         ? (data.weekly_customers_growth >= 0 ? "up" : "down")
         : (data.customers_growth >= 0 ? "up" : "down"),
@@ -92,7 +92,7 @@ export default function StatsCards({ data }: StatsCardsProps) {
       change: showWeekly
         ? `${data.pourcentage_visiteurs_semaine >= 0 ? '+' : ''}${data.pourcentage_visiteurs_semaine}%`
         : `${data.pourcentage_visiteur_total >= 0 ? '+' : ''}${data.pourcentage_visiteur_total}%`,
-      changeValue: showWeekly ? "+500 cette semaine" : "+500 cette semaine",
+      changeValue: showWeekly ? "" : "",
       trend: showWeekly
         ? (data.pourcentage_visiteurs_semaine >= 0 ? "up" : "down")
         : (data.pourcentage_visiteur_total >= 0 ? "up" : "down"),
@@ -105,8 +105,8 @@ export default function StatsCards({ data }: StatsCardsProps) {
       title: "Remboursements",
       value: formatNumber(data.refunds_count),
       subtitle: "Nombre de remboursements",
-      change: "-12.7%",
-      changeValue: "-21",
+      change: "",
+      changeValue: "",
       trend: "down",
       icon: RotateCcw,
       bgColor: "bg-white",

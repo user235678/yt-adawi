@@ -131,6 +131,7 @@ export default function AdminRapports() {
             onChange={(e) => setDateRange(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent"
           >
+            <option value="today">Aujourd'hui</option>
             <option value="7-days">7 derniers jours</option>
             <option value="30-days">30 derniers jours</option>
             <option value="90-days">3 derniers mois</option>
