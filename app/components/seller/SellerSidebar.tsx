@@ -1,4 +1,5 @@
 import { Link, useLocation } from "@remix-run/react";
+//icones pour appointments
 import {
   LayoutDashboard,
   Package,
@@ -8,7 +9,7 @@ import {
   LogOut,
   X,
   Store,
-  ArrowLeft,
+  ArrowLeft
 } from "lucide-react";
 
 interface SellerSidebarProps {
@@ -17,7 +18,7 @@ interface SellerSidebarProps {
 
 export default function SellerSidebar({ onClose }: SellerSidebarProps) {
   const location = useLocation();
-//ajout de seller/blog
+  //ajout de seller/availaibility
   const menuItems = [
     { id: "Dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/seller/dashboard" },
     { id: "produits", label: "Produits", icon: Package, path: "/seller/products" },
@@ -25,6 +26,8 @@ export default function SellerSidebar({ onClose }: SellerSidebarProps) {
     { id: "support", label: "Support", icon: MessageSquare, path: "/seller/support" },
     { id: "remboursements", label: "Remboursements", icon: BarChart3, path: "/seller/refund" },
     { id: "blog", label: "Blog", icon: MessageSquare, path: "/seller/blog" },
+    { id: "appointments", label: "Rendez-vous", icon: MessageSquare, path: "/seller/appointments" },
+    { id: "availability", label: "Disponibilités", icon: BarChart3, path: "/seller/availability" },
   ];
 
   const handleLinkClick = () => {
