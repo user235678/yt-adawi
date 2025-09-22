@@ -110,26 +110,24 @@ export default function AdminRapports() {
   };
 
   const tabs = [
-    { id: "ventes", label: "Ventes", icon: TrendingUp },
-    { id: "produits", label: "Produits", icon: ShoppingBag },
-    { id: "clients", label: "Clients", icon: Users },
-    { id: "revenus", label: "Revenus", icon: DollarSign },
+    { id: "ventes", label: "Ventes", icon: TrendingUp, iconName: "Ventes" },
+    { id: "produits", label: "Produits", icon: ShoppingBag, iconName: "Produits" },
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-0">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Rapports</h1>
-          <p className="text-gray-600">Analysez les performances de votre boutique</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Rapports</h1>
+          <p className="text-sm sm:text-base text-gray-600">Analysez les performances de votre boutique</p>
         </div>
         
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-3 gap-3">
           <select 
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent"
+            className="w-full sm:w-auto px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent"
           >
             <option value="today">Aujourd'hui</option>
             <option value="7-days">7 derniers jours</option>
@@ -141,7 +139,7 @@ export default function AdminRapports() {
           <button
             onClick={handleExport}
             disabled={exporting}
-            className="flex items-center px-4 py-2 bg-adawi-gold text-white rounded-lg hover:bg-adawi-gold/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center w-full sm:w-auto px-3 sm:px-4 py-2 bg-adawi-gold text-white text-sm sm:text-base rounded-lg hover:bg-adawi-gold/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {exporting ? (
               <Loader className="w-4 h-4 mr-2 animate-spin" />
@@ -154,69 +152,69 @@ export default function AdminRapports() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="text-sm text-gray-600">Ventes totales</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
                 {reportsSummary ? reportsSummary.total_orders.toLocaleString() : "—"}
               </p>
               <p className={`text-sm ${reportsSummary && reportsSummary.orders_growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {reportsSummary ? `${reportsSummary.orders_growth >= 0 ? '+' : ''}${reportsSummary.orders_growth}% ce mois` : "—"}
               </p>
             </div>
-            <div className="p-3 bg-green-100 rounded-lg">
-              <TrendingUp className="w-6 h-6 text-green-600" />
+            <div className="p-2 sm:p-3 bg-green-100 rounded-lg flex-shrink-0">
+              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="text-sm text-gray-600">Revenus</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
                 {reportsSummary ? `${(reportsSummary.total_revenue / 1000).toFixed(1)}K F CFA` : "—"}
               </p>
               <p className={`text-sm ${reportsSummary && reportsSummary.revenue_growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {reportsSummary ? `${reportsSummary.revenue_growth >= 0 ? '+' : ''}${reportsSummary.revenue_growth}% ce mois` : "—"}
               </p>
             </div>
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <DollarSign className="w-6 h-6 text-blue-600" />
+            <div className="p-2 sm:p-3 bg-blue-100 rounded-lg flex-shrink-0">
+              <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="text-sm text-gray-600">Nouveaux clients</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
                 {reportsSummary ? reportsSummary.total_nouveaux_clients.toLocaleString() : "—"}
               </p>
               <p className={`text-sm ${reportsSummary && reportsSummary.customers_growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {reportsSummary ? `${reportsSummary.customers_growth >= 0 ? '+' : ''}${reportsSummary.customers_growth}% ce mois` : "—"}
               </p>
             </div>
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <Users className="w-6 h-6 text-purple-600" />
+            <div className="p-2 sm:p-3 bg-purple-100 rounded-lg flex-shrink-0">
+              <Users className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="text-sm text-gray-600">Produits vendus</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
                 {reportsSummary ? reportsSummary.total_produits_vendus.toLocaleString() : "—"}
               </p>
-              <p className="text-sm text-gray-600">Commission: {reportsSummary ? `${reportsSummary.commission_collected.toLocaleString()} F CFA` : "—"}</p>
+              <p className="text-sm text-gray-600 truncate">Commission: {reportsSummary ? `${reportsSummary.commission_collected.toLocaleString()} F CFA` : "—"}</p>
             </div>
-            <div className="p-3 bg-orange-100 rounded-lg">
-              <ShoppingBag className="w-6 h-6 text-orange-600" />
+            <div className="p-2 sm:p-3 bg-orange-100 rounded-lg flex-shrink-0">
+              <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
             </div>
           </div>
         </div>
@@ -225,21 +223,22 @@ export default function AdminRapports() {
       {/* Tabs */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
         <div className="border-b border-gray-200">
-          <nav className="flex space-x-8 px-6">
+          <nav className="flex overflow-x-auto px-4 sm:px-6">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                  className={`flex items-center py-4 px-2 sm:px-4 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'border-adawi-gold text-adawi-gold'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
                   <Icon className="w-4 h-4 mr-2" />
-                  {tab.label}
+                  <span className="hidden xs:inline">{tab.label}</span>
+                  <span className="ml-1 text-xs text-gray-400">{tab.iconName}</span>
                 </button>
               );
             })}
@@ -247,28 +246,28 @@ export default function AdminRapports() {
         </div>
 
         {/* Table Content */}
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           {error && (
             <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
               <div className="flex items-center">
-                <AlertCircle className="w-5 h-5 text-red-600 mr-2" />
-                <p className="text-red-800">{error}</p>
+                <AlertCircle className="w-5 h-5 text-red-600 mr-2 flex-shrink-0" />
+                <p className="text-red-800 text-sm">{error}</p>
               </div>
             </div>
           )}
 
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader className="w-8 h-8 animate-spin text-adawi-gold" />
-              <span className="ml-2 text-gray-600">Chargement des données...</span>
+              <Loader className="w-6 sm:w-8 h-6 sm:h-8 animate-spin text-adawi-gold" />
+              <span className="ml-2 text-gray-600 text-sm sm:text-base">Chargement des données...</span>
             </div>
           ) : (
             <>
               {activeTab === "ventes" && (
                 <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900">Détail des ventes</h3>
-                    <button className="flex items-center px-3 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900">Détail des ventes</h3>
+                    <button className="flex items-center justify-center sm:justify-start px-3 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50">
                       <Filter className="w-4 h-4 mr-2" />
                       Filtrer
                     </button>
@@ -280,19 +279,19 @@ export default function AdminRapports() {
                         <table className="min-w-full divide-y divide-gray-200">
                           <thead className="bg-gray-50">
                             <tr>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Date
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Produit
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
                                 Client
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Quantité
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Montant
                               </th>
                             </tr>
@@ -300,20 +299,27 @@ export default function AdminRapports() {
                           <tbody className="bg-white divide-y divide-gray-200">
                             {salesReport.ventes.map((sale, index) => (
                               <tr key={`${sale.date}-${sale.produit}-${index}`} className="hover:bg-gray-50">
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
                                   {sale.date}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                  {sale.produit}
+                                <td className="px-3 sm:px-6 py-4 text-xs sm:text-sm font-medium text-gray-900">
+                                  <div className="max-w-[120px] sm:max-w-none truncate">
+                                    {sale.produit}
+                                  </div>
+                                  <div className="sm:hidden text-xs text-gray-500 mt-1">
+                                    {sale.client || "—"}
+                                  </div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 hidden sm:table-cell">
                                   {sale.client || "—"}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
                                   {sale.quantite}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                  {sale.montant.toLocaleString()} F CFA
+                                <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-gray-900">
+                                  <div className="max-w-[80px] sm:max-w-none truncate">
+                                    {sale.montant.toLocaleString()} F CFA
+                                  </div>
                                 </td>
                               </tr>
                             ))}
@@ -322,21 +328,23 @@ export default function AdminRapports() {
                       </div>
 
                       {/* Pagination */}
-                      <Pagination
-                        currentPage={salesReport.page}
-                        totalPages={salesReport.total_pages}
-                        onPageChange={handlePageChange}
-                        totalItems={salesReport.total_items}
-                        itemsPerPage={itemsPerPage}
-                      />
+                      <div className="mt-4">
+                        <Pagination
+                          currentPage={salesReport.page}
+                          totalPages={salesReport.total_pages}
+                          onPageChange={handlePageChange}
+                          totalItems={salesReport.total_items}
+                          itemsPerPage={itemsPerPage}
+                        />
+                      </div>
                     </>
                   ) : (
                     <div className="text-center py-12">
-                      <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      <FileText className="w-8 sm:w-12 h-8 sm:h-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
                         Aucune vente trouvée
                       </h3>
-                      <p className="text-gray-600">
+                      <p className="text-sm sm:text-base text-gray-600">
                         Il n'y a pas de données de ventes pour la période sélectionnée.
                       </p>
                     </div>
@@ -347,7 +355,7 @@ export default function AdminRapports() {
               {activeTab === "produits" && (
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900">Performance des produits</h3>
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900">Performance des produits</h3>
                   </div>
 
                   {productsReport.length > 0 ? (
@@ -355,19 +363,19 @@ export default function AdminRapports() {
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Produit
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Stock actuel
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
                               Vendus
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
                               Revenus
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Statut
                             </th>
                           </tr>
@@ -375,19 +383,24 @@ export default function AdminRapports() {
                         <tbody className="bg-white divide-y divide-gray-200">
                           {productsReport.map((product, index) => (
                             <tr key={`${product.nom}-${index}`} className="hover:bg-gray-50">
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {product.nom}
+                              <td className="px-3 sm:px-6 py-4 text-xs sm:text-sm font-medium text-gray-900">
+                                <div className="max-w-[120px] sm:max-w-none truncate">
+                                  {product.nom}
+                                </div>
+                                <div className="sm:hidden text-xs text-gray-500 mt-1">
+                                  Vendus: {product.vendus} • {product.revenus.toLocaleString()} F CFA
+                                </div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
                                 {product.stock}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 hidden sm:table-cell">
                                 {product.vendus}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                              <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-gray-900 hidden sm:table-cell">
                                 {product.revenus.toLocaleString()} F CFA
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
+                              <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                                 <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                                   product.statut === 'En stock'
                                     ? 'bg-green-100 text-green-800'
@@ -405,11 +418,11 @@ export default function AdminRapports() {
                     </div>
                   ) : (
                     <div className="text-center py-12">
-                      <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      <FileText className="w-8 sm:w-12 h-8 sm:h-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
                         Aucun produit trouvé
                       </h3>
-                      <p className="text-gray-600">
+                      <p className="text-sm sm:text-base text-gray-600">
                         Il n'y a pas de données de produits disponibles.
                       </p>
                     </div>
@@ -419,11 +432,11 @@ export default function AdminRapports() {
 
               {(activeTab === "clients" || activeTab === "revenus") && (
                 <div className="text-center py-12">
-                  <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  <FileText className="w-8 sm:w-12 h-8 sm:h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
                     Rapport {activeTab} en cours de développement
                   </h3>
-                  <p className="text-gray-600">
+                  <p className="text-sm sm:text-base text-gray-600">
                     Cette section sera bientôt disponible avec des données détaillées.
                   </p>
                 </div>

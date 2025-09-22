@@ -26,7 +26,7 @@ export default function Services() {
       icon: <Truck className="w-8 h-8 sm:w-10 sm:h-10" />,
       title: "Livraison rapide",
       subtitle: "et gratuite",
-      description: "Livraison gratuite dès 50FCFA d'achat",
+      description: "Frais de livraison payé à la réception de la commande",
       color: "from-orange-500 to-orange-600",
       hoverColor: "hover:from-orange-600 hover:to-orange-700",
       shadowColor: "shadow-orange-200",

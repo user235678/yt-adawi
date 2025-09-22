@@ -17,13 +17,14 @@ interface SellerSidebarProps {
 
 export default function SellerSidebar({ onClose }: SellerSidebarProps) {
   const location = useLocation();
-
+//ajout de seller/blog
   const menuItems = [
     { id: "Dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/seller/dashboard" },
     { id: "produits", label: "Produits", icon: Package, path: "/seller/products" },
     { id: "orders", label: "Commandes", icon: ShoppingCart, path: "/seller/orders" },
     { id: "support", label: "Support", icon: MessageSquare, path: "/seller/support" },
     { id: "remboursements", label: "Remboursements", icon: BarChart3, path: "/seller/refund" },
+    { id: "blog", label: "Blog", icon: MessageSquare, path: "/seller/blog" },
   ];
 
   const handleLinkClick = () => {

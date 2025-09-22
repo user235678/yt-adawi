@@ -16,133 +16,133 @@ export const meta: MetaFunction = () => {
 };
 
 interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  size?: string;
-  color?: string;
-  images: string[];
-  stock: number;
-  product_id: string;
+    id: string;
+    name: string;
+    price: number;
+    quantity: number;
+    size?: string;
+    color?: string;
+    images: string[];
+    stock: number;
+    product_id: string;
 }
 
 interface LoaderData {
-  cartItems: CartItem[];
-  total: number;
-  isLoggedIn: boolean;
-  error?: string;
-  debugInfo?: any;
-  sessionData?: {
-    session_id: string;
-    access_token: string;
-  };
+    cartItems: CartItem[];
+    total: number;
+    isLoggedIn: boolean;
+    error?: string;
+    debugInfo?: any;
+    sessionData?: {
+        session_id: string;
+        access_token: string;
+    };
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  try {
-    console.log("🔍 Début du loader panier");
+    try {
+        console.log("🔍 Début du loader panier");
 
-    // Récupérer les données de session
-    const sessionData = await readSessionData(request);
-    console.log("📋 Session data:", sessionData);
+        // Récupérer les données de session
+        const sessionData = await readSessionData(request);
+        console.log("📋 Session data:", sessionData);
 
-    if (!sessionData || !sessionData.session_id) {
-      console.log("❌ Pas de session_id trouvé");
-      return json<LoaderData>({
-        cartItems: [],
-        total: 0,
-        isLoggedIn: false,
-        error: "Vous devez être connecté pour voir votre panier",
-        debugInfo: { sessionData }
-      });
-    }
+        if (!sessionData || !sessionData.session_id) {
+            console.log("❌ Pas de session_id trouvé");
+            return json<LoaderData>({
+                cartItems: [],
+                total: 0,
+                isLoggedIn: false,
+                error: "Vous devez être connecté pour voir votre panier",
+                debugInfo: { sessionData }
+            });
+        }
 
-    console.log("🔑 Session ID trouvé:", sessionData.session_id);
+        console.log("🔑 Session ID trouvé:", sessionData.session_id);
 
-    // Appel à l'API pour récupérer le panier
-    const apiUrl = `${process.env.API_BASE_URL || 'https://showroom-backend-2x3g.onrender.com'}/cart/?session-id=${sessionData.session_id}`;
-    console.log("📡 Appel API:", apiUrl);
+        // Appel à l'API pour récupérer le panier
+        const apiUrl = `${process.env.API_BASE_URL || 'https://showroom-backend-2x3g.onrender.com'}/cart/?session-id=${sessionData.session_id}`;
+        console.log("📡 Appel API:", apiUrl);
 
-    const response = await fetch(apiUrl, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${sessionData.access_token}`,
-      },
-    });
-
-    console.log("📥 Réponse API:", {
-      status: response.status,
-      statusText: response.statusText,
-      ok: response.ok
-    });
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        return json<LoaderData>({
-          cartItems: [],
-          total: 0,
-          isLoggedIn: false,
-          error: "Votre session a expiré. Veuillez vous reconnecter.",
-          debugInfo: { 
-            sessionData, 
-            apiResponse: { status: response.status, statusText: response.statusText }
-          }
+        const response = await fetch(apiUrl, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionData.access_token}`,
+            },
         });
-      }
 
-      const errorText = await response.text();
-      console.log("❌ Erreur API:", errorText);
-      
-      throw new Error(`Erreur API: ${response.status} - ${errorText}`);
+        console.log("📥 Réponse API:", {
+            status: response.status,
+            statusText: response.statusText,
+            ok: response.ok
+        });
+
+        if (!response.ok) {
+            if (response.status === 401) {
+                return json<LoaderData>({
+                    cartItems: [],
+                    total: 0,
+                    isLoggedIn: false,
+                    error: "Votre session a expiré. Veuillez vous reconnecter.",
+                    debugInfo: {
+                        sessionData,
+                        apiResponse: { status: response.status, statusText: response.statusText }
+                    }
+                });
+            }
+
+            const errorText = await response.text();
+            console.log("❌ Erreur API:", errorText);
+
+            throw new Error(`Erreur API: ${response.status} - ${errorText}`);
+        }
+
+        const cartData = await response.json();
+        console.log("✅ Données du panier reçues:", cartData);
+
+        // Transformer les données de l'API vers notre format
+        const cartItems: CartItem[] = cartData.items?.map((item: any) => ({
+            id: item.id || item.product_id,
+            name: item.name || item.product_name || 'Produit sans nom',
+            price: item.price || 0,
+            quantity: item.quantity || 1,
+            size: item.size,
+            color: item.color,
+            images: item.images || ['/placeholder-product.png'],
+            stock: item.stock || 0,
+            product_id: item.product_id
+        })) || [];
+
+        const total = cartData.total || cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+        console.log("✅ Panier transformé:", { itemsCount: cartItems.length, total });
+
+        return json<LoaderData>({
+            cartItems,
+            total,
+            isLoggedIn: true,
+            sessionData: {
+                session_id: sessionData.session_id,
+                access_token: sessionData.access_token
+            },
+            debugInfo: {
+                sessionData: { session_id: sessionData.session_id, hasToken: !!sessionData.access_token },
+                apiResponse: { status: response.status, itemsCount: cartItems.length }
+            }
+        });
+
+    } catch (error) {
+        console.error("❌ Erreur dans le loader:", error);
+        const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+        return json<LoaderData>({
+            cartItems: [],
+            total: 0,
+            isLoggedIn: false,
+            error: `Erreur lors du chargement du panier: ${errorMessage}`,
+            debugInfo: { error: errorMessage }
+        }, { status: 500 });
     }
-
-    const cartData = await response.json();
-    console.log("✅ Données du panier reçues:", cartData);
-
-    // Transformer les données de l'API vers notre format
-    const cartItems: CartItem[] = cartData.items?.map((item: any) => ({
-      id: item.id || item.product_id,
-      name: item.name || item.product_name || 'Produit sans nom',
-      price: item.price || 0,
-      quantity: item.quantity || 1,
-      size: item.size,
-      color: item.color,
-      images: item.images || ['/placeholder-product.png'],
-      stock: item.stock || 0,
-      product_id: item.product_id
-    })) || [];
-
-    const total = cartData.total || cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
-    console.log("✅ Panier transformé:", { itemsCount: cartItems.length, total });
-
-    return json<LoaderData>({
-      cartItems,
-      total,
-      isLoggedIn: true,
-      sessionData: {
-        session_id: sessionData.session_id,
-        access_token: sessionData.access_token
-      },
-      debugInfo: {
-        sessionData: { session_id: sessionData.session_id, hasToken: !!sessionData.access_token },
-        apiResponse: { status: response.status, itemsCount: cartItems.length }
-      }
-    });
-
-  } catch (error) {
-    console.error("❌ Erreur dans le loader:", error);
-    const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
-    return json<LoaderData>({
-      cartItems: [],
-      total: 0,
-      isLoggedIn: false,
-      error: `Erreur lors du chargement du panier: ${errorMessage}`,
-      debugInfo: { error: errorMessage }
-    }, { status: 500 });
-  }
 }
 
 export default function panier() {
@@ -184,8 +184,8 @@ export default function panier() {
                                 >
                                     Réessayer
                                 </button>
-                                <Link 
-                                    to="/login" 
+                                <Link
+                                    to="/login"
                                     className="inline-block bg-blue-500 text-white px-6 py-3 rounded-xl hover:bg-blue-600 transition-all duration-300 transform hover:scale-105"
                                 >
                                     Se connecter
@@ -216,8 +216,8 @@ export default function panier() {
                             </div>
                             <h2 className="text-lg sm:text-xl font-semibold text-yellow-800 mb-2">Connexion requise</h2>
                             <p className="text-yellow-700 mb-6 text-sm sm:text-base">Vous devez être connecté pour voir votre panier</p>
-                            <Link 
-                                to="/login" 
+                            <Link
+                                to="/login"
                                 className="inline-block bg-adawi-gold hover:bg-adawi-gold/90 text-white font-medium py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
                             >
                                 Se connecter
@@ -292,7 +292,7 @@ export default function panier() {
         } catch (error) {
             console.error('❌ Erreur réseau:', error);
             const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
-            
+
             if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
                 alert("Votre session a expiré. Veuillez vous reconnecter.");
                 navigate('/login');
@@ -363,7 +363,7 @@ export default function panier() {
         } catch (error) {
             console.error('❌ Erreur réseau:', error);
             const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
-            
+
             if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
                 alert("Votre session a expiré. Veuillez vous reconnecter.");
                 navigate('/login');
@@ -437,7 +437,7 @@ export default function panier() {
         } catch (error) {
             console.error('❌ Erreur réseau:', error);
             const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
-            
+
             if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
                 alert("Votre session a expiré. Veuillez vous reconnecter.");
                 navigate('/login');
@@ -492,8 +492,8 @@ export default function panier() {
                             </div>
                             <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Votre panier est vide</h2>
                             <p className="text-gray-600 mb-6 text-sm sm:text-base">Découvrez nos produits et ajoutez-les à votre panier</p>
-                            <Link 
-                                to="/boutique" 
+                            <Link
+                                to="/boutique"
                                 className="inline-block bg-adawi-gold hover:bg-adawi-gold/90 text-white font-medium py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
                             >
                                 Découvrir nos produits
@@ -516,15 +516,14 @@ export default function panier() {
                     <p className="text-gray-600 mb-4 text-sm sm:text-base">
                         Frais de livraison payé à la réception de la marchandise
                     </p>
-                    
+
                     {/* Bouton vider le panier */}
                     {cartItems.length > 0 && (
                         <button
                             onClick={clearCart}
                             disabled={isClearing || isUpdating !== null}
-                            className={`text-sm text-red-600 hover:text-red-800 underline transition-all duration-300 transform hover:scale-105 ${
-                                isClearing || isUpdating !== null ? 'cursor-not-allowed opacity-50' : ''
-                            }`}
+                            className={`text-sm text-red-600 hover:text-red-800 underline transition-all duration-300 transform hover:scale-105 ${isClearing || isUpdating !== null ? 'cursor-not-allowed opacity-50' : ''
+                                }`}
                         >
                             {isClearing ? (
                                 <span className="flex items-center justify-center">
@@ -561,12 +560,11 @@ export default function panier() {
                         const isAnimating = animatingItems.has(itemId);
 
                         return (
-                            <div 
-                                key={itemId} 
-                                className={`bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-500 transform ${
-                                    isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-                                } ${isAnimating ? 'scale-105 shadow-lg' : 'hover:scale-[1.02]'}`}
-                                style={{ 
+                            <div
+                                key={itemId}
+                                className={`bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-500 transform ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+                                    } ${isAnimating ? 'scale-105 shadow-lg' : 'hover:scale-[1.02]'}`}
+                                style={{
                                     animationDelay: `${index * 100}ms`,
                                     transitionDelay: isLoaded ? `${index * 100}ms` : '0ms'
                                 }}
@@ -586,7 +584,7 @@ export default function panier() {
                                                 }}
                                             />
                                         </div>
-                                        
+
                                         {/* Informations produit */}
                                         <div className="flex-1 min-w-0">
                                             <h3 className="text-base sm:text-lg font-medium text-black mb-1 truncate">
@@ -598,18 +596,17 @@ export default function panier() {
                                             <p className="text-xs text-gray-500 mb-3">
                                                 {(item.size || 'M').toUpperCase()} / {(item.color || 'NOIR').toUpperCase()}
                                             </p>
-                                            
+
                                             {/* Contrôles quantité mobile */}
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center space-x-3">
                                                     <button
                                                         onClick={() => updateQuantity(itemId, quantity - 1)}
                                                         disabled={isUpdating === itemId || quantity <= 1 || isClearing}
-                                                        className={`w-8 h-8 border rounded-full flex items-center justify-center text-lg font-medium transition-all duration-200 ${
-                                                            quantity <= 1 || isUpdating === itemId || isClearing
-                                                                ? 'border-gray-200 text-gray-400 cursor-not-allowed' 
+                                                        className={`w-8 h-8 border rounded-full flex items-center justify-center text-lg font-medium transition-all duration-200 ${quantity <= 1 || isUpdating === itemId || isClearing
+                                                                ? 'border-gray-200 text-gray-400 cursor-not-allowed'
                                                                 : 'border-gray-300 text-gray-600 hover:bg-gray-50 active:scale-95'
-                                                        }`}
+                                                            }`}
                                                     >
                                                         {isUpdating === itemId ? (
                                                             <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
@@ -623,9 +620,8 @@ export default function panier() {
                                                     <button
                                                         onClick={() => updateQuantity(itemId, quantity + 1)}
                                                         disabled={isUpdating === itemId || isClearing}
-                                                        className={`w-8 h-8 border border-gray-300 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-all duration-200 text-lg font-medium active:scale-95 ${
-                                                            isUpdating === itemId || isClearing ? 'cursor-not-allowed opacity-50' : ''
-                                                        }`}
+                                                        className={`w-8 h-8 border border-gray-300 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-all duration-200 text-lg font-medium active:scale-95 ${isUpdating === itemId || isClearing ? 'cursor-not-allowed opacity-50' : ''
+                                                            }`}
                                                     >
                                                         {isUpdating === itemId ? (
                                                             <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
@@ -634,7 +630,7 @@ export default function panier() {
                                                         )}
                                                     </button>
                                                 </div>
-                                                
+
                                                 <div className="text-right">
                                                     <p className="text-lg font-medium text-black mb-1">
                                                         {itemTotal.toLocaleString()} F CFA
@@ -642,9 +638,8 @@ export default function panier() {
                                                     <button
                                                         onClick={() => removeItem(itemId)}
                                                         disabled={isUpdating === itemId || isClearing}
-                                                        className={`text-sm text-gray-500 hover:text-red-600 underline transition-colors ${
-                                                            isUpdating === itemId || isClearing ? 'cursor-not-allowed opacity-50' : ''
-                                                        }`}
+                                                        className={`text-sm text-gray-500 hover:text-red-600 underline transition-colors ${isUpdating === itemId || isClearing ? 'cursor-not-allowed opacity-50' : ''
+                                                            }`}
                                                     >
                                                         {isUpdating === itemId ? 'Suppression...' : 'Supprimer'}
                                                     </button>
@@ -687,11 +682,10 @@ export default function panier() {
                                         <button
                                             onClick={() => updateQuantity(itemId, quantity - 1)}
                                             disabled={isUpdating === itemId || quantity <= 1 || isClearing}
-                                            className={`w-8 h-8 border rounded-full flex items-center justify-center text-lg font-medium transition-all duration-200 ${
-                                                quantity <= 1 || isUpdating === itemId || isClearing
-                                                    ? 'border-gray-200 text-gray-400 cursor-not-allowed' 
+                                            className={`w-8 h-8 border rounded-full flex items-center justify-center text-lg font-medium transition-all duration-200 ${quantity <= 1 || isUpdating === itemId || isClearing
+                                                    ? 'border-gray-200 text-gray-400 cursor-not-allowed'
                                                     : 'border-gray-300 text-gray-600 hover:bg-gray-50 active:scale-95'
-                                            }`}
+                                                }`}
                                         >
                                             {isUpdating === itemId ? (
                                                 <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
@@ -705,9 +699,8 @@ export default function panier() {
                                         <button
                                             onClick={() => updateQuantity(itemId, quantity + 1)}
                                             disabled={isUpdating === itemId || isClearing}
-                                            className={`w-8 h-8 border border-gray-300 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-all duration-200 text-lg font-medium active:scale-95 ${
-                                                isUpdating === itemId || isClearing ? 'cursor-not-allowed opacity-50' : ''
-                                            }`}
+                                            className={`w-8 h-8 border border-gray-300 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-all duration-200 text-lg font-medium active:scale-95 ${isUpdating === itemId || isClearing ? 'cursor-not-allowed opacity-50' : ''
+                                                }`}
                                         >
                                             {isUpdating === itemId ? (
                                                 <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
@@ -725,9 +718,8 @@ export default function panier() {
                                         <button
                                             onClick={() => removeItem(itemId)}
                                             disabled={isUpdating === itemId || isClearing}
-                                            className={`text-sm text-gray-500 hover:text-red-600 underline transition-colors ${
-                                                isUpdating === itemId || isClearing ? 'cursor-not-allowed opacity-50' : ''
-                                            }`}
+                                            className={`text-sm text-gray-500 hover:text-red-600 underline transition-colors ${isUpdating === itemId || isClearing ? 'cursor-not-allowed opacity-50' : ''
+                                                }`}
                                         >
                                             {isUpdating === itemId ? 'Suppression...' : 'Supprimer'}
                                         </button>
@@ -739,10 +731,9 @@ export default function panier() {
                 </div>
 
                 {/* Section inférieure */}
-                <div className={`grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 transform transition-all duration-700 ${
-                    isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-                }`} style={{ transitionDelay: `${cartItems.length * 100 + 200}ms` }}>
-                    
+                <div className={`grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 transform transition-all duration-700 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+                    }`} style={{ transitionDelay: `${cartItems.length * 100 + 200}ms` }}>
+
                     {/* Note de commande */}
                     <div className="order-2 lg:order-1">
                         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 hover:shadow-md transition-shadow duration-300">
@@ -757,9 +748,8 @@ export default function panier() {
                                 onChange={(e) => setOrderNote(e.target.value)}
                                 placeholder="Comment pouvons-nous vous aider? (instructions de livraison, demandes spéciales...)"
                                 disabled={isClearing}
-                                className={`w-full h-28 sm:h-32 p-4 border border-gray-200 bg-white text-black rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent text-sm transition-all duration-300 ${
-                                    isClearing ? 'opacity-50 cursor-not-allowed' : 'hover:border-gray-300'
-                                }`}
+                                className={`w-full h-28 sm:h-32 p-4 border border-gray-200 bg-white text-black rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent text-sm transition-all duration-300 ${isClearing ? 'opacity-50 cursor-not-allowed' : 'hover:border-gray-300'
+                                    }`}
                                 maxLength={500}
                             />
                             <div className="text-right text-xs text-gray-400 mt-2">
@@ -777,7 +767,7 @@ export default function panier() {
                                 </svg>
                                 Résumé de commande
                             </h3>
-                            
+
                             {/* Calculs */}
                             <div className="space-y-4 mb-6">
                                 <div className="flex justify-between text-base py-2">
@@ -794,7 +784,7 @@ export default function panier() {
                                         <span className="text-adawi-gold">{total.toLocaleString()} F CFA</span>
                                     </div>
                                 </div>
-                                
+
                                 {/* Nombre d'articles */}
                                 <div className="text-center text-sm text-gray-500 bg-gray-50 rounded-lg py-2">
                                     {cartItems.length} article{cartItems.length > 1 ? 's' : ''} dans votre panier
@@ -803,18 +793,17 @@ export default function panier() {
 
                             <div className="space-y-4">
                                 <p className="text-xs text-gray-500 text-center leading-relaxed">
-                                    Taxes et frais de livraison calculés à la commande. 
+                                    Taxes et frais de livraison calculés à la commande.
                                     <br />
-                                    Livraison gratuite disponible selon votre zone.
+                                    Frais de livraison payé à la réception de la marchandise
                                 </p>
 
                                 {/* Bouton checkout avec animation de pulse */}
                                 <button
                                     onClick={handlePhysicalSale}
                                     disabled={isClearing}
-                                    className={`w-full bg-gradient-to-r from-adawi-gold to-adawi-gold text-white font-medium py-4 px-6 text-base rounded-full hover:bg-adawi-gold transition-all duration-300 tracking-wider transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl ${
-                                        isClearing ? 'opacity-50 cursor-not-allowed' : 'animate-pulse hover:animate-none'
-                                    }`}
+                                    className={`w-full bg-gradient-to-r from-adawi-gold to-adawi-gold text-white font-medium py-4 px-6 text-base rounded-full hover:bg-adawi-gold transition-all duration-300 tracking-wider transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl ${isClearing ? 'opacity-50 cursor-not-allowed' : 'animate-pulse hover:animate-none'
+                                        }`}
                                 >
                                     <span className="flex items-center justify-center">
                                         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -836,8 +825,8 @@ export default function panier() {
 
                                 {/* Lien continuer les achats */}
                                 <div className="text-center pt-2">
-                                    <Link 
-                                        to="/boutique" 
+                                    <Link
+                                        to="/boutique"
                                         className="text-sm text-gray-600 hover:text-adawi-gold underline transition-all duration-300 hover:no-underline flex items-center justify-center group"
                                     >
                                         <svg className="w-4 h-4 mr-1 transform group-hover:-translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -852,10 +841,9 @@ export default function panier() {
                 </div>
 
                 {/* Section informations supplémentaires */}
-                <div className={`mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 transform transition-all duration-700 ${
-                    isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-                }`} style={{ transitionDelay: `${cartItems.length * 100 + 400}ms` }}>
-                    
+                <div className={`mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 transform transition-all duration-700 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+                    }`} style={{ transitionDelay: `${cartItems.length * 100 + 400}ms` }}>
+
                     {/* Livraison */}
                     <div className="text-center p-6 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-105">
                         <div className="w-12 h-12 bg-adawi-gold/10 rounded-full flex items-center justify-center mx-auto mb-4">

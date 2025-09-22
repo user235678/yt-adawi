@@ -267,6 +267,7 @@ export default function AdminOrders() {
         </div>
       )}
       {/* Table */}
+      {/* ajout de methode de paiement */}
       <table className="w-full mt-4 border-collapse border border-gray-200">
         <thead className="bg-gray-50">
           <tr>
