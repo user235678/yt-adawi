@@ -5,6 +5,7 @@ import { useLoaderData } from "@remix-run/react";
 import { useState, useEffect, useRef } from "react";
 import AddProductModal from "~/components/admin/AddProductModal";
 import ViewProductModal from "~/components/admin/ViewProductModal";
+import SellerAddToCartModal from "~/components/seller/SellerAddToCartModal";
 import { requireVendor } from "~/utils/auth.server";
 import SellerLayout from "~/components/seller/SellerLayout";
 import {
@@ -593,6 +594,7 @@ export default function SellerDashboard() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAddToCartModalOpen, setIsAddToCartModalOpen] = useState(false);
 
   const openViewModal = (product: Product) => {
     setSelectedProduct(product);
@@ -1143,8 +1145,16 @@ export default function SellerDashboard() {
           />
 
         )} */}
+
+        {/* Seller Add to Cart Modal */}
+        {selectedProduct && (
+          <SellerAddToCartModal
+            isOpen={isAddToCartModalOpen}
+            onClose={() => setIsAddToCartModalOpen(false)}
+            product={selectedProduct}
+          />
+        )}
       </div>
-      
     </SellerLayout>
 
   );

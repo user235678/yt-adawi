@@ -480,7 +480,7 @@ export default function panier() {
                             <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Votre panier est vide</h2>
                             <p className="text-gray-600 mb-6 text-sm sm:text-base">Découvrez nos produits et ajoutez-les à votre panier</p>
                             <Link
-                                to="/boutique"
+                                to="/seller/products"
                                 className="inline-block bg-adawi-gold hover:bg-adawi-gold/90 text-white font-medium py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
                             >
                                 Découvrir nos produits
