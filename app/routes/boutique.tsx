@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import type { MetaFunction } from "@remix-run/node";
 import TopBanner from "~/components/TopBanner";
 import Header from "~/components/CompactHeader";
@@ -8,6 +8,7 @@ import SidebarFilters from "~/components/boutique/SidebarFilters";
 import ProductGrid, { Product, ProductCategory, ProductSize, ProductColor } from "~/components/boutique/ProductGrid";
 import SortButton from "~/components/boutique/SortButton";
 import ProductModal from "~/components/boutique/ProductModal";
+import Pagination from "~/components/boutique/Pagination";
 import { Outlet } from "@remix-run/react";
 import { ToastProvider } from "~/contexts/ToastContext";
 import { getUserProfile } from "~/utils/auth.server";
@@ -65,6 +66,10 @@ export default function Boutique() {
     const [apiProducts, setApiProducts] = useState<ApiProduct[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    // États pour la pagination
+    const [currentPage, setCurrentPage] = useState(1);
+    const PRODUCTS_PER_PAGE = 15;
 
     // Fonction pour mapper les produits de l'API vers le format attendu
     const mapApiProductToProduct = (apiProduct: ApiProduct): Product => {
@@ -269,6 +274,21 @@ export default function Boutique() {
 
     const sortedProducts = sortProducts(filteredProducts, sortOption);
 
+    // Calcul des produits paginés
+    const paginatedProducts = useMemo(() => {
+        const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+        const endIndex = startIndex + PRODUCTS_PER_PAGE;
+        return sortedProducts.slice(startIndex, endIndex);
+    }, [sortedProducts, currentPage]);
+
+    // Calcul du nombre total de pages
+    const totalPages = Math.ceil(sortedProducts.length / PRODUCTS_PER_PAGE);
+
+    // Réinitialiser la page courante quand les filtres changent
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [activeCategory, selectedSize, selectedColor, sortOption]);
+
     const handleCategoryChange = (category: ProductCategory) => {
         setActiveCategory(category);
         setSelectedSize(undefined);
@@ -279,9 +299,16 @@ export default function Boutique() {
     const handleColorChange = (color: ProductColor | undefined) => setSelectedColor(color);
     const handleSortChange = (option: SortOption) => setSortOption(option);
 
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+        // Scroll vers le haut de la grille des produits
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     const handleProductClick = (product: Product) => {
         // Ne pas ouvrir le modal si le produit n'est pas en stock
-        if (product.stock <= 0) return;
+
+        if (product.inStock === false) return;        
         
         setSelectedProduct(product);
         setIsModalOpen(true);
@@ -342,12 +369,30 @@ export default function Boutique() {
                                         <p className="text-gray-500 text-lg">Aucun produit trouvé pour cette sélection.</p>
                                     </div>
                                 ) : (
-                                    <ProductGrid
-                                        products={sortedProducts}
-                                        selectedSize={selectedSize}
-                                        selectedColor={selectedColor}
-                                        onProductClick={handleProductClick}
-                                    />
+                                    <>
+                                        <ProductGrid
+                                            products={paginatedProducts}
+                                            selectedSize={selectedSize}
+                                            selectedColor={selectedColor}
+                                            onProductClick={handleProductClick}
+                                        />
+                                        {/* Pagination */}
+                                        {totalPages > 1 && (
+                                            <div className="mt-8">
+                                                <Pagination
+                                                    currentPage={currentPage}
+                                                    totalPages={totalPages}
+                                                    onPageChange={handlePageChange}
+                                                />
+                                            </div>
+                                        )}
+                                        {/* Informations sur la pagination */}
+                                        <div className="mt-4 text-center text-sm text-gray-600">
+                                            <p>
+                                                Affichage de {Math.min((currentPage - 1) * PRODUCTS_PER_PAGE + 1, sortedProducts.length)} à {Math.min(currentPage * PRODUCTS_PER_PAGE, sortedProducts.length)} sur {sortedProducts.length} produits
+                                            </p>
+                                        </div>
+                                    </>
                                 )}
                             </div>
                         </div>
