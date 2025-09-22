@@ -15,8 +15,12 @@ import {
   TableOfContents,
   Clock,
   ArrowLeft,
-  Store
+  Store,
+  ChevronDown,
+  ChevronRight,
+  Package as Package2
 } from "lucide-react";
+import { useState } from "react";
 
 interface AdminSidebarProps {
   onClose?: () => void;
@@ -24,28 +28,59 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ onClose }: AdminSidebarProps) {
   const location = useLocation();
+  const [openMenus, setOpenMenus] = useState<Set<string>>(new Set());
 
   const menuItems = [
     { id: "dashboard", label: "Vue d'ensemble", icon: LayoutDashboard, path: "/admin/dashboard" },
     { id: "users", label: "Utilisateurs", icon: Users, path: "/admin/users" },
-    { id: "products", label: "Produits", icon: Package, path: "/admin/products" },
+    {
+      id: "products",
+      label: "Boutique",
+      icon: Store,
+      path: "/admin/products",
+      children: [
+
+        { id: "products", label: "Produits", icon: Package2, path: "/admin/products" },
+        { id: "categories", label: "Catégories", icon: Box, path: "/admin/categories" }
+      ]
+    },
     { id: "orders", label: "Commandes", icon: ShoppingCart, path: "/admin/orders" },
     { id: "support", label: "Support", icon: MessageSquare, path: "/admin/support", },
     { id: "rapports", label: "Rapports", icon: BarChart3, path: "/admin/rapports" },
-    { id: "categories", label: "Categories", icon: Box, path: "/admin/categories" },
     { id: "Blogs", label: "Blog", icon: TableOfContents, path: "/admin/blog" },
-    { id: "refunds", label: "refunds", icon: TableOfContents, path: "/admin/refunds" },
+    { id: "refunds", label: "Remboursements", icon: TableOfContents, path: "/admin/refunds" },
     { id: "Rendez-Vous", label: "Rendez-Vous", icon: Settings, path: "/admin/appointments" },
     { id: "availability", label: "Disponibilités", icon: Clock, path: "/admin/availability" },
     { id: "settings", label: "Paramètres", icon: Settings, path: "/admin/settings" },
-
   ];
+
+  const toggleMenu = (menuId: string) => {
+    const newOpenMenus = new Set(openMenus);
+    if (newOpenMenus.has(menuId)) {
+      newOpenMenus.delete(menuId);
+    } else {
+      newOpenMenus.add(menuId);
+    }
+    setOpenMenus(newOpenMenus);
+  };
+
+  const isMenuOpen = (menuId: string) => openMenus.has(menuId);
+
+  const isActive = (path: string) => location.pathname === path;
+
+  const isParentActive = (item: any) => {
+    if (isActive(item.path)) return true;
+    if (item.children) {
+      return item.children.some((child: any) => isActive(child.path));
+    }
+    return false;
+  };
 
   const handleLinkClick = () => {
     // Fermer la sidebar sur mobile après avoir cliqué sur un lien
     if (onClose) {
       onClose();
-    } 
+    }
   };
 
   return (
@@ -92,23 +127,64 @@ export default function AdminSidebar({ onClose }: AdminSidebarProps) {
         <ul className="space-y-1 sm:space-y-2 px-3 sm:px-4">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.path;
+            const hasChildren = item.children && item.children.length > 0;
+            const isOpen = isMenuOpen(item.id);
+            const isItemActive = isParentActive(item);
 
             return (
               <li key={item.id}>
-                <Link
-                  to={item.path}
-                  onClick={handleLinkClick}
-                  className={`w-full flex items-center px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-colors duration-200 text-sm sm:text-base ${isActive
-                      ? "bg-adawi-gold text-black"
-                      : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                    }`}
-                >
-                  <Icon className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3 flex-shrink-0" />
-                  <span className="flex-1 truncate">{item.label}</span>
+                <div>
+                  <div
+                    className={`w-full flex items-center px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-colors duration-200 text-sm sm:text-base cursor-pointer ${isItemActive
+                        ? "bg-adawi-gold text-black"
+                        : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                      }`}
+                    onClick={() => hasChildren ? toggleMenu(item.id) : (() => {
+                      if (item.path) {
+                        window.location.href = item.path;
+                      }
+                      handleLinkClick();
+                    })()}
+                  >
+                    <Icon className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3 flex-shrink-0" />
+                    <span className="flex-1 truncate">{item.label}</span>
+                    {hasChildren && (
+                      <div className="ml-2">
+                        {isOpen ? (
+                          <ChevronDown className="w-4 h-4" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4" />
+                        )}
+                      </div>
+                    )}
+                  </div>
 
+                  {/* Sous-menu */}
+                  {hasChildren && isOpen && (
+                    <ul className="ml-6 mt-1 space-y-1">
+                      {item.children.map((child: any) => {
+                        const ChildIcon = child.icon;
+                        const isChildActive = isActive(child.path);
 
-                </Link>
+                        return (
+                          <li key={child.id}>
+                            <Link
+                              to={child.path}
+                              onClick={handleLinkClick}
+                              className={`w-full flex items-center px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-colors duration-200 text-sm sm:text-base ${isChildActive
+                                  ? "bg-adawi-gold text-black"
+                                  : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                                }`}
+                            >
+                              <ChildIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3 flex-shrink-0" />
+                              <span className="flex-1 truncate">{child.label}</span>
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </div>
               </li>
             );
           })}

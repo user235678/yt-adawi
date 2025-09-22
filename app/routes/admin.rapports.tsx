@@ -44,6 +44,16 @@ export default function AdminRapports() {
   const [dateRange, setDateRange] = useState("30-days");
   const itemsPerPage = 10;
 
+  // Filter states
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    minAmount: "",
+    maxAmount: "",
+    productName: "",
+    clientName: "",
+    status: "all"
+  });
+
   // State for API data
   const [reportsSummary, setReportsSummary] = useState<ReportsSummary | null>(null);
   const [salesReport, setSalesReport] = useState<SalesReport | null>(null);
@@ -113,6 +123,36 @@ export default function AdminRapports() {
     { id: "ventes", label: "Ventes", icon: TrendingUp, iconName: "Ventes" },
     { id: "produits", label: "Produits", icon: ShoppingBag, iconName: "Produits" },
   ];
+
+  // Filter functions
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const applyFilters = () => {
+    // Here you would typically refetch data with filters
+    // For now, we'll just close the modal
+    setShowFilters(false);
+  };
+
+  const resetFilters = () => {
+    setFilters({
+      minAmount: "",
+      maxAmount: "",
+      productName: "",
+      clientName: "",
+      status: "all"
+    });
+  };
+
+  const filteredSales = salesReport?.ventes.filter(sale => {
+    const matchesMinAmount = !filters.minAmount || sale.montant >= parseInt(filters.minAmount);
+    const matchesMaxAmount = !filters.maxAmount || sale.montant <= parseInt(filters.maxAmount);
+    const matchesProduct = !filters.productName || sale.produit.toLowerCase().includes(filters.productName.toLowerCase());
+    const matchesClient = !filters.clientName || (sale.client && sale.client.toLowerCase().includes(filters.clientName.toLowerCase()));
+
+    return matchesMinAmount && matchesMaxAmount && matchesProduct && matchesClient;
+  }) || [];
 
   return (
     <div className="space-y-4 sm:space-y-6 p-4 sm:p-0">
@@ -267,13 +307,16 @@ export default function AdminRapports() {
                 <div>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
                     <h3 className="text-base sm:text-lg font-semibold text-gray-900">Détail des ventes</h3>
-                    <button className="flex items-center justify-center sm:justify-start px-3 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    <button
+                      onClick={() => setShowFilters(true)}
+                      className="flex items-center justify-center sm:justify-start px-3 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+                    >
                       <Filter className="w-4 h-4 mr-2" />
                       Filtrer
                     </button>
                   </div>
 
-                  {salesReport && salesReport.ventes.length > 0 ? (
+                  {filteredSales.length > 0 ? (
                     <>
                       <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200">
@@ -297,7 +340,7 @@ export default function AdminRapports() {
                             </tr>
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-200">
-                            {salesReport.ventes.map((sale, index) => (
+                            {filteredSales.map((sale, index) => (
                               <tr key={`${sale.date}-${sale.produit}-${index}`} className="hover:bg-gray-50">
                                 <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
                                   {sale.date}
@@ -328,15 +371,17 @@ export default function AdminRapports() {
                       </div>
 
                       {/* Pagination */}
-                      <div className="mt-4">
-                        <Pagination
-                          currentPage={salesReport.page}
-                          totalPages={salesReport.total_pages}
-                          onPageChange={handlePageChange}
-                          totalItems={salesReport.total_items}
-                          itemsPerPage={itemsPerPage}
-                        />
-                      </div>
+                      {salesReport && (
+                        <div className="mt-4">
+                          <Pagination
+                            currentPage={salesReport.page}
+                            totalPages={salesReport.total_pages}
+                            onPageChange={handlePageChange}
+                            totalItems={salesReport.total_items}
+                            itemsPerPage={itemsPerPage}
+                          />
+                        </div>
+                      )}
                     </>
                   ) : (
                     <div className="text-center py-12">
@@ -445,6 +490,100 @@ export default function AdminRapports() {
           )}
         </div>
       </div>
+
+      {/* Filter Modal */}
+      {showFilters && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-gray-900">Filtrer les ventes</h3>
+                <button
+                  onClick={() => setShowFilters(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {/* Montant minimum */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Montant minimum (F CFA)
+                  </label>
+                  <input
+                    type="number"
+                    value={filters.minAmount}
+                    onChange={(e) => handleFilterChange('minAmount', e.target.value)}
+                    placeholder="Ex: 10000"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent"
+                  />
+                </div>
+
+                {/* Montant maximum */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Montant maximum (F CFA)
+                  </label>
+                  <input
+                    type="number"
+                    value={filters.maxAmount}
+                    onChange={(e) => handleFilterChange('maxAmount', e.target.value)}
+                    placeholder="Ex: 50000"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent"
+                  />
+                </div>
+
+                {/* Nom du produit */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nom du produit
+                  </label>
+                  <input
+                    type="text"
+                    value={filters.productName}
+                    onChange={(e) => handleFilterChange('productName', e.target.value)}
+                    placeholder="Rechercher un produit..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent"
+                  />
+                </div>
+
+                {/* Nom du client */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nom du client
+                  </label>
+                  <input
+                    type="text"
+                    value={filters.clientName}
+                    onChange={(e) => handleFilterChange('clientName', e.target.value)}
+                    placeholder="Rechercher un client..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  onClick={resetFilters}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Réinitialiser
+                </button>
+                <button
+                  onClick={applyFilters}
+                  className="px-4 py-2 text-sm font-medium text-white bg-adawi-gold border border-transparent rounded-lg hover:bg-adawi-gold/90 transition-colors"
+                >
+                  Appliquer
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
