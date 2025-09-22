@@ -185,6 +185,19 @@ export default function AdminOrders() {
     }
   };
 
+  const getPayementInfo = (status: string) => {
+    switch (status) {
+      case "effectué": case "effectue":
+        return { icon: <CheckCircle className="w-4 h-4" />, color: "bg-green-100 text-green-800" };
+      case "en_attente":
+        return { icon: <Clock className="w-4 h-4" />, color: "bg-gray-100 text-gray-800" };
+      case "échoué": case "echoue":
+        return { icon: <XCircle className="w-4 h-4" />, color: "bg-red-100 text-red-800" };
+      default:
+        return { icon: <AlertCircle className="w-4 h-4" />, color: "bg-gray-100 text-gray-800" };
+    }
+  };
+
   return (
     <SellerLayout userName="VENDEUR"> {/* Replace with actual seller name */}
       <h1 className="text-2xl font-bold">Tableau de bord du Vendeur</h1>
@@ -274,6 +287,7 @@ export default function AdminOrders() {
             <th className="border px-4 py-2 text-left">ID</th>
             <th className="border px-4 py-2 text-left">Statut</th>
             <th className="border px-4 py-2 text-left">Paiement</th>
+            <th className="border px-4 py-2 text-left">Méthode</th>
             <th className="border px-4 py-2 text-left">Date</th>
             <th className="border px-4 py-2 text-left">Total</th>
             <th className="border px-4 py-2 text-left">Actions</th>
@@ -282,6 +296,7 @@ export default function AdminOrders() {
         <tbody>
           {filteredOrders.length > 0 ? filteredOrders.map(order => {
             const statusInfo = getStatusInfo(order.status);
+            const payementInfo = getPayementInfo(order.payment_status);
             return (
               <tr key={order.id} className="hover:bg-gray-50">
                 <td className="border px-4 py-2">{order.id}</td>
@@ -290,7 +305,12 @@ export default function AdminOrders() {
                     {statusInfo.icon}<span className="ml-1">{order.status}</span>
                   </span>
                 </td>
-                <td className="border px-4 py-2">{order.payment_status}</td>
+                <td className="border px-4 py-2">
+                  <span className={`px-2 py-1 rounded-full ${payementInfo.color} inline-flex items-center`}>
+                    {payementInfo.icon}<span className="ml-1">{order.payment_status}</span>
+                  </span>
+                </td>
+                <td className="border px-4 py-2">{order.payment_method}</td>
                 <td className="border px-4 py-2">{new Date(order.created_at).toLocaleDateString("fr-FR")}</td>
                 <td className="border px-4 py-2">{order.total} F CFA</td>
                 <td className="border px-4 py-2 flex gap-2">
@@ -301,7 +321,7 @@ export default function AdminOrders() {
             );
           }) : (
             <tr>
-              <td colSpan={6} className="text-center py-4">Aucune commande trouvée</td>
+              <td colSpan={7} className="text-center py-4">Aucune commande trouvée</td>
             </tr>
           )}
         </tbody>

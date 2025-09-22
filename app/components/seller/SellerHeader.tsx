@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Bell } from 'lucide-react';
 import NotificationDropdown from '~/components/admin/NotificationDropdown';
 import NotificationDetailsModal from '~/components/admin/NotificationDetailsModal';
+import { Link } from '@remix-run/react';
 
 // Interface pour les notifications
 interface Notification {
@@ -141,7 +142,7 @@ const SellerHeader: React.FC<SellerHeaderProps> = ({ onMenuClick, userName }) =>
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
-  <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between">
           <button onClick={onMenuClick} className="p-2 text-gray-500 hover:text-gray-700">
             {/* Menu Icon */}
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,6 +166,15 @@ const SellerHeader: React.FC<SellerHeaderProps> = ({ onMenuClick, userName }) =>
                   </span>
                 )}
               </button>
+              <Link
+                to="/seller/panier"
+                className="hidden sm:inline-flex text-gray-400 hover:text-gray-600 transition-colors duration-200 p-2 rounded-full hover:bg-adawi-beige/50 relative"
+              >
+                <svg className="w-6 h-6 hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2 4h12m-8 4a1 1 0 11-2 0 1 1 0 012 0zm8 0a1 1 0 11-2 0 1 1 0 012 0z" />
+                </svg>
+              </Link>
 
               <NotificationDropdown
                 isOpen={isNotificationOpen}

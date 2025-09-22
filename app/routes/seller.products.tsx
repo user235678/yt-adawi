@@ -1076,6 +1076,16 @@ export default function SellerDashboard() {
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <div className="flex items-center justify-center space-x-2">
                             <button
+                            onClick={() => {
+                              setSelectedProduct(product);
+                              setIsAddToCartModalOpen(true);
+                            }}
+                            className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
+                            title="Ajouter au panier"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+                            <button
                               onClick={() => openViewModal(product)}
                               className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
                               title="Voir détails"
