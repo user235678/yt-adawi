@@ -1,8 +1,11 @@
-import type { MetaFunction } from "@remix-run/node";
+import type { MetaFunction, LoaderFunction } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import { useState } from "react";
+import { useLoaderData } from "@remix-run/react";
 import TopBanner from "~/components/TopBanner";
 import Header from "~/components/CompactHeader";
 import Footer from "~/components/Footer";
+import { readToken } from "~/utils/session.server";
 import {
   MessageCircle,
   Mail,
@@ -10,8 +13,82 @@ import {
   Package,
   RefreshCw,
   Ruler,
-  Truck
+  Truck,
+  Plus,
+  MessageSquare,
+  Clock,
+  CheckCircle,
+  AlertCircle
 } from "lucide-react";
+
+interface User {
+  id: string;
+  email: string;
+  full_name: string;
+}
+
+interface Order {
+  id: string;
+  created_at: string;
+  total: number;
+}
+
+interface LoaderData {
+  user: User | null;
+  orders: Order[];
+  token: string;
+  error?: string;
+}
+
+export const loader: LoaderFunction = async ({ request }) => {
+  try {
+    const tokenData = await readToken(request);
+    if (!tokenData) {
+      return json<LoaderData>({
+        user: null,
+        orders: [],
+        token: "",
+      });
+    }
+
+    const token = typeof tokenData === "string"
+      ? (() => {
+          try { return JSON.parse(tokenData)?.access_token || tokenData }
+          catch { return tokenData }
+        })()
+      : tokenData;
+
+    if (!token) {
+      return json<LoaderData>({
+        user: null,
+        orders: [],
+        token: "",
+      });
+    }
+
+    const [userRes, ordersRes] = await Promise.all([
+      fetch("https://showroom-backend-2x3g.onrender.com/auth/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+      fetch("https://showroom-backend-2x3g.onrender.com/orders/", {
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+    ]);
+
+    const user = userRes.ok ? await userRes.json() : null;
+    const orders = ordersRes.ok ? await ordersRes.json() : [];
+
+    return json<LoaderData>({ user, orders, token });
+  } catch (err: any) {
+    console.error("Erreur loader support:", err);
+    return json<LoaderData>({
+      user: null,
+      orders: [],
+      token: "",
+      error: err.message || "Erreur serveur",
+    });
+  }
+};
 
 export const meta: MetaFunction = () => {
   return [
@@ -21,15 +98,18 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Support() {
+  const { user, orders, token, error } = useLoaderData<LoaderData>();
   const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    priority: 'normal',
-    category: 'general',
-    message: ''
+    title: '',
+    description: '',
+    category: 'commande',
+    priority: 'normale',
+    order_id: orders.length > 0 ? orders[0].id : ''
   });
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const toggleSection = (section: string) => {
     setActiveSection(activeSection === section ? null : section);
@@ -40,30 +120,59 @@ export default function Support() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Ticket soumis:', formData);
-    // Logique de soumission du ticket
-    alert('Votre demande a été envoyée avec succès ! Nous vous répondrons dans les plus brefs délais.');
+    setSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const res = await fetch("https://showroom-backend-2x3g.onrender.com/support/tickets", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        setSubmitError(errData.detail?.[0]?.msg || "Erreur lors de la création du ticket");
+      } else {
+        alert('Votre ticket a été créé avec succès ! Nous vous répondrons dans les plus brefs délais.');
+        setShowCreateForm(false);
+        setFormData({
+          title: '',
+          description: '',
+          category: 'commande',
+          priority: 'normale',
+          order_id: orders.length > 0 ? orders[0].id : ''
+        });
+      }
+    } catch (err: any) {
+      setSubmitError(err.message || "Erreur réseau");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const supportChannels = [
-    {
-      title: "Chat en Direct",
-      description: "Assistance immédiate avec notre équipe",
-      icon: "💬",
-      availability: "Lun-Ven 9h-18h",
-      status: "En ligne",
-      action: "Démarrer le chat",
-      color: "bg-green-100 text-green-800"
-    },
+    // {
+    //   title: "Chat en Direct",
+    //   description: "Assistance immédiate avec notre équipe",
+    //   icon: "💬",
+    //   availability: "Lun-Ven 9h-18h",
+    //   status: "En ligne",
+    //   action: "Démarrer le chat",
+    //   color: "bg-green-100 text-green-800"
+    // },
     {
       title: "Email Support",
       description: "Réponse sous 24h maximum",
       icon: "📧",
       availability: "24h/24, 7j/7",
       status: "Disponible",
-      action: "support@adawi.com",
+      action: "sergiodaklu12@gmail.com",
       color: "bg-blue-100 text-blue-800"
     },
     {
@@ -72,7 +181,7 @@ export default function Support() {
       icon: "📞",
       availability: "Lun-Ven 9h-17h",
       status: "Ouvert",
-      action: "+228 90 00 00 00",
+      action: "+228 97732976",
       color: "bg-adawi-gold/20 text-adawi-brown"
     }
   ];
@@ -207,7 +316,7 @@ export default function Support() {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-2 gap-6">
               {supportChannels.map((channel, index) => (
                 <div key={index} className="bg-adawi-beige/30 rounded-2xl p-8 text-center hover:bg-adawi-beige/50 transition-all duration-300">
                   <div className="text-4xl mb-4">{channel.icon}</div>
@@ -222,9 +331,10 @@ export default function Support() {
                   
                   <p className="text-sm text-adawi-brown mb-4 font-medium">{channel.availability}</p>
                   
-                  <button className="bg-adawi-gold text-white px-6 py-3 rounded-full hover:bg-adawi-brown transition-colors duration-300 font-semibold">
+            
+                  <a href="mailto:sergiodaklu12@gmail.com" className="bg-adawi-gold text-white px-6 py-3 rounded-full hover:bg-adawi-brown transition-colors duration-300 font-semibold">
                     {channel.action}
-                  </button>
+                  </a>
                 </div>
               ))}
             </div>
@@ -291,41 +401,29 @@ export default function Support() {
             </div>
 
             <div className="bg-adawi-beige/20 rounded-2xl p-8 border border-adawi-gold/20">
+              {submitError && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-600">{submitError}</p>
+                </div>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-adawi-brown mb-2">
-                      Nom complet *
+                    <label htmlFor="title" className="block text-sm font-medium text-adawi-brown mb-2">
+                      Titre du ticket *
                     </label>
                     <input
                       type="text"
-                      id="name"
-                      name="name"
-                      value={formData.name}
+                      id="title"
+                      name="title"
+                      value={formData.title}
                       onChange={handleInputChange}
                       className="w-full px-4 py-3 border-2 border-adawi-gold/30 rounded-full focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent bg-white text-black placeholder-black/25"
-                      placeholder="votre nom complet"
+                      placeholder="Résumé de votre demande"
                       required
                     />
                   </div>
-                  <div> 
-                    <label htmlFor="email" className="block text-sm font-medium text-adawi-brown mb-2">
-                      Email *
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border-2 border-adawi-gold/30 rounded-full focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent bg-white text-black placeholder-black/25"
-                      placeholder="email@gmail.com"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-6">
                   <div>
                     <label htmlFor="category" className="block text-sm font-medium text-adawi-brown mb-2">
                       Catégorie *
@@ -338,15 +436,18 @@ export default function Support() {
                       className="w-full px-4 py-3 border-2 border-adawi-gold/30 rounded-full focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent bg-white text-black"
                       required
                     >
-                      <option value="general">Question générale</option>
                       <option value="commande">Problème de commande</option>
                       <option value="livraison">Livraison</option>
                       <option value="retour">Retour/Échange</option>
                       <option value="produit">Question produit</option>
                       <option value="paiement">Paiement</option>
                       <option value="technique">Problème technique</option>
+                      <option value="general">Question générale</option>
                     </select>
                   </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
                   <div>
                     <label htmlFor="priority" className="block text-sm font-medium text-adawi-brown mb-2">
                       Priorité *
@@ -358,38 +459,43 @@ export default function Support() {
                       onChange={handleInputChange}
                       className="w-full px-4 py-3 border-2 border-adawi-gold/30 rounded-full focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent bg-white text-black"
                     >
-                      <option value="low">Faible</option>
-                      <option value="normal">Normal</option>
-                      <option value="high">Élevée</option>
-                      <option value="urgent">Urgent</option>
+                      <option value="basse">Basse</option>
+                      <option value="normale">Normale</option>
+                      <option value="haute">Élevée</option>
+                      <option value="urgente">Urgente</option>
                     </select>
                   </div>
+                  {orders.length > 0 && (
+                    <div>
+                      <label htmlFor="order_id" className="block text-sm font-medium text-adawi-brown mb-2">
+                        Commande associée (optionnel)
+                      </label>
+                      <select
+                        id="order_id"
+                        name="order_id"
+                        value={formData.order_id}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border-2 border-adawi-gold/30 rounded-full focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent bg-white text-black"
+                      >
+                        <option value="">Aucune commande</option>
+                        {orders.map((order) => (
+                          <option key={order.id} value={order.id}>
+                            Commande #{order.id} - {new Date(order.created_at).toLocaleDateString()}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </div>
 
                 <div>
-                  <label htmlFor="subject" className="block text-sm font-medium text-adawi-brown mb-2">
-                    Sujet *
-                  </label>
-                  <input
-                    type="text"
-                    id="subject"
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border-2 border-adawi-gold/30 rounded-full focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent bg-white text-black placeholder-black/25"
-                    placeholder="Résumé de votre demande"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-adawi-brown mb-2">
+                  <label htmlFor="description" className="block text-sm font-medium text-adawi-brown mb-2">
                     Description détaillée *
                   </label>
                   <textarea
-                    id="message"
-                    name="message"
-                    value={formData.message}
+                    id="description"
+                    name="description"
+                    value={formData.description}
                     onChange={handleInputChange}
                     rows={6}
                     className="w-full px-4 py-3 border-2 border-adawi-gold/30 rounded-2xl focus:outline-none focus:ring-2 focus:ring-adawi-gold focus:border-transparent bg-white text-black placeholder-black/25 resize-none"
@@ -417,9 +523,20 @@ export default function Support() {
                 <div className="text-center">
                   <button
                     type="submit"
-                    className="bg-adawi-brown text-white px-8 py-4 rounded-full font-semibold hover:bg-adawi-gold transition-colors duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                    disabled={submitting}
+                    className="bg-adawi-brown text-white px-8 py-4 rounded-full font-semibold hover:bg-adawi-gold transition-colors duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   >
-                    Envoyer ma Demande
+                    {submitting ? (
+                      <div className="flex items-center justify-center">
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Envoi en cours...
+                      </div>
+                    ) : (
+                      'Envoyer ma Demande'
+                    )}
                   </button>
                 </div>
               </form>
@@ -507,10 +624,10 @@ export default function Support() {
               </a>
               
               <a
-                href="mailto:support@adawi.com"
+                href="mailto:sergiodaklu12@gmail.com"
                 className="border-2 border-white text-white px-8 py-4 rounded-full font-semibold hover:bg-white hover:text-adawi-brown transition-all duration-300 hover:shadow-xl transform hover:scale-105"
               >
-                support@adawi.com
+                sergiodaklu12@gmail.com
               </a>
             </div>
           </div>
