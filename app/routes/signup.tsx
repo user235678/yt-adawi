@@ -1,7 +1,7 @@
 // app/routes/signup.tsx
 import { MetaFunction, ActionFunction, json, redirect } from "@remix-run/node";
-import { Form, useNavigation, useActionData } from "@remix-run/react";
-import { useState } from "react";
+import { Form, useNavigation, useActionData, useNavigate } from "@remix-run/react";
+import { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import TopBanner from "~/components/TopBanner";
 import Footer from "~/components/Footer";
@@ -45,7 +45,7 @@ export const action: ActionFunction = async ({ request }) => {
       );
     }
 
-    return redirect("/login?success=1");
+    return json({ success: true });
   } catch (err: any) {
     return json({ error: err.message || "Erreur serveur" }, { status: 500 });
   }
@@ -53,9 +53,100 @@ export const action: ActionFunction = async ({ request }) => {
 
 export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
+  const [buttonState, setButtonState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState("");
   const navigation = useNavigation();
+  const actionData = useActionData<{ error?: string; success?: boolean }>();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (actionData?.error) {
+      setErrorMessage(actionData.error);
+      setButtonState('error');
+    } else if (actionData?.success) {
+      setButtonState('success');
+      // Redirection après 5 secondes vers la page de login
+      setTimeout(() => {
+        navigate("/login?success=1");
+      }, 2000);
+    }
+  }, [actionData, navigate]);
+
   const isSubmitting = navigation.state === "submitting";
-  const actionData = useActionData<{ error?: string }>();
+  const isDisabled = isSubmitting || buttonState === 'success' || buttonState === 'loading';
+
+  useEffect(() => {
+    if (isSubmitting && buttonState !== 'success') {
+      setButtonState('loading');
+      setErrorMessage("");
+    }
+  }, [isSubmitting, buttonState]);
+
+  // Composant SVG pour l'animation de succès (style Stripe)
+  const SuccessAnimation = () => (
+    <div className="relative w-8 h-8">
+      <svg
+        className="w-8 h-8"
+        viewBox="0 0 32 32"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        {/* Cercle de fond */}
+        <circle
+          cx="16"
+          cy="16"
+          r="14"
+          stroke="rgba(255,255,255,0.2)"
+          strokeWidth="2"
+          fill="none"
+        />
+        {/* Cercle animé */}
+        <circle
+          cx="16"
+          cy="16"
+          r="14"
+          stroke="white"
+          strokeWidth="2"
+          fill="none"
+          strokeLinecap="round"
+          strokeDasharray="87.96"
+          strokeDashoffset={buttonState === 'success' ? 0 : 87.96}
+          transform="rotate(-90 16 16)"
+          style={{
+            transition: 'stroke-dashoffset 1.5s cubic-bezier(0.4, 0.0, 0.2, 1)',
+          }}
+        />
+        {/* Coche complète en une seule fois avec animation de dessin */}
+        <g
+          opacity={buttonState === 'success' ? 1 : 0}
+          style={{
+            transition: 'opacity 0.2s ease-out',
+            transitionDelay: '1.5s',
+          }}
+        >
+          <path
+            d="M10 16.5l3.5 3.5L22 11"
+            stroke="white"
+            strokeWidth="2.5"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeDasharray="15"
+            strokeDashoffset={buttonState === 'success' ? 0 : 15}
+            style={{
+              transition: 'stroke-dashoffset 0.8s cubic-bezier(0.4, 0.0, 0.2, 1)',
+              transitionDelay: '1.7s',
+            }}
+          />
+        </g>
+      </svg>
+    </div>
+  );
+
+  // Spinner de chargement
+  const LoadingSpinner = () => (
+    <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+  );
 
   return (
     <>
@@ -82,8 +173,10 @@ export default function Signup() {
             S'INSCRIRE
           </div>
 
-          {actionData?.error && (
-            <p className="text-red-500 text-center mb-4">{actionData.error}</p>
+          {errorMessage && buttonState === 'error' && (
+            <div className="w-full mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600 text-sm text-center">{errorMessage}</p>
+            </div>
           )}
 
           <Form method="post" className="space-y-4">
@@ -92,6 +185,7 @@ export default function Signup() {
                 type="text"
                 name="name"
                 placeholder="Nom"
+                disabled={isDisabled}
                 required
                 className="w-full bg-transparent outline-none border-none text-[18px] text-[#555] py-5 px-2 tracking-wide"
               />
@@ -102,6 +196,7 @@ export default function Signup() {
                 type="email"
                 name="email"
                 placeholder="Email"
+                disabled={isDisabled}
                 required
                 className="w-full bg-transparent outline-none border-none text-[18px] text-[#555] py-5 px-2 tracking-wide"
               />
@@ -112,27 +207,38 @@ export default function Signup() {
                 type={showPassword ? "text" : "password"}
                 name="password"
                 placeholder="Mot de passe"
+                disabled={isDisabled}
                 required
                 className="w-full bg-transparent outline-none border-none text-[18px] text-[#555] py-5 px-2 pr-10 tracking-wide"
               />
               <div
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"
-                onClick={() => setShowPassword((prev) => !prev)}
+                onClick={() => !isDisabled && setShowPassword((prev) => !prev)}
+                aria-label="Afficher/masquer le mot de passe"
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </div>
             </div>
 
+            {/* Bouton avec animation Stripe */}
             <button
               type="submit"
-              disabled={isSubmitting}
-              className={`w-full h-[60px] mt-6 rounded-full text-white text-[20px] font-bold bg-gradient-to-r from-adawi-brown via-adawi-brown-light to-adawi-gold-light shadow-md transition duration-500 hover:bg-right flex items-center justify-center ${isSubmitting ? "opacity-70 cursor-not-allowed" : ""
-                }`}
+              disabled={isDisabled}
+              className={`
+                w-full h-[60px] mt-6 rounded-full text-white text-[20px] font-bold 
+                bg-gradient-to-r from-adawi-brown via-adawi-brown-light to-adawi-gold-light 
+                shadow-md transition-all duration-300 
+                flex items-center justify-center relative overflow-hidden
+                ${isDisabled ? "cursor-not-allowed" : "hover:shadow-lg hover:scale-[1.02]"}
+                ${buttonState === 'success' ? 'bg-green-500' : ''}
+              `}
             >
-              {isSubmitting ? (
-                <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin" />
+              {buttonState === 'loading' ? (
+                <LoadingSpinner />
+              ) : buttonState === 'success' ? (
+                <SuccessAnimation />
               ) : (
-                "S'inscrire"
+                <span className="transition-opacity duration-200">S'inscrire</span>
               )}
             </button>
           </Form>

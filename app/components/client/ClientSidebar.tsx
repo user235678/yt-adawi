@@ -102,7 +102,8 @@ export default function ClientSidebar({ onClose }: ClientSidebarProps) {
                 <span className="ml-auto">
                   <Icon1
                     className="w-5 h-5 text-red-500"
-                    title="Non disponible pour le moment"
+
+                    title="Fonctionnalité désactivée"                    
                   />
                 </span>
               )}
