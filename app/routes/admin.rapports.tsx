@@ -200,9 +200,9 @@ export default function AdminRapports() {
               <p className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
                 {reportsSummary ? reportsSummary.total_orders.toLocaleString() : "—"}
               </p>
-              <p className={`text-sm ${reportsSummary && reportsSummary.orders_growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {/* <p className={`text-sm ${reportsSummary && reportsSummary.orders_growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {reportsSummary ? `${reportsSummary.orders_growth >= 0 ? '+' : ''}${reportsSummary.orders_growth}% ce mois` : "—"}
-              </p>
+              </p> */}
             </div>
             <div className="p-2 sm:p-3 bg-green-100 rounded-lg flex-shrink-0">
               <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
@@ -217,9 +217,9 @@ export default function AdminRapports() {
               <p className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
                 {reportsSummary ? `${(reportsSummary.total_revenue / 1000).toFixed(1)}K F CFA` : "—"}
               </p>
-              <p className={`text-sm ${reportsSummary && reportsSummary.revenue_growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {/* <p className={`text-sm ${reportsSummary && reportsSummary.revenue_growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {reportsSummary ? `${reportsSummary.revenue_growth >= 0 ? '+' : ''}${reportsSummary.revenue_growth}% ce mois` : "—"}
-              </p>
+              </p> */}
             </div>
             <div className="p-2 sm:p-3 bg-blue-100 rounded-lg flex-shrink-0">
               <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
@@ -234,9 +234,9 @@ export default function AdminRapports() {
               <p className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
                 {reportsSummary ? reportsSummary.total_nouveaux_clients.toLocaleString() : "—"}
               </p>
-              <p className={`text-sm ${reportsSummary && reportsSummary.customers_growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {/* <p className={`text-sm ${reportsSummary && reportsSummary.customers_growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {reportsSummary ? `${reportsSummary.customers_growth >= 0 ? '+' : ''}${reportsSummary.customers_growth}% ce mois` : "—"}
-              </p>
+              </p> */}
             </div>
             <div className="p-2 sm:p-3 bg-purple-100 rounded-lg flex-shrink-0">
               <Users className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
@@ -251,7 +251,7 @@ export default function AdminRapports() {
               <p className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
                 {reportsSummary ? reportsSummary.total_produits_vendus.toLocaleString() : "—"}
               </p>
-              <p className="text-sm text-gray-600 truncate">Commission: {reportsSummary ? `${reportsSummary.commission_collected.toLocaleString()} F CFA` : "—"}</p>
+              {/* <p className="text-sm text-gray-600 truncate">Commission: {reportsSummary ? `${reportsSummary.commission_collected.toLocaleString()} F CFA` : "—"}</p> */}
             </div>
             <div className="p-2 sm:p-3 bg-orange-100 rounded-lg flex-shrink-0">
               <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />

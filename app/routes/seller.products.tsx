@@ -837,7 +837,7 @@ export default function SellerDashboard() {
           </div>
 
           {/* Cartes de statistiques améliorées */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 mb-4">
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
                 <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
@@ -879,7 +879,7 @@ export default function SellerDashboard() {
               )}
             </div>
 
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            {/* <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
                 <div className="p-3 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl">
                   <DollarSign className="w-6 h-6 text-white" />
@@ -892,9 +892,9 @@ export default function SellerDashboard() {
                 </div>
               </div>
               <span className="text-sm text-gray-600">F CFA</span>
-            </div>
+            </div> */}
 
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            {/* <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
                 <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl">
                   <TrendingUp className="w-6 h-6 text-white" />
@@ -907,7 +907,7 @@ export default function SellerDashboard() {
                 </div>
               </div>
               <span className="text-sm text-gray-600">F CFA</span>
-            </div>
+            </div> */}
           </div>
 
           {/* Section des produits améliorée */}

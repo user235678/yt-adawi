@@ -23,7 +23,7 @@ export default function SellerSidebar({ onClose }: SellerSidebarProps) {
     { id: "Dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/seller/dashboard" },
     { id: "produits", label: "Produits", icon: Package, path: "/seller/products" },
     { id: "orders", label: "Commandes", icon: ShoppingCart, path: "/seller/orders" },
-    { id: "support", label: "Support", icon: MessageSquare, path: "/seller/support" },
+    { id: "Tickets", label: "Tickets ", icon: MessageSquare, path: "/seller/support" },
     { id: "remboursements", label: "Remboursements", icon: BarChart3, path: "/seller/refund" },
     { id: "blog", label: "Blog", icon: MessageSquare, path: "/seller/blog" },
     { id: "appointments", label: "Rendez-vous", icon: MessageSquare, path: "/seller/appointments" },

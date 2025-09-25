@@ -246,7 +246,7 @@ export default function ClientBooking() {
                     )}
 
                     {/* Debug Info - Responsive (À supprimer en production) */}
-                    <div className="mb-4 sm:mb-6 bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
+                    {/* <div className="mb-4 sm:mb-6 bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
                         <h3 className="font-bold text-blue-800 mb-2 text-sm sm:text-base">Debug Info:</h3>
                         <div className="text-blue-700 text-xs sm:text-sm space-y-1">
                             <p>Total slots: {initialSlots?.length || 0}</p>
@@ -264,7 +264,7 @@ export default function ClientBooking() {
                                 </pre>
                             </details>
                         )}
-                    </div>
+                    </div> */}
 
                     {/* Header - Responsive */}
                     <div className="text-center mb-6 sm:mb-8">

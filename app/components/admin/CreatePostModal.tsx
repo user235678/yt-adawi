@@ -9,7 +9,7 @@ interface CreatePostModalProps {
 }
 
 export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
-  const actionData = useActionData();
+  const actionData = useActionData() as { error?: any; success?: boolean } | undefined;
   const navigation = useNavigation();
   const [tags, setTags] = useState<string>("");
 
@@ -19,7 +19,7 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white w-full max-w-md md:max-w-lg rounded-xl shadow-lg p-6 relative">
+        <div className="bg-white w-full max-w-4xl rounded-xl shadow-lg p-8 relative">
         {/* Bouton fermer */}
         <button
           onClick={onClose}
@@ -47,7 +47,7 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
         <Form
           method="post"
           encType="multipart/form-data"
-          className="space-y-4"
+          className="grid grid-cols-1 md:grid-cols-2 gap-4"
         >
           <div>
             <label className="block font-medium">Titre *</label>
@@ -65,15 +65,17 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
               name="excerpt"
               required
               className="w-full p-2 border rounded"
+              rows={3}
             />
           </div>
 
-          <div>
+          <div className="md:col-span-2">
             <label className="block font-medium">Contenu *</label>
             <textarea
               name="content"
               required
               className="w-full p-2 border rounded h-40"
+              rows={10}
             />
           </div>
 
@@ -86,7 +88,7 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
             >
               <option value="draft">Brouillon</option>
               <option value="published">Publié</option>
-              <option value="published">archivé</option>
+              <option value="archived">Archivé</option>
             </select>
           </div>
 
@@ -101,7 +103,7 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
             />
           </div>
 
-          <div>
+          <div className="md:col-span-2">
             <label className="block font-medium">Image de couverture</label>
             <input
               type="file"
@@ -111,7 +113,7 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
             />
           </div>
 
-          <div className="flex justify-end gap-3">
+          <div className="md:col-span-2 flex justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
@@ -122,7 +124,7 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="px-4 py-2 bg-adawi-gold text-white rounded hover:bg-adawi-gold/90 disabled:opacity-50"
             >
               {isSubmitting ? "Envoi en cours..." : "Créer l'article"}
             </button>

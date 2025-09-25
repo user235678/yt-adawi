@@ -16,6 +16,8 @@ import {
   Clock,
   ArrowLeft,
   Store,
+  FileText,
+  RotateCcw,
   ChevronDown,
   ChevronRight,
   Package as Package2
@@ -45,10 +47,10 @@ export default function AdminSidebar({ onClose }: AdminSidebarProps) {
       ]
     },
     { id: "orders", label: "Commandes", icon: ShoppingCart, path: "/admin/orders" },
-    { id: "support", label: "Support", icon: MessageSquare, path: "/admin/support", },
+    { id: "Tickets", label: "Tickets", icon: MessageSquare, path: "/admin/support", },
     { id: "rapports", label: "Rapports", icon: BarChart3, path: "/admin/rapports" },
-    { id: "Blogs", label: "Blog", icon: TableOfContents, path: "/admin/blog" },
-    { id: "refunds", label: "Remboursements", icon: TableOfContents, path: "/admin/refunds" },
+    { id: "Blogs", label: "Blog", icon: FileText, path: "/admin/blog" },
+  { id: "refunds", label: "Remboursements", icon: RotateCcw, path: "/admin/refunds" },
     { id: "Rendez-Vous", label: "Rendez-Vous", icon: Settings, path: "/admin/appointments" },
     { id: "availability", label: "Disponibilités", icon: Clock, path: "/admin/availability" },
     { id: "settings", label: "Paramètres", icon: Settings, path: "/admin/settings" },

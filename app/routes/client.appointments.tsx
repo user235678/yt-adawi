@@ -368,6 +368,7 @@ export default function Appointments() {
               required
             >
               <option value="">Sélectionnez un type de service</option>
+              <option value="prise_de_mesure">Prise de mesure</option>
               <option value="consultation">Consultation</option>
               <option value="suivi">Suivi</option>
               <option value="urgence">Urgence</option>
@@ -550,15 +551,16 @@ export default function Appointments() {
                 <label htmlFor="location" className="block font-medium mb-1">
                   Lieu du rendez-vous
                 </label>
-                <input
-                  type="text"
+                <select
                   id="location"
                   name="location"
                   defaultValue={actionData?.fields?.location || ""}
                   className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-adawi-gold focus:border-transparent"
-                  placeholder="Adresse ou lieu de rendez-vous"
-                  maxLength={200}
-                />
+                >
+                  <option value="">Sélectionnez un lieu</option>
+                  <option value="Boutique">Boutique</option>
+                  <option value="Domicile">Domicile</option>
+                </select>
               </div>
             </div>
 

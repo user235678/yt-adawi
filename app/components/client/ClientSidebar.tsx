@@ -25,7 +25,7 @@ export default function ClientSidebar({ onClose }: ClientSidebarProps) {
   const navigation = [
     { name: "Profil", href: "/client/user", icon: User },
     { name: "Mes Commandes", href: "/client/orders", icon: ShoppingBag },
-    { name: "Tickets", href: "/client/tickets", icon: MessageSquare },
+    { name: "Support", href: "/client/tickets", icon: MessageSquare },
     { name: "Remboursements", href: "/client/refund", icon: TicketX },
     { name: "Suivi", href: "/client/tracking", icon: TruckElectric },
     { name: "Rendez-vous", href: "/client/appointments", icon: Clock1 },

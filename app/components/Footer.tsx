@@ -16,6 +16,7 @@ export default function Footer() {
       { name: "Homme", href: "/boutique" },
       { name: "Femme", href: "/boutique" },
       { name: "Enfants", href: "/boutique" },
+      { name: "Couple", href: "/boutique" },
     ],
     informations: [
       { name: "À propos", href: "/A-propos" },
@@ -26,7 +27,7 @@ export default function Footer() {
     ],
     aide: [
       { name: "FAQ", href: "/faq" },
-      { name: "Livraison", href: "/livraison" },
+      // { name: "Livraison", href: "/livraison" },
       { name: "Retours", href: "/retour" },
       { name: "Guide des tailles", href: "/guide-tailles" },
       { name: "Support", href: "/support" },
