@@ -6,7 +6,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
   try {
     const token = await readToken(request);
     if (!token) {
-      return json({ error: "Non authentifié" }, { status: 401 });
+      // No token: treat as no active promotion for unauthenticated users
+      return json(null);
     }
 
     const response = await fetch(`${API_BASE}/promotions/active`, {
@@ -18,16 +19,30 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
 
     if (!response.ok) {
-      if (response.status === 401) {
-        return json({ error: "Non authentifié" }, { status: 401 });
+      if (response.status === 404 || response.status === 401) {
+        // No active promotion or invalid token: return null without error
+        return json(null);
       }
       return json({ error: "Erreur lors de la récupération de la promotion" }, { status: response.status });
     }
 
     const promotionData = await response.json();
-    if (promotionData.is_active) {
-      return json(promotionData);
+    console.log("Promotion data from API:", promotionData);
+
+    let activePromotion = null;
+
+    if (Array.isArray(promotionData)) {
+      // If response is an array, find the first active promotion
+      activePromotion = promotionData.find(promo => promo.is_active === true || promo.status === "active");
+    } else if (promotionData && (promotionData.is_active === true || promotionData.status === "active")) {
+      // If single object and active
+      activePromotion = promotionData;
+    }
+
+    if (activePromotion) {
+      return json(activePromotion);
     } else {
+      console.log("No active promotion found, returning null");
       return json(null);
     }
   } catch (error) {

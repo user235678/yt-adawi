@@ -22,24 +22,43 @@ export function usePromotion() {
   useEffect(() => {
     const fetchPromotion = async () => {
       try {
+        setLoading(true);
+        setError(null);
+        
+        console.log("Fetching promotion from /api/promotions/active");
+        
         const response = await fetch('/api/promotions/active', {
-          credentials: 'include' // Include cookies for session-based auth
+          method: 'GET',
+          credentials: 'include', // Important pour Remix sessions
+          headers: {
+            'Accept': 'application/json',
+          }
         });
 
+        console.log("Response status:", response.status);
+        console.log("Response ok:", response.ok);
+
         if (response.ok) {
-          const promotionData = await response.json();
-          if (promotionData.is_active) {
-            setPromotion(promotionData);
+          const data = await response.json();
+          console.log("Data received:", data);
+          
+          if (data && !data.error) {
+            setPromotion(data);
+            console.log("Promotion set:", data);
           } else {
+            console.log("No promotion or error in data");
             setPromotion(null);
           }
         } else if (response.status === 401) {
-          // Not authenticated or no active promotion
-          setPromotion(null);
+          console.log("Authentication required");
+          setError('Non authentifié');
         } else {
-          setError('Erreur lors de la récupération de la promotion');
+          const errorData = await response.json().catch(() => ({}));
+          console.log("Error response:", errorData);
+          setError(errorData.error || 'Erreur lors de la récupération');
         }
       } catch (err) {
+        console.error('Network error:', err);
         setError('Erreur réseau');
       } finally {
         setLoading(false);
