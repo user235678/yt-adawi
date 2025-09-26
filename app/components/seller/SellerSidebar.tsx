@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@remix-run/react";
-//icones pour appointments
+//icones pour disponibilités
 import {
   LayoutDashboard,
   Package,
@@ -9,7 +9,11 @@ import {
   LogOut,
   X,
   Store,
-  ArrowLeft
+  ArrowLeft,
+  FileText,
+  RotateCcw,
+  Clock10,
+  CalendarCheck
 } from "lucide-react";
 
 interface SellerSidebarProps {
@@ -24,10 +28,10 @@ export default function SellerSidebar({ onClose }: SellerSidebarProps) {
     { id: "produits", label: "Produits", icon: Package, path: "/seller/products" },
     { id: "orders", label: "Commandes", icon: ShoppingCart, path: "/seller/orders" },
     { id: "Tickets", label: "Tickets ", icon: MessageSquare, path: "/seller/support" },
-    { id: "remboursements", label: "Remboursements", icon: BarChart3, path: "/seller/refund" },
-    { id: "blog", label: "Blog", icon: MessageSquare, path: "/seller/blog" },
-    { id: "appointments", label: "Rendez-vous", icon: MessageSquare, path: "/seller/appointments" },
-    { id: "availability", label: "Disponibilités", icon: BarChart3, path: "/seller/availability" },
+    { id: "remboursements", label: "Remboursements", icon: RotateCcw, path: "/seller/refund" },
+    { id: "blog", label: "Blog", icon: FileText, path: "/seller/blog" },
+    { id: "appointments", label: "Rendez-vous", icon: Clock10, path: "/seller/appointments" },
+    { id: "availability", label: "Disponibilités", icon: CalendarCheck, path: "/seller/availability" },
   ];
 
   const handleLinkClick = () => {

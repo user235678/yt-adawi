@@ -17,27 +17,26 @@ import Header from "~/components/CompactHeader";
 
 export const meta: MetaFunction = () => [{ title: "The Providers - Login" }];
 
-/** Si déjà connecté, on redirige vers /boutique */
+/** Si déjà connecté, on redirige vers la bonne route selon le rôle */
 export const loader: LoaderFunction = async ({ request }) => {
   const token = await readToken(request);
   if (!token) {
     return null; // pas connecté → rester sur la page
   }
 
-  // Check if just logged in, don't redirect immediately to show animation
-  const cookieHeader = request.headers.get("cookie") || "";
-  if (cookieHeader.includes("just_logged_in=true")) {
-    // Clear the flag by setting it to expire
-    return new Response(null, {
-      headers: {
-        "Set-Cookie": "just_logged_in=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0",
-      },
-    });
-  }
-
   const user = await getUserProfile(request);
   if (!user) {
     return null; // token invalide → rester sur la page
+  }
+
+  // Vérifier le referer pour éviter la double redirection
+  const referer = request.headers.get("referer");
+  const url = new URL(request.url);
+  
+  // Si on vient de cette même page de login, ne pas rediriger immédiatement
+  // pour laisser l'animation se faire
+  if (referer && (referer.includes("/login") || referer === url.origin + url.pathname)) {
+    return null;
   }
 
   // choisir la bonne route selon le rôle
@@ -58,7 +57,7 @@ export const loader: LoaderFunction = async ({ request }) => {
       target = "/boutique";
   }
 
-  throw redirect(target);
+  return redirect(target);
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -105,10 +104,74 @@ export const action: ActionFunction = async ({ request }) => {
     };
 
     const headers = await commitToken(JSON.stringify(sessionData));
-    // Set a flag to prevent loader redirect immediately
-    headers["Set-Cookie"] += "; just_logged_in=true; Path=/; HttpOnly; SameSite=Lax";
 
-    return json({ success: true }, {
+    // Créer un faux request object avec les headers de session
+    const mockRequest = {
+      headers: {
+        get: (name: string) => {
+          if (name.toLowerCase() === 'cookie') {
+            // Extraire le cookie de session des headers retournés par commitToken
+            const cookieHeaders = Array.isArray(headers['Set-Cookie']) 
+              ? headers['Set-Cookie'] 
+              : [headers['Set-Cookie']].filter(Boolean);
+            return cookieHeaders.join('; ');
+          }
+          return null;
+        }
+      }
+    } as Request;
+
+    // Utiliser getUserProfile existant au lieu de fetch manuel
+    const user = await getUserProfile(mockRequest);
+    let userRole = user?.role;
+    
+    console.log('User from getUserProfile:', user);
+    console.log('Extracted role:', userRole);
+
+    // Si on n'arrive pas à récupérer le rôle depuis getUserProfile, 
+    // essayons de le récupérer depuis la réponse de login
+    if (!userRole && data.user) {
+      const fallbackRole = data.user.role || data.user.user_type || data.user.type;
+      console.log('Role from login response (fallback):', fallbackRole);
+      userRole = fallbackRole;
+    }
+    
+    // Déterminer la cible de redirection selon le rôle
+    let target = "/boutique";
+    if (userRole) {
+      console.log('Processing role:', userRole);
+      switch (userRole.toLowerCase()) {
+        case "admin":
+        case "administrator":
+          target = "/admin/dashboard";
+          break;
+        case "vendeur":
+        case "seller":
+        case "vendor":
+          target = "/seller/dashboard";
+          break;
+        case "client":
+        case "customer":
+        case "user":
+          target = "/boutique";
+          break;
+        default:
+          console.log('Unknown role, defaulting to /boutique');
+          target = "/boutique";
+      }
+    } else {
+      console.log('No role found, defaulting to /boutique');
+    }
+
+    console.log('Final target redirect:', target);
+
+    // RETOURNER LE SUCCESS AVEC LE TARGET POUR L'ANIMATION
+    // au lieu de rediriger immédiatement
+    return json({ 
+      success: true, 
+      target,
+      user: user 
+    }, {
       headers,
     });
 
@@ -125,7 +188,7 @@ export default function Login() {
   const [buttonState, setButtonState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState("");
   const navigation = useNavigation();
-  const actionData = useActionData<{ error?: string; success?: boolean }>();
+  const actionData = useActionData<{ error?: string; success?: boolean; target?: string; user?: any }>();
   const navigate = useNavigate();
 
   // Récupérer les paramètres d'erreur de l'URL
@@ -169,10 +232,11 @@ export default function Login() {
       setButtonState('error');
     } else if (actionData?.success) {
       setButtonState('success');
-      // Redirection après 5 secondes (temps pour voir l'animation complète)
+      console.log('Login success, redirecting to:', actionData.target);
+      // Redirection après l'animation complète
       setTimeout(() => {
-        navigate("/boutique");
-      }, 10000);
+        navigate(actionData.target || "/boutique");
+      }, 2500); // Temps 
     }
   }, [actionData, navigate]);
 

@@ -13,11 +13,20 @@ interface TopCategoriesProps {
 
 export default function TopCategories({ data }: TopCategoriesProps) {
   const categories = data.sales_by_category.map((cat, index) => ({
-    name: cat.category_name,
-    value: cat.total_sales,
-    color: ["#1f2937", "#6b7280", "#9ca3af", "#d1d5db"][index % 4],
-    percentage: cat.percentage,
-  }));
+  name: cat.category_name,
+  value: cat.total_sales,
+  color: [
+    "#3B82F6", // bleu
+    "#10B981", // vert
+    "#F59E0B", // orange
+    "#8B5CF6", // violet
+    "#EF4444", // rouge
+    "#14B8A6", // cyan
+    "#EC4899", // rose
+    "#84CC16", // lime
+  ][index % 8],
+  percentage: cat.percentage,
+}));
 
   const total = categories.reduce((sum, cat) => sum + cat.value, 0);
 
