@@ -446,7 +446,7 @@ export default function CheckoutCustomPage() {
           <div>
             <h2 className="text-xl font-semibold mb-4 text-adawi-brown">Photos de référence</h2>
             <div>
-              <label className="block text-sm font-medium mb-2">Téléchargez des photos du vêtement souhaité</label>
+              <label className="block text-sm font-medium mb-2">Veillez nous faire parvenir votre photo</label>
               <input
                 type="file"
                 name="photos"
