@@ -28,6 +28,8 @@ interface ApiProduct {
     name: string;
     description: string;
     price: number;
+    discounted_price?: number | null;
+    discount_amount?: number | null;
     cost_price?: number;
     currency: string;
     category_id: string;
@@ -92,6 +94,8 @@ export default function Boutique() {
             name: apiProduct.name,
             price: `${apiProduct.price} ${apiProduct.currency.toLowerCase()}`,
             priceValue: apiProduct.price,
+            discounted_price: apiProduct.discounted_price,
+            discount_amount: apiProduct.discount_amount,
             image: apiProduct.images[0] || "/placeholder.jpg",
             hoverImage: apiProduct.hover_images?.[0] || apiProduct.images[1],
             image1: apiProduct.images[1],

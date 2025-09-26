@@ -12,11 +12,13 @@ export interface Product {
   id: string;
   name: string;
   price: string;
+  priceValue: number;
+  discounted_price?: number | null;
+  discount_amount?: number | null;
   image: string;
   hoverImage?: string; // Image qui apparaît au survol
   image1?: string;     // Nouvelle image supplémentaire 1
   image2?: string;     // Nouvelle image supplémentaire 2
-  priceValue: number;
   date: Date;
   category: ProductCategory;
   size?: ProductSize;  // Ancien format (gardé pour compatibilité)
@@ -148,9 +150,22 @@ const ProductGrid = ({ products, selectedSize, selectedColor, onProductClick }: 
               <h3 className="text-xs sm:text-sm font-medium text-black mb-1 transition-colors duration-300 line-clamp-2 leading-tight">
                 {product.name}
               </h3>
-              <p className="text-sm sm:text-base font-bold text-black">
-                {product.price}
-              </p>
+              <div className="flex items-center space-x-2">
+                {product.discounted_price && product.discounted_price < product.priceValue ? (
+                  <>
+                    <p className="text-sm sm:text-base font-bold text-adawi-gold">
+                      {product.discounted_price.toLocaleString()} F CFA
+                    </p>
+                    <p className="text-xs sm:text-sm text-gray-500 line-through">
+                      {product.priceValue.toLocaleString()} F CFA
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-sm sm:text-base font-bold text-black">
+                    {product.price}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         ))}

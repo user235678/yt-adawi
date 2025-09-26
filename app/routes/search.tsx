@@ -53,6 +53,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
       name: product.name,
       price: `${product.price.toLocaleString()} F CFA`,
       priceValue: product.price,
+      discounted_price: product.discounted_price,
+      discount_amount: product.discount_amount,
       image: product.images && product.images.length > 0 ? product.images[0] : "/placeholder.png",
       hoverImage: product.hover_images && product.hover_images.length > 0 ? product.hover_images[0] : undefined,
       image1: product.images && product.images.length > 1 ? product.images[1] : undefined,
@@ -67,7 +69,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       inStock: product.is_active && product.stock > 0,
     }));
 
-    return { query, results };
+    return { query, results, apiProducts };
   } catch (error) {
     console.error("Erreur lors de la recherche:", error);
     // En cas d'erreur, retourner des résultats vides
@@ -76,7 +78,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function Search() {
-  const { query, results } = useLoaderData<typeof loader>();
+  const { query, results, apiProducts } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
 
   // État pour gérer la modale produit
@@ -508,7 +510,18 @@ export default function Search() {
                         </h3>
 
                         <div className="product-price">
-                          {result.price}
+                          {result.discounted_price && result.discounted_price < result.priceValue ? (
+                            <div className="flex items-center gap-2">
+                              <span className="text-adawi-gold font-bold">
+                                {result.discounted_price.toLocaleString()} F CFA
+                              </span>
+                              <span className="text-gray-500 line-through text-sm">
+                                {result.priceValue.toLocaleString()} F CFA
+                              </span>
+                            </div>
+                          ) : (
+                            <span>{result.price}</span>
+                          )}
                         </div>
 
                         {/* Stock info */}
@@ -579,6 +592,7 @@ export default function Search() {
         product={selectedProduct}
         isOpen={isProductModalOpen}
         onClose={handleCloseProductModal}
+        apiProducts={apiProducts}
       />
 
       {/* Modale d'image */}

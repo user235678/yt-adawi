@@ -18,6 +18,8 @@ interface ApiProduct {
   name: string;
   description: string;
   price: number;
+  discounted_price?: number | null;
+  discount_amount?: number | null;
   cost_price?: number;
   currency: string;
   category_id: string;
@@ -621,9 +623,36 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
                   {product.category?.charAt(0).toUpperCase() + product.category?.slice(1) || 'Produit'}
                 </p>
                 <h3 className="text-2xl sm:text-3xl font-bold text-black mb-4 leading-tight">{product.name}</h3>
-                <p className="text-2xl sm:text-3xl font-bold text-black bg-gradient-to-r from-black to-gray-800 bg-clip-text">
-                  {product.price}
-                </p>
+                <div className="flex items-center gap-3 mb-4">
+                  {(() => {
+                    const apiProduct = apiProducts.find(p => p.id === product.id);
+                    const hasDiscount = apiProduct?.discounted_price && apiProduct.discounted_price < apiProduct.price;
+                    const originalPrice = apiProduct?.price || product.priceValue;
+                    const discountedPrice = apiProduct?.discounted_price;
+
+                    return (
+                      <>
+                        {hasDiscount ? (
+                          <>
+                            <p className="text-2xl sm:text-3xl font-bold text-red-600 bg-gradient-to-r from-red-600 to-red-800 bg-clip-text">
+                              {discountedPrice}F CFA
+                            </p>
+                            <p className="text-lg sm:text-xl font-semibold text-gray-500 line-through">
+                              {originalPrice}F CFA
+                            </p>
+                            <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                              -{Math.round(((originalPrice - discountedPrice) / originalPrice) * 100)}%
+                            </span>
+                          </>
+                        ) : (
+                          <p className="text-2xl sm:text-3xl font-bold text-black bg-gradient-to-r from-black to-gray-800 bg-clip-text">
+                            {product.price}
+                          </p>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
               </div>
 
               {/* Sélection de taille avec animation */}
