@@ -197,8 +197,8 @@ export default function CheckoutCustomPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <CompactHeader />
       <TopBanner />
+      <CompactHeader />
       <div className="max-w-4xl mx-auto p-6 bg-white rounded-2xl shadow-lg">
         <h1 className="text-3xl font-bold mb-8 text-adawi-brown text-center">Commande sur mesure</h1>
 

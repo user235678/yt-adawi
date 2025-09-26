@@ -9,7 +9,7 @@ const TopBanner: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="bg-gray-200 text-red-500 text-center py-2 text-sm overflow-hidden">
+      <div className="bg-gradient-to-r from-amber-400 to-yellow-500 text-white text-center py-2 text-sm overflow-hidden">
         <div className="animate-pulse">Chargement...</div>
       </div>
     );
@@ -52,7 +52,7 @@ const TopBanner: React.FC = () => {
   const message = getMessage();
 
   return (
-    <div className="bg-gray-200 text-red-500 py-2 text-sm overflow-hidden relative">
+    <div className="bg-gradient-to-r from-amber-500 to-yellow-600 text-white py-3 text-sm overflow-hidden relative shadow-lg">
       <style>{`
         @keyframes scroll-right {
           0% {
@@ -64,9 +64,12 @@ const TopBanner: React.FC = () => {
         }
         
         .scrolling-text {
-          animation: scroll-right 29s linear infinite;
+          animation: scroll-right 85s linear infinite;
           white-space: nowrap;
           display: inline-block;
+          padding-left: 100%;
+          font-weight: 500;
+          letter-spacing: 0.5px;
         }
         
         .banner-container {
@@ -74,6 +77,11 @@ const TopBanner: React.FC = () => {
           width: 100%;
           display: flex;
           align-items: center;
+          justify-content: flex-start;
+        }
+
+        .banner-container:hover .scrolling-text {
+          animation-play-state: paused;
         }
       `}</style>
 

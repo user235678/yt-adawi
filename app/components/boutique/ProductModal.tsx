@@ -641,7 +641,7 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
                               {originalPrice}F CFA
                             </p>
                             <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                              -{Math.round(((originalPrice - discountedPrice) / originalPrice) * 100)}%
+                              -{Math.round(((originalPrice - discountedPrice!) / originalPrice) * 100)}%
                             </span>
                           </>
                         ) : (
