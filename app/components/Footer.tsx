@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin, ArrowRight, Heart } from "lucide-react";
+import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin, ArrowRight, Heart, Clock } from "lucide-react";
 
 const socialLinks = [
   { icon: Facebook, url: "https://facebook.com", name: "Facebook", color: "hover:bg-blue-600" },
@@ -34,6 +34,21 @@ export default function Footer() {
     ]
   };
 
+  // Fonction pour déterminer si nous sommes ouvert maintenant
+  const isCurrentlyOpen = () => {
+    const now = new Date();
+    const day = now.getDay(); // 0 = Dimanche, 1 = Lundi, etc.
+    const hour = now.getHours();
+    
+    // Fermé le dimanche (jour 0)
+    if (day === 0) return false;
+    
+    // Ouvert de 8h à 19h du lundi au samedi
+    return hour >= 8 && hour < 19;
+  };
+
+  const currentlyOpen = isCurrentlyOpen();
+
   return (
     <>
       <style dangerouslySetInnerHTML={{
@@ -65,6 +80,11 @@ export default function Footer() {
             50% { opacity: 0.7; }
           }
           
+          @keyframes pulse-status {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+          }
+          
           .animate-float-gentle {
             animation: float-gentle 3s ease-in-out infinite;
           }
@@ -80,6 +100,10 @@ export default function Footer() {
           
           .animate-pulse-soft {
             animation: pulse-soft 2s ease-in-out infinite;
+          }
+          
+          .animate-pulse-status {
+            animation: pulse-status 2s ease-in-out infinite;
           }
           
           .link-hover-effect {
@@ -109,6 +133,24 @@ export default function Footer() {
           .social-icon:hover {
             transform: translateY(-3px) scale(1.1);
           }
+          
+          .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+          }
+          
+          .status-open {
+            background-color: #10b981;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+          }
+          
+          .status-closed {
+            background-color: #ef4444;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+          }
         `
       }} />
       
@@ -119,12 +161,11 @@ export default function Footer() {
           <div className="absolute bottom-16 right-16 w-24 h-24 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-full blur-xl animate-float-gentle" style={{animationDelay: '2s'}}></div>
         </div>
 
-        {/* ✅ Réduction padding & marges */}
         <div className="relative z-10 px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
           <div className="max-w-6xl mx-auto">
             
             {/* Section principale */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 mb-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 lg:gap-8 mb-10">
               
               {/* Logo + Coordonnées */}
               <div className="lg:col-span-1 animate-fade-in-up">
@@ -132,12 +173,12 @@ export default function Footer() {
                   <div className="relative group mb-4 w-28">
                     <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl blur opacity-20 group-hover:opacity-40 transition-opacity duration-300"></div>
                     <div className="relative bg-white p-3 rounded-xl shadow-lg transform group-hover:scale-105 transition-all duration-300">
-                      <img src="/ADAWI _ LOGO FOND BLANC.png" alt="" />
+                      <img src="/ADAWI _ LOGO FOND BLANC.png" alt="Logo Adawi" />
                     </div>
                   </div>
 
                   {/* Coordonnées avec animations de hover */}
-                  <div className="space-y-3 text-sm">
+                  <div className="space-y-3 text-sm mb-6">
                     <div className="flex items-center space-x-2 group">
                       <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                         <MapPin className="w-4 h-4 text-white" />
@@ -179,34 +220,110 @@ export default function Footer() {
                 </div>
               </div>
 
-              {/* Colonnes Nav avec animations */}
-              {Object.entries(navLinks).map(([section, links], sIdx) => (
-                <div key={sIdx} className="animate-fade-in-up" style={{ animationDelay: `${(sIdx + 1) * 0.1}s` }}>
-                  <h3 className="text-lg font-semibold mb-4 capitalize relative">
-                    <span className="relative z-10">{section}</span>
-                    <div className={`absolute bottom-0 left-0 w-12 h-0.5 ${
-                      section === 'commander' ? 'bg-gradient-to-r from-yellow-400 to-orange-500' :
-                      section === 'informations' ? 'bg-gradient-to-r from-green-400 to-blue-500' :
-                      'bg-gradient-to-r from-purple-400 to-pink-500'
-                    }`}></div>
-                  </h3>
-                  <ul className="space-y-2 text-sm">
-                    {links.map((link, idx) => (
-                      <li key={idx}>
-                        <a
-                          href={link.href}
-                          className="link-hover-effect text-gray-300 hover:text-white hover:translate-x-2 inline-flex items-center group transition-all duration-300"
-                          onMouseEnter={() => setHoveredLink(`${section}-${idx}`)}
-                          onMouseLeave={() => setHoveredLink(null)}
-                        >
-                          <ArrowRight className={`w-4 h-4 mr-2 transition-all duration-300 ${hoveredLink === `${section}-${idx}` ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`} />
-                          {link.name}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
+              {/* Colonne Commander */}
+              <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+                <h3 className="text-lg font-semibold mb-4 capitalize relative">
+                  <span className="relative z-10">Commander</span>
+                  <div className="absolute bottom-0 left-0 w-12 h-0.5 bg-gradient-to-r from-yellow-400 to-orange-500"></div>
+                </h3>
+                <ul className="space-y-2 text-sm">
+                  {navLinks.commander.map((link, idx) => (
+                    <li key={idx}>
+                      <a
+                        href={link.href}
+                        className="link-hover-effect text-gray-300 hover:text-white hover:translate-x-2 inline-flex items-center group transition-all duration-300"
+                        onMouseEnter={() => setHoveredLink(`commander-${idx}`)}
+                        onMouseLeave={() => setHoveredLink(null)}
+                      >
+                        <ArrowRight className={`w-4 h-4 mr-2 transition-all duration-300 ${hoveredLink === `commander-${idx}` ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`} />
+                        {link.name}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Colonne Horaires d'ouverture */}
+              <div className="animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                <h3 className="text-lg font-semibold mb-4 relative">
+                  <span className="relative z-10">Horaires</span>
+                  <div className="absolute bottom-0 left-0 w-12 h-0.5 bg-gradient-to-r from-orange-400 to-red-500"></div>
+                </h3>
+                
+                <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4 border border-white/10">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-orange-500 to-red-600 rounded-full flex items-center justify-center">
+                      <Clock className="w-4 h-4 text-white" />
+                    </div>
+                    <h4 className="text-sm font-semibold text-white">Nos horaires</h4>
+                  </div>
+                  
+                  <div className="space-y-1 text-xs text-gray-300">
+                    <div className="flex justify-between items-center">
+                      <span>Lundi - Samedi</span>
+                      <span className="font-medium text-white">8h - 19h</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>Dimanche</span>
+                      <span className="font-medium text-red-400">Fermé</span>
+                    </div>
+                  </div>
+                  
+                  {/* Statut actuel */}
+                  <div className={`mt-3 pt-3 border-t border-white/10 flex items-center text-xs font-medium ${
+                    currentlyOpen ? 'text-green-400' : 'text-red-400'
+                  }`}>
+                    <span className={`status-dot ${currentlyOpen ? 'status-open animate-pulse-status' : 'status-closed'}`}></span>
+                    {currentlyOpen ? 'Actuellement ouvert' : 'Actuellement fermé'}
+                  </div>
                 </div>
-              ))}
+              </div>
+
+              {/* Colonne Informations */}
+              <div className="animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+                <h3 className="text-lg font-semibold mb-4 capitalize relative">
+                  <span className="relative z-10">Informations</span>
+                  <div className="absolute bottom-0 left-0 w-12 h-0.5 bg-gradient-to-r from-green-400 to-blue-500"></div>
+                </h3>
+                <ul className="space-y-2 text-sm">
+                  {navLinks.informations.map((link, idx) => (
+                    <li key={idx}>
+                      <a
+                        href={link.href}
+                        className="link-hover-effect text-gray-300 hover:text-white hover:translate-x-2 inline-flex items-center group transition-all duration-300"
+                        onMouseEnter={() => setHoveredLink(`informations-${idx}`)}
+                        onMouseLeave={() => setHoveredLink(null)}
+                      >
+                        <ArrowRight className={`w-4 h-4 mr-2 transition-all duration-300 ${hoveredLink === `informations-${idx}` ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`} />
+                        {link.name}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Colonne Aide */}
+              <div className="animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+                <h3 className="text-lg font-semibold mb-4 capitalize relative">
+                  <span className="relative z-10">Aide</span>
+                  <div className="absolute bottom-0 left-0 w-12 h-0.5 bg-gradient-to-r from-purple-400 to-pink-500"></div>
+                </h3>
+                <ul className="space-y-2 text-sm">
+                  {navLinks.aide.map((link, idx) => (
+                    <li key={idx}>
+                      <a
+                        href={link.href}
+                        className="link-hover-effect text-gray-300 hover:text-white hover:translate-x-2 inline-flex items-center group transition-all duration-300"
+                        onMouseEnter={() => setHoveredLink(`aide-${idx}`)}
+                        onMouseLeave={() => setHoveredLink(null)}
+                      >
+                        <ArrowRight className={`w-4 h-4 mr-2 transition-all duration-300 ${hoveredLink === `aide-${idx}` ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`} />
+                        {link.name}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
         </div>

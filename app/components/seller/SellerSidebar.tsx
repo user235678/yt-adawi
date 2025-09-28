@@ -26,6 +26,7 @@ export default function SellerSidebar({ onClose }: SellerSidebarProps) {
   const menuItems = [
     { id: "Dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/seller/dashboard" },
     { id: "produits", label: "Produits", icon: Package, path: "/seller/products" },
+    { id: "inventory", label: "Inventaire", icon: BarChart3, path: "/seller/inventory" },
     { id: "orders", label: "Commandes", icon: ShoppingCart, path: "/seller/orders" },
     { id: "Tickets", label: "Tickets ", icon: MessageSquare, path: "/seller/support" },
     { id: "remboursements", label: "Remboursements", icon: RotateCcw, path: "/seller/refund" },

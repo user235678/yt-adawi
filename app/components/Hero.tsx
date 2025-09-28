@@ -198,7 +198,7 @@ const Hero: React.FC<HeroProps> = ({
       <div className="absolute bottom-20 right-20 w-32 h-32 bg-adawi-gold/5 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }}></div>
       
       {/* CSS intégré pour les animations avancées */}
-      <style jsx>{`
+      <style>{`
         @keyframes float {
           0%, 100% { transform: translateY(0px); }
           50% { transform: translateY(-10px); }

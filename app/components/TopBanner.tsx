@@ -52,7 +52,7 @@ const TopBanner: React.FC = () => {
   const message = getMessage();
 
   return (
-    <div className="bg-gradient-to-r from-amber-500 to-yellow-600 text-white py-3 text-sm overflow-hidden relative shadow-lg">
+    <div className="bg-gradient-to-r from-white to-white text-red-600 py-3 text-sm overflow-hidden relative shadow-lg">
       <style>{`
         @keyframes scroll-right {
           0% {

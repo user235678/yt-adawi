@@ -65,7 +65,11 @@ export const loader: LoaderFunction = async ({ request }) => {
         recent_orders: [],
         orders_by_status: [],
         average_order_value: 0,
-        pending_orders: []
+        pending_orders: [],
+        total_orders_today: 0,
+        total_orders_week: 0,
+        total_revenue_today: 0,
+        total_revenue_week: 0
       }
     });
   }
@@ -109,10 +113,17 @@ interface DashboardData {
   orders_by_status: OrderByStatus[];
   average_order_value: number;
   pending_orders: PendingOrder[];
+  total_orders_today: number;
+  total_orders_week: number;
+  total_revenue_today: number;
+  total_revenue_week: number;
 }
 
 export default function SellerDashboard() {
   const { user, dashboardData } = useLoaderData<typeof loader>();
+
+  const [activePeriod, setActivePeriod] = useState<'total' | 'week' | 'day'>('total');
+  const [showDetails, setShowDetails] = useState(true);
 
   // Formater la devise
   const formatCurrency = (amount: number) => {
@@ -187,6 +198,12 @@ export default function SellerDashboard() {
 
               <div className="flex items-center space-x-4">
                 <button
+                  onClick={() => setShowDetails(!showDetails)}
+                  className="flex items-center px-4 py-3 bg-white text-adawi-brown rounded-xl hover:bg-adawi-beige transition-all duration-200 shadow-lg font-medium"
+                >
+                  {showDetails ? '>' : '<'}
+                </button>
+                <button
                   onClick={() => window.location.reload()}
                   className="flex items-center px-6 py-3 bg-white text-adawi-brown rounded-xl hover:bg-adawi-beige transition-all duration-200 shadow-lg font-medium"
                 >
@@ -199,6 +216,36 @@ export default function SellerDashboard() {
 
           {dashboardData ? (
             <>
+              {/* Period Tabs */}
+              <div className="flex justify-center mb-6">
+                <div className="bg-white rounded-xl shadow-lg p-1 flex space-x-1">
+                  <button
+                    onClick={() => setActivePeriod('total')}
+                    className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                      activePeriod === 'total' ? 'bg-adawi-gold text-white' : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    Total
+                  </button>
+                  <button
+                    onClick={() => setActivePeriod('week')}
+                    className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                      activePeriod === 'week' ? 'bg-adawi-gold text-white' : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    Semaine
+                  </button>
+                  <button
+                    onClick={() => setActivePeriod('day')}
+                    className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                      activePeriod === 'day' ? 'bg-adawi-gold text-white' : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    Jour
+                  </button>
+                </div>
+              </div>
+
               {/* Cartes de statistiques principales */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
@@ -208,9 +255,17 @@ export default function SellerDashboard() {
                     </div>
                     <div className="text-right">
                       <p className="text-2xl font-bold text-gray-900">
-                        {formatCurrency(dashboardData.total_revenue)}
+                        {formatCurrency(
+                          activePeriod === 'total' ? dashboardData.total_revenue :
+                          activePeriod === 'week' ? dashboardData.total_revenue_week :
+                          dashboardData.total_revenue_today
+                        )}
                       </p>
-                      <p className="text-sm text-gray-500">Chiffre d'affaires</p>
+                      <p className="text-sm text-gray-500">
+                        {activePeriod === 'total' ? 'Chiffre d\'affaires' :
+                         activePeriod === 'week' ? 'Semaine' :
+                         ' Aujourd\'hui'}
+                      </p>
                     </div>
                   </div>
                   <span className="text-sm text-gray-600">F CFA</span>
@@ -222,13 +277,21 @@ export default function SellerDashboard() {
                       <ShoppingCart className="w-6 h-6 text-white" />
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-gray-900">{dashboardData.total_orders}</p>
-                      <p className="text-sm text-gray-500">Commandes Totales</p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {activePeriod === 'total' ? dashboardData.total_orders :
+                         activePeriod === 'week' ? dashboardData.total_orders_week :
+                         dashboardData.total_orders_today}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {activePeriod === 'total' ? 'Commandes Totales' :
+                         activePeriod === 'week' ? 'Commandes Semaine' :
+                         'Commandes Aujourd\'hui'}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center text-green-600">
                     <ArrowUpRight className="w-4 h-4 mr-1" />
-                    <span className="text-sm font-medium">+12%</span>
+                    {/* <span className="text-sm font-medium">+12%</span> */}
                   </div>
                 </div>
 
@@ -261,151 +324,155 @@ export default function SellerDashboard() {
                 </div>
               </div>
 
-              {/* Section commandes par statut */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold text-gray-900">Commandes par Statut</h2>
-                    <BarChart3 className="w-6 h-6 text-gray-400" />
-                  </div>
-                  <div className="space-y-4">
-                    {dashboardData.orders_by_status.map((status: OrderByStatus, index: number) => (
-                      <div key={index} className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          {getStatusIcon(status.status)}
-                          <span className="text-sm font-medium text-gray-900 capitalize">
-                            {status.status}
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm font-semibold text-gray-900">{status.count}</span>
-                          <div className="w-20 bg-gray-200 rounded-full h-2">
-                            <div
-                              className="bg-adawi-gold h-2 rounded-full"
-                              style={{
-                                width: `${(status.count / Math.max(...dashboardData.orders_by_status.map((s: OrderByStatus) => s.count))) * 100}%`
-                              }}
-                            ></div>
-                          </div>
-                        </div>
+              {showDetails && (
+                <>
+                  {/* Section commandes par statut */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                      <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-xl font-bold text-gray-900">Commandes par Statut</h2>
+                        <BarChart3 className="w-6 h-6 text-gray-400" />
                       </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Commandes en attente */}
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold text-gray-900">Commandes en Attente</h2>
-                    <Clock className="w-6 h-6 text-amber-500" />
-                  </div>
-                  <div className="space-y-4">
-                    {dashboardData.pending_orders.length > 0 ? (
-                      dashboardData.pending_orders.slice(0, 5).map((order: PendingOrder, index: number) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <div>
-                            <p className="text-sm font-medium text-gray-900">{order.user_name}</p>
-                            <p className="text-xs text-gray-500">#{order.order_id.slice(-8)}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm font-semibold text-gray-900">
-                              {formatCurrency(order.total)} F CFA
-                            </p>
-                            <p className="text-xs text-gray-500">{formatDate(order.created_at)}</p>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-center py-8">
-                        <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
-                        <p className="text-gray-600">Aucune commande en attente</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Section produits populaires et commandes récentes */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Produits populaires */}
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold text-gray-900">Produits Populaires</h2>
-                    <Package className="w-6 h-6 text-gray-400" />
-                  </div>
-                  <div className="space-y-4">
-                    {dashboardData.top_products.length > 0 ? (
-                      dashboardData.top_products.slice(0, 5).map((product: TopProduct, index: number) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-adawi-gold rounded-full flex items-center justify-center text-white text-xs font-bold">
-                              {index + 1}
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-gray-900 truncate max-w-32">
-                                {product.name}
-                              </p>
-                              <p className="text-xs text-gray-500">{product.total_quantity} vendus</p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm font-semibold text-gray-900">
-                              {formatCurrency(product.total_revenue)} F CFA
-                            </p>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-center py-8">
-                        <Package className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                        <p className="text-gray-600">Aucun produit populaire</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Commandes récentes */}
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold text-gray-900">Commandes Récentes</h2>
-                    <ShoppingCart className="w-6 h-6 text-gray-400" />
-                  </div>
-                  <div className="space-y-4">
-                    {dashboardData.recent_orders.length > 0 ? (
-                      dashboardData.recent_orders.slice(0, 5).map((order: RecentOrder, index: number) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-                              <Users className="w-4 h-4 text-white" />
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-gray-900">{order.user_name}</p>
-                              <p className="text-xs text-gray-500">#{order.order_id.slice(-8)}</p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="flex items-center space-x-2 mb-1">
-                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                                {getStatusIcon(order.status)}
-                                <span className="ml-1 capitalize">{order.status}</span>
+                      <div className="space-y-4">
+                        {dashboardData.orders_by_status.map((status: OrderByStatus, index: number) => (
+                          <div key={index} className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                              {getStatusIcon(status.status)}
+                              <span className="text-sm font-medium text-gray-900 capitalize">
+                                {status.status}
                               </span>
                             </div>
-                            <p className="text-sm font-semibold text-gray-900">
-                              {formatCurrency(order.total)} F CFA
-                            </p>
-                            <p className="text-xs text-gray-500">{formatDate(order.created_at)}</p>
+                            <div className="flex items-center space-x-2">
+                              <span className="text-sm font-semibold text-gray-900">{status.count}</span>
+                              <div className="w-20 bg-gray-200 rounded-full h-2">
+                                <div
+                                  className="bg-adawi-gold h-2 rounded-full"
+                                  style={{
+                                    width: `${(status.count / Math.max(...dashboardData.orders_by_status.map((s: OrderByStatus) => s.count))) * 100}%`
+                                  }}
+                                ></div>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-center py-8">
-                        <ShoppingCart className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                        <p className="text-gray-600">Aucune commande récente</p>
+                        ))}
                       </div>
-                    )}
+                    </div>
+
+                    {/* Commandes en attente */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                      <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-xl font-bold text-gray-900">Commandes en Attente</h2>
+                        <Clock className="w-6 h-6 text-amber-500" />
+                      </div>
+                      <div className="space-y-4">
+                        {dashboardData.pending_orders.length > 0 ? (
+                          dashboardData.pending_orders.slice(0, 5).map((order: PendingOrder, index: number) => (
+                            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">{order.user_name}</p>
+                                <p className="text-xs text-gray-500">#{order.order_id.slice(-8)}</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-sm font-semibold text-gray-900">
+                                  {formatCurrency(order.total)} F CFA
+                                </p>
+                                <p className="text-xs text-gray-500">{formatDate(order.created_at)}</p>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-8">
+                            <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
+                            <p className="text-gray-600">Aucune commande en attente</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
+
+                  {/* Section produits populaires et commandes récentes */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Produits populaires */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                      <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-xl font-bold text-gray-900">Produits Populaires</h2>
+                        <Package className="w-6 h-6 text-gray-400" />
+                      </div>
+                      <div className="space-y-4">
+                        {dashboardData.top_products.length > 0 ? (
+                          dashboardData.top_products.slice(0, 5).map((product: TopProduct, index: number) => (
+                            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <div className="flex items-center space-x-3">
+                                <div className="w-8 h-8 bg-adawi-gold rounded-full flex items-center justify-center text-white text-xs font-bold">
+                                  {index + 1}
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium text-gray-900 truncate max-w-32">
+                                    {product.name}
+                                  </p>
+                                  <p className="text-xs text-gray-500">{product.total_quantity} vendus</p>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-sm font-semibold text-gray-900">
+                                  {formatCurrency(product.total_revenue)} F CFA
+                                </p>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-8">
+                            <Package className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                            <p className="text-gray-600">Aucun produit populaire</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Commandes récentes */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                      <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-xl font-bold text-gray-900">Commandes Récentes</h2>
+                        <ShoppingCart className="w-6 h-6 text-gray-400" />
+                      </div>
+                      <div className="space-y-4">
+                        {dashboardData.recent_orders.length > 0 ? (
+                          dashboardData.recent_orders.slice(0, 5).map((order: RecentOrder, index: number) => (
+                            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <div className="flex items-center space-x-3">
+                                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                                  <Users className="w-4 h-4 text-white" />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium text-gray-900">{order.user_name}</p>
+                                  <p className="text-xs text-gray-500">#{order.order_id.slice(-8)}</p>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="flex items-center space-x-2 mb-1">
+                                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                                    {getStatusIcon(order.status)}
+                                    <span className="ml-1 capitalize">{order.status}</span>
+                                  </span>
+                                </div>
+                                <p className="text-sm font-semibold text-gray-900">
+                                  {formatCurrency(order.total)} F CFA
+                                </p>
+                                <p className="text-xs text-gray-500">{formatDate(order.created_at)}</p>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-8">
+                            <ShoppingCart className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                            <p className="text-gray-600">Aucune commande récente</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </>
           ) : null}
         </div>

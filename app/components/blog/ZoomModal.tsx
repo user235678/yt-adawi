@@ -17,6 +17,7 @@ interface ZoomModalProps {
   onToggleControls: () => void;
   onSetDragging: (dragging: boolean) => void;
   onSetZoomPosition: (position: { x: number; y: number }) => void;
+  onSetZoomScale?: (scale: number) => void; // Nouvelle prop optionnelle
 }
 
 export default function ZoomModal({
@@ -35,8 +36,14 @@ export default function ZoomModal({
   onToggleControls,
   onSetDragging,
   onSetZoomPosition,
+  onSetZoomScale,
 }: ZoomModalProps) {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  // Configuration du zoom
+  const ZOOM_STEP = 0.2; // Étapes plus petites pour un zoom plus fluide
+  const MIN_ZOOM = 0.5;
+  const MAX_ZOOM = 5;
 
   // Empêcher le scroll du body quand le modal est ouvert
   useEffect(() => {
@@ -45,6 +52,39 @@ export default function ZoomModal({
       document.body.style.overflow = 'unset';
     };
   }, []);
+
+  // Fonction pour zoom progressif avec limites
+  const handleZoomIn = useCallback(() => {
+    if (onSetZoomScale) {
+      const newScale = Math.min(zoomScale + ZOOM_STEP, MAX_ZOOM);
+      onSetZoomScale(newScale);
+    } else {
+      onZoomIn();
+    }
+  }, [zoomScale, onSetZoomScale, onZoomIn]);
+
+  const handleZoomOut = useCallback(() => {
+    if (onSetZoomScale) {
+      const newScale = Math.max(zoomScale - ZOOM_STEP, MIN_ZOOM);
+      onSetZoomScale(newScale);
+      
+      // Si on revient en dessous de 1, on recentre l'image
+      if (newScale <= 1) {
+        onSetZoomPosition({ x: 0, y: 0 });
+      }
+    } else {
+      onZoomOut();
+    }
+  }, [zoomScale, onSetZoomScale, onZoomOut, onSetZoomPosition]);
+
+  const handleZoomReset = useCallback(() => {
+    if (onSetZoomScale) {
+      onSetZoomScale(1);
+      onSetZoomPosition({ x: 0, y: 0 });
+    } else {
+      onZoomReset();
+    }
+  }, [onSetZoomScale, onSetZoomPosition, onZoomReset]);
 
   // Gestion des touches clavier
   useEffect(() => {
@@ -56,37 +96,58 @@ export default function ZoomModal({
         case '+':
         case '=':
           e.preventDefault();
-          onZoomIn();
+          handleZoomIn();
           break;
         case '-':
           e.preventDefault();
-          onZoomOut();
+          handleZoomOut();
           break;
         case '0':
           e.preventDefault();
-          onZoomReset();
+          handleZoomReset();
           break;
         case 'h':
         case 'H':
           e.preventDefault();
           onToggleControls();
           break;
+        case 'f':
+        case 'F':
+          e.preventDefault();
+          // Zoom pour ajuster à l'écran
+          if (onSetZoomScale) {
+            onSetZoomScale(1);
+            onSetZoomPosition({ x: 0, y: 0 });
+          }
+          break;
       }
     };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [onClose, onZoomIn, onZoomOut, onZoomReset, onToggleControls]);
+  }, [onClose, handleZoomIn, handleZoomOut, handleZoomReset, onToggleControls, onSetZoomScale, onSetZoomPosition]);
 
-  // Gestion de la molette de la souris
+  // Gestion de la molette de la souris avec zoom progressif
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault();
-    if (e.deltaY < 0) {
-      onZoomIn();
+    
+    if (onSetZoomScale) {
+      const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
+      const newScale = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoomScale + delta));
+      onSetZoomScale(newScale);
+      
+      // Recentrer si on zoom out en dessous de 1
+      if (newScale <= 1) {
+        onSetZoomPosition({ x: 0, y: 0 });
+      }
     } else {
-      onZoomOut();
+      if (e.deltaY < 0) {
+        handleZoomIn();
+      } else {
+        handleZoomOut();
+      }
     }
-  }, [onZoomIn, onZoomOut]);
+  }, [zoomScale, onSetZoomScale, onSetZoomPosition, handleZoomIn, handleZoomOut]);
 
   // Gestion du touch pour mobile
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -115,6 +176,10 @@ export default function ZoomModal({
     onSetDragging(false);
   };
 
+  // Niveaux de zoom prédéfinis
+  const zoomLevels = [0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4, 5];
+  const currentZoomIndex = zoomLevels.findIndex(level => Math.abs(level - zoomScale) < 0.1);
+
   return (
     <div 
       className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center"
@@ -132,9 +197,12 @@ export default function ZoomModal({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onZoomOut();
+              handleZoomOut();
             }}
-            className="bg-white/10 backdrop-blur-sm text-white p-2 md:p-3 rounded-full hover:bg-white/20 transition-all duration-200 touch-manipulation"
+            disabled={zoomScale <= MIN_ZOOM}
+            className={`bg-white/10 backdrop-blur-sm text-white p-2 md:p-3 rounded-full hover:bg-white/20 transition-all duration-200 touch-manipulation ${
+              zoomScale <= MIN_ZOOM ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
             title="Zoom arrière (- ou molette)"
             aria-label="Zoom arrière"
           >
@@ -151,10 +219,10 @@ export default function ZoomModal({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onZoomReset();
+              handleZoomReset();
             }}
             className="bg-white/10 backdrop-blur-sm text-white p-2 md:p-3 rounded-full hover:bg-white/20 transition-all duration-200 touch-manipulation"
-            title="Réinitialiser le zoom (0)"
+            title="Réinitialiser le zoom (0 ou F)"
             aria-label="Réinitialiser le zoom"
           >
             <svg
@@ -170,9 +238,12 @@ export default function ZoomModal({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onZoomIn();
+              handleZoomIn();
             }}
-            className="bg-white/10 backdrop-blur-sm text-white p-2 md:p-3 rounded-full hover:bg-white/20 transition-all duration-200 touch-manipulation"
+            disabled={zoomScale >= MAX_ZOOM}
+            className={`bg-white/10 backdrop-blur-sm text-white p-2 md:p-3 rounded-full hover:bg-white/20 transition-all duration-200 touch-manipulation ${
+              zoomScale >= MAX_ZOOM ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
             title="Zoom avant (+ ou molette)"
             aria-label="Zoom avant"
           >
@@ -231,10 +302,21 @@ export default function ZoomModal({
         </svg>
       </button>
 
-      {/* Indicateur de zoom */}
+      {/* Indicateur de zoom avec barre de progression */}
       {showControls && (
-        <div className="absolute bottom-2 left-2 md:bottom-4 md:left-4 z-10 bg-white/10 backdrop-blur-sm text-white px-2 py-1 md:px-3 md:py-2 rounded-full text-xs md:text-sm">
-          {Math.round(zoomScale * 100)}%
+        <div className="absolute bottom-2 left-2 md:bottom-4 md:left-4 z-10">
+          <div className="bg-white/10 backdrop-blur-sm text-white px-2 py-1 md:px-3 md:py-2 rounded-full text-xs md:text-sm mb-2">
+            {Math.round(zoomScale * 100)}%
+          </div>
+          {/* Barre de zoom */}
+          <div className="w-32 h-1 bg-white/20 rounded-full">
+            <div 
+              className="h-full bg-white/60 rounded-full transition-all duration-200"
+              style={{
+                width: `${Math.min(100, ((zoomScale - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM)) * 100)}%`
+              }}
+            />
+          </div>
         </div>
       )}
 
@@ -268,10 +350,10 @@ export default function ZoomModal({
       {showControls && (
         <div className="absolute bottom-2 right-2 md:bottom-4 md:right-4 z-10 bg-white/10 backdrop-blur-sm text-white px-2 py-1 md:px-3 md:py-2 rounded-full text-xs">
           <span className="hidden sm:inline">
-            {zoomScale > 1 ? "Glisser pour déplacer" : "Molette ou +/- pour zoomer"}
+            {zoomScale > 1 ? "Glisser pour déplacer • F pour ajuster" : "Molette, +/- ou F pour zoomer"}
           </span>
           <span className="sm:hidden">
-            {zoomScale > 1 ? "Glisser" : "Pincer pour zoomer"}
+            {zoomScale > 1 ? "Glisser pour bouger" : "Pincer pour zoomer"}
           </span>
         </div>
       )}

@@ -8,7 +8,7 @@ interface FilterBarProps {
 
 const FilterBar: React.FC<FilterBarProps> = ({ activeCategory, onCategoryChange }) => {
   const categories = [
-    { id: "vedette" as ProductCategory, label: "Voir produits en vedette" },
+    { id: "vedette" as ProductCategory, label: "Voir tout les produits" },
     { id: "nouveaute" as ProductCategory, label: "Nouveauté" },
     { id: "homme" as ProductCategory, label: "Homme" },
     { id: "femme" as ProductCategory, label: "Femme" },

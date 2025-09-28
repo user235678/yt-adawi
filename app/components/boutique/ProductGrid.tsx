@@ -153,7 +153,7 @@ const ProductGrid = ({ products, selectedSize, selectedColor, onProductClick }: 
               <div className="flex items-center space-x-2">
                 {product.discounted_price && product.discounted_price < product.priceValue ? (
                   <>
-                    <p className="text-sm sm:text-base font-bold text-adawi-gold">
+                    <p className="text-sm sm:text-base font-bold text-red-600">
                       {product.discounted_price.toLocaleString()} F CFA
                     </p>
                     <p className="text-xs sm:text-sm text-gray-500 line-through">

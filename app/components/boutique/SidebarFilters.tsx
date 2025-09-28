@@ -22,7 +22,7 @@ const SidebarFilters: React.FC<SidebarFiltersProps> = ({
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const categoryOptions = [
-    { id: "vedette", label: "Vedette" },
+    { id: "vedette", label: "Tout" },
     { id: "nouveaute", label: "Nouveauté" },
     { id: "homme", label: "Homme" },
     { id: "femme", label: "Femme" },
