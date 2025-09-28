@@ -221,51 +221,74 @@ export default function panier() {
         );
     }
 
-    const updateQuantity = async (itemId: string, newQuantity: number) => {
-        if (newQuantity <= 0) {
-            removeItem(itemId);
-            return;
-        }
-
-        setIsUpdating(itemId);
-        setAnimatingItems(prev => new Set(prev).add(itemId));
+    const handleIncrease = async (item: CartItem) => {
+        setIsUpdating(item.product_id);
+        setAnimatingItems(prev => new Set(prev).add(item.product_id));
 
         try {
-            console.log('🔄 Mise à jour quantité:', { itemId, newQuantity });
-
-            const response = await fetch('/api/cart/update', {
+            const response = await fetch('/api/cart/increase', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    product_id: itemId,
-                    quantity: newQuantity
-                }),
+                    product_id: item.product_id,
+                    size: item.size,
+                    color: item.color
+                })
             });
-
-            const result = await response.json();
-            console.log('📥 Réponse update:', result);
-
-            if (result.success) {
-                // Animation de succès
+            if (response.ok) {
                 setTimeout(() => {
                     window.location.reload();
                 }, 300);
             } else {
-                console.error('❌ Erreur lors de la mise à jour:', result.error);
-                alert(`Erreur: ${result.error}`);
+                console.error('Failed to increase quantity');
+                alert('Erreur lors de l\'augmentation de la quantité');
             }
         } catch (error) {
-            console.error('❌ Erreur réseau:', error);
+            console.error('Error increasing quantity:', error);
             alert('Erreur de connexion. Veuillez réessayer.');
         } finally {
             setTimeout(() => {
                 setIsUpdating(null);
                 setAnimatingItems(prev => {
                     const newSet = new Set(prev);
-                    newSet.delete(itemId);
+                    newSet.delete(item.product_id);
+                    return newSet;
+                });
+            }, 500);
+        }
+    };
+
+    const handleDecrease = async (item: CartItem) => {
+        setIsUpdating(item.product_id);
+        setAnimatingItems(prev => new Set(prev).add(item.product_id));
+
+        try {
+            const response = await fetch('/api/cart/decrease', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    product_id: item.product_id,
+                    size: item.size,
+                    color: item.color
+                })
+            });
+            if (response.ok) {
+                setTimeout(() => {
+                    window.location.reload();
+                }, 300);
+            } else {
+                console.error('Failed to decrease quantity');
+                alert('Erreur lors de la diminution de la quantité');
+            }
+        } catch (error) {
+            console.error('Error decreasing quantity:', error);
+            alert('Erreur de connexion. Veuillez réessayer.');
+        } finally {
+            setTimeout(() => {
+                setIsUpdating(null);
+                setAnimatingItems(prev => {
+                    const newSet = new Set(prev);
+                    newSet.delete(item.product_id);
                     return newSet;
                 });
             }, 500);
@@ -492,7 +515,7 @@ export default function panier() {
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center space-x-3">
                                                     <button
-                                                        onClick={() => updateQuantity(itemId, quantity - 1)}
+                                                        onClick={() => handleDecrease(item)}
                                                         disabled={isUpdating === itemId || quantity <= 1 || isClearing}
                                                         className={`w-8 h-8 border rounded-full flex items-center justify-center text-lg font-medium transition-all duration-200 ${quantity <= 1 || isUpdating === itemId || isClearing
                                                                 ? 'border-gray-200 text-gray-400 cursor-not-allowed'
@@ -509,7 +532,7 @@ export default function panier() {
                                                         {quantity}
                                                     </span>
                                                     <button
-                                                        onClick={() => updateQuantity(itemId, quantity + 1)}
+                                                        onClick={() => handleIncrease(item)}
                                                         disabled={isUpdating === itemId || isClearing}
                                                         className={`w-8 h-8 border border-gray-300 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-all duration-200 text-lg font-medium active:scale-95 ${isUpdating === itemId || isClearing ? 'cursor-not-allowed opacity-50' : ''
                                                             }`}
@@ -571,7 +594,7 @@ export default function panier() {
                                     {/* Quantité */}
                                     <div className="col-span-3 flex items-center justify-center space-x-3">
                                         <button
-                                            onClick={() => updateQuantity(itemId, quantity - 1)}
+                                            onClick={() => handleDecrease(item)}
                                             disabled={isUpdating === itemId || quantity <= 1 || isClearing}
                                             className={`w-8 h-8 border rounded-full flex items-center justify-center text-lg font-medium transition-all duration-200 ${quantity <= 1 || isUpdating === itemId || isClearing
                                                     ? 'border-gray-200 text-gray-400 cursor-not-allowed'
@@ -588,7 +611,7 @@ export default function panier() {
                                             {quantity}
                                         </span>
                                         <button
-                                            onClick={() => updateQuantity(itemId, quantity + 1)}
+                                            onClick={() => handleIncrease(item)}
                                             disabled={isUpdating === itemId || isClearing}
                                             className={`w-8 h-8 border border-gray-300 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-all duration-200 text-lg font-medium active:scale-95 ${isUpdating === itemId || isClearing ? 'cursor-not-allowed opacity-50' : ''
                                                 }`}

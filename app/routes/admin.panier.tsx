@@ -227,81 +227,74 @@ export default function panier() {
         );
     }
 
-    const updateQuantity = async (itemId: string, newQuantity: number) => {
-        if (newQuantity <= 0) {
-            removeItem(itemId);
-            return;
-        }
-
-        setIsUpdating(itemId);
-        setAnimatingItems(prev => new Set(prev).add(itemId));
+    const handleIncrease = async (item: CartItem) => {
+        setIsUpdating(item.product_id);
+        setAnimatingItems(prev => new Set(prev).add(item.product_id));
 
         try {
-            console.log('🔄 Mise à jour quantité:', { itemId, newQuantity });
-
-            const apiBaseUrl = 'https://showroom-backend-2x3g.onrender.com';
-            // ✅ Utiliser PUT au lieu de POST pour la mise à jour
-            const apiUrl = `${apiBaseUrl}/cart/update`;
-            console.log('📡 Appel API update:', apiUrl);
-
-            const response = await fetch(apiUrl, {
-                method: 'PUT', // ✅ Changé de POST à PUT
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${sessionData?.access_token || ''}`,
-                },
+            const response = await fetch('/api/cart/increase', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    session_id: sessionData?.session_id,
-                    product_id: itemId,
-                    quantity: newQuantity
-                }),
+                    product_id: item.product_id,
+                    size: item.size,
+                    color: item.color
+                })
             });
-
-            console.log('📥 Réponse update:', {
-                status: response.status,
-                statusText: response.statusText,
-                ok: response.ok
-            });
-
-            if (!response.ok) {
-                let errorMessage = `Erreur ${response.status}`;
-                try {
-                    const errorData = await response.json();
-                    errorMessage = errorData.detail || errorData.message || errorMessage;
-                } catch {
-                    const errorText = await response.text();
-                    errorMessage = errorText || errorMessage;
-                }
-                throw new Error(errorMessage);
-            }
-
-            const result = await response.json();
-            console.log('✅ Résultat update:', result);
-
-            if (result.success) {
+            if (response.ok) {
                 setTimeout(() => {
                     window.location.reload();
                 }, 300);
             } else {
-                console.error('❌ Erreur lors de la mise à jour:', result.error);
-                alert(`Erreur: ${result.error || 'Erreur lors de la mise à jour'}`);
+                console.error('Failed to increase quantity');
+                alert('Erreur lors de l\'augmentation de la quantité');
             }
         } catch (error) {
-            console.error('❌ Erreur réseau:', error);
-            const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
-
-            if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
-                alert("Votre session a expiré. Veuillez vous reconnecter.");
-                navigate('/login');
-            } else {
-                alert(`Erreur de connexion: ${errorMessage}. Veuillez réessayer.`);
-            }
+            console.error('Error increasing quantity:', error);
+            alert('Erreur de connexion. Veuillez réessayer.');
         } finally {
             setTimeout(() => {
                 setIsUpdating(null);
                 setAnimatingItems(prev => {
                     const newSet = new Set(prev);
-                    newSet.delete(itemId);
+                    newSet.delete(item.product_id);
+                    return newSet;
+                });
+            }, 500);
+        }
+    };
+
+    const handleDecrease = async (item: CartItem) => {
+        setIsUpdating(item.product_id);
+        setAnimatingItems(prev => new Set(prev).add(item.product_id));
+
+        try {
+            const response = await fetch('/api/cart/decrease', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    product_id: item.product_id,
+                    size: item.size,
+                    color: item.color
+                })
+            });
+            if (response.ok) {
+                setTimeout(() => {
+                    window.location.reload();
+                }, 300);
+            } else {
+                console.error('Failed to decrease quantity');
+                alert('Erreur lors de la diminution de la quantité');
+            }
+        } catch (error) {
+            console.error('Error decreasing quantity:', error);
+            alert('Erreur de connexion. Veuillez réessayer.');
+        } finally {
+            setTimeout(() => {
+                setIsUpdating(null);
+                setAnimatingItems(prev => {
+                    const newSet = new Set(prev);
+                    newSet.delete(item.product_id);
                     return newSet;
                 });
             }, 500);
@@ -470,7 +463,8 @@ export default function panier() {
             }
         } catch (error) {
             console.error('Erreur:', error);
-            alert(`Erreur: ${error.message}`);
+            const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+            alert(`Erreur: ${errorMessage}`);
         }
     };
 
@@ -597,7 +591,7 @@ export default function panier() {
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center space-x-3">
                                                     <button
-                                                        onClick={() => updateQuantity(itemId, quantity - 1)}
+                                                        onClick={() => handleDecrease(item)}
                                                         disabled={isUpdating === itemId || quantity <= 1 || isClearing}
                                                         className={`w-8 h-8 border rounded-full flex items-center justify-center text-lg font-medium transition-all duration-200 ${quantity <= 1 || isUpdating === itemId || isClearing
                                                                 ? 'border-gray-200 text-gray-400 cursor-not-allowed'
@@ -614,7 +608,7 @@ export default function panier() {
                                                         {quantity}
                                                     </span>
                                                     <button
-                                                        onClick={() => updateQuantity(itemId, quantity + 1)}
+                                                        onClick={() => handleIncrease(item)}
                                                         disabled={isUpdating === itemId || isClearing}
                                                         className={`w-8 h-8 border border-gray-300 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-all duration-200 text-lg font-medium active:scale-95 ${isUpdating === itemId || isClearing ? 'cursor-not-allowed opacity-50' : ''
                                                             }`}
@@ -676,7 +670,7 @@ export default function panier() {
                                     {/* Quantité */}
                                     <div className="col-span-3 flex items-center justify-center space-x-3">
                                         <button
-                                            onClick={() => updateQuantity(itemId, quantity - 1)}
+                                            onClick={() => handleDecrease(item)}
                                             disabled={isUpdating === itemId || quantity <= 1 || isClearing}
                                             className={`w-8 h-8 border rounded-full flex items-center justify-center text-lg font-medium transition-all duration-200 ${quantity <= 1 || isUpdating === itemId || isClearing
                                                     ? 'border-gray-200 text-gray-400 cursor-not-allowed'
@@ -693,7 +687,7 @@ export default function panier() {
                                             {quantity}
                                         </span>
                                         <button
-                                            onClick={() => updateQuantity(itemId, quantity + 1)}
+                                            onClick={() => handleIncrease(item)}
                                             disabled={isUpdating === itemId || isClearing}
                                             className={`w-8 h-8 border border-gray-300 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-all duration-200 text-lg font-medium active:scale-95 ${isUpdating === itemId || isClearing ? 'cursor-not-allowed opacity-50' : ''
                                                 }`}

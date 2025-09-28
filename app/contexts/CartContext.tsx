@@ -13,6 +13,10 @@ interface CartState {
   items: CartItem[];
   total: number;
   itemCount: number;
+  sessionId?: string;
+  cartId?: string;
+  error?: string;
+  isLoading?: boolean;
 }
 
 type CartAction =
@@ -24,6 +28,8 @@ type CartAction =
 const CartContext = createContext<{
   state: CartState;
   dispatch: React.Dispatch<CartAction>;
+  refreshCart: () => Promise<void>;
+  addToCart: (product: Product, size: string, color: string, quantity: number) => Promise<boolean>;
 } | null>(null);
 
 function cartReducer(state: CartState, action: CartAction): CartState {
@@ -126,8 +132,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
     itemCount: 0,
   });
 
+  const refreshCart = async () => {
+    // For now, just simulate loading
+    dispatch({ type: 'CLEAR_CART' }); // or load from API, but since local, do nothing
+  };
+
+  const addToCart = async (product: Product, size: string, color: string, quantity: number) => {
+    dispatch({ type: 'ADD_ITEM', payload: { product, quantity, size, color } });
+    return true;
+  };
+
   return (
-    <CartContext.Provider value={{ state, dispatch }}>
+    <CartContext.Provider value={{ state, dispatch, refreshCart, addToCart }}>
       {children}
     </CartContext.Provider>
   );
