@@ -1,7 +1,8 @@
 // components/admin/blog/CreatePostModal.tsx
 import { Form, useActionData, useNavigation } from "@remix-run/react";
-import { useState } from "react";
-import { X } from "lucide-react";
+import { useState, useRef } from "react";
+import { X, Upload } from "lucide-react";
+import { compressImage } from "~/utils/imageCompression";
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -12,14 +13,58 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
   const actionData = useActionData() as { error?: any; success?: boolean } | undefined;
   const navigation = useNavigation();
   const [tags, setTags] = useState<string>("");
+  const [coverImage, setCoverImage] = useState<File | null>(null);
+  const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
 
   const isSubmitting = navigation.state === "submitting";
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      // Compresser l'image avant de la stocker
+      const compressedFile = await compressImage(file);
+
+      setCoverImage(compressedFile);
+
+      // Créer l'aperçu de l'image compressée
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        if (ev.target?.result) {
+          setCoverImagePreview(ev.target.result as string);
+        }
+      };
+      reader.readAsDataURL(compressedFile);
+    } catch (error) {
+      console.error('Erreur lors de la compression de l\'image:', error);
+      // En cas d'erreur, utiliser le fichier original
+      setCoverImage(file);
+
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        if (ev.target?.result) {
+          setCoverImagePreview(ev.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setCoverImage(null);
+    setCoverImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-        <div className="bg-white w-full max-w-4xl rounded-xl shadow-lg p-8 relative">
+        <div className="bg-white w-full max-w-4xl rounded-xl shadow-lg p-8 relative max-h-[90vh] overflow-y-auto">
         {/* Bouton fermer */}
         <button
           onClick={onClose}
@@ -42,7 +87,6 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
             Article créé avec succès 🎉
           </div>
         )}
-
 
         <Form
           method="post"
@@ -104,13 +148,40 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
           </div>
 
           <div className="md:col-span-2">
-            <label className="block font-medium">Image de couverture</label>
+            <label className="block font-medium mb-2">Image de couverture</label>
             <input
+              ref={fileInputRef}
               type="file"
               name="cover_image"
               accept="image/*"
-              className="w-full"
+              onChange={handleImageUpload}
+              className="hidden"
             />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-adawi-gold transition-colors flex items-center justify-center gap-2"
+            >
+              <Upload className="w-5 h-5" />
+              <span>Choisir une image de couverture</span>
+            </button>
+
+            {coverImagePreview && (
+              <div className="mt-4 relative inline-block">
+                <img
+                  src={coverImagePreview}
+                  alt="Aperçu de l'image de couverture"
+                  className="w-32 h-32 object-cover rounded-lg border"
+                />
+                <button
+                  type="button"
+                  onClick={removeImage}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="md:col-span-2 flex justify-end gap-3">

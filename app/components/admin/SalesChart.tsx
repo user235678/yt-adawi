@@ -89,13 +89,13 @@ export default function SalesChart({ data, token }: SalesChartProps) {
         </h3>
 
         <div className="flex gap-3 flex-wrap">
-          <button
+          {/* <button
             onClick={handleExport}
             className="flex items-center px-3 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
           >
             Exporter CSV
             <ChevronDown className="w-4 h-4 ml-2" />
-          </button>
+          </button> */}
 
           <select
             value={timeRange}

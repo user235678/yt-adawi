@@ -2,6 +2,7 @@
 import { useState, useRef } from "react";
 import { X, Upload, Plus, Minus, Package, Tag, DollarSign, Hash, FileText, Palette, Ruler, Image } from "lucide-react";
 import SuccessNotification from "~/components/SuccessNotification";
+import { compressImages } from "~/utils/imageCompression";
 
 interface Category {
   id: string;
@@ -71,23 +72,50 @@ export default function AddProductModal({
   };
 
   // --- Images principales ---
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
-    const newImages = [...images, ...files].slice(0, 5);
-    setImages(newImages);
 
-    files.forEach(file => {
-      if (imagePreviews.length < 5) {
+    try {
+      // Compresser les images avant de les stocker
+      const compressedFiles = await compressImages(files);
+
+      // Limiter à 5 images maximum
+      const newImages = [...images, ...compressedFiles].slice(0, 5);
+      setImages(newImages);
+
+      // Créer les aperçus des images compressées
+      const newPreviews: string[] = [];
+      for (const file of compressedFiles.slice(0, 5 - imagePreviews.length)) {
         const reader = new FileReader();
         reader.onload = (ev) => {
           if (ev.target?.result) {
-            setImagePreviews(prev => [...prev, ev.target!.result as string].slice(0, 5));
+            newPreviews.push(ev.target.result as string);
+            if (newPreviews.length === compressedFiles.slice(0, 5 - imagePreviews.length).length) {
+              setImagePreviews(prev => [...prev, ...newPreviews].slice(0, 5));
+            }
           }
         };
         reader.readAsDataURL(file);
       }
-    });
+    } catch (error) {
+      console.error('Erreur lors de la compression des images:', error);
+      // En cas d'erreur, utiliser les fichiers originaux
+      const newImages = [...images, ...files].slice(0, 5);
+      setImages(newImages);
+
+      files.forEach(file => {
+        if (imagePreviews.length < 5) {
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            if (ev.target?.result) {
+              setImagePreviews(prev => [...prev, ev.target!.result as string].slice(0, 5));
+            }
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
   };
 
   const removeImage = (index: number) => {
@@ -96,23 +124,50 @@ export default function AddProductModal({
   };
 
   // --- Hover images ---
-  const handleHoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleHoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
-    const newImages = [...hoverImages, ...files].slice(0, 5);
-    setHoverImages(newImages);
 
-    files.forEach(file => {
-      if (hoverPreviews.length < 5) {
+    try {
+      // Compresser les images avant de les stocker
+      const compressedFiles = await compressImages(files);
+
+      // Limiter à 5 images maximum
+      const newImages = [...hoverImages, ...compressedFiles].slice(0, 5);
+      setHoverImages(newImages);
+
+      // Créer les aperçus des images compressées
+      const newPreviews: string[] = [];
+      for (const file of compressedFiles.slice(0, 5 - hoverPreviews.length)) {
         const reader = new FileReader();
         reader.onload = (ev) => {
           if (ev.target?.result) {
-            setHoverPreviews(prev => [...prev, ev.target!.result as string].slice(0, 5));
+            newPreviews.push(ev.target.result as string);
+            if (newPreviews.length === compressedFiles.slice(0, 5 - hoverPreviews.length).length) {
+              setHoverPreviews(prev => [...prev, ...newPreviews].slice(0, 5));
+            }
           }
         };
         reader.readAsDataURL(file);
       }
-    });
+    } catch (error) {
+      console.error('Erreur lors de la compression des images hover:', error);
+      // En cas d'erreur, utiliser les fichiers originaux
+      const newImages = [...hoverImages, ...files].slice(0, 5);
+      setHoverImages(newImages);
+
+      files.forEach(file => {
+        if (hoverPreviews.length < 5) {
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            if (ev.target?.result) {
+              setHoverPreviews(prev => [...prev, ev.target!.result as string].slice(0, 5));
+            }
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
   };
 
   const removeHoverImage = (index: number) => {

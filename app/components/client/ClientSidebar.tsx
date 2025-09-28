@@ -78,7 +78,7 @@ export default function ClientSidebar({ onClose }: ClientSidebarProps) {
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {navigation.map((item) => {
           const Icon = item.icon;
-          const Icon1 = item.icon1;
+          const Icon1 = (item as any).icon1;
           const active = isActive(item.href);
 
           return (

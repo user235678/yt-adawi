@@ -8,6 +8,7 @@ import ViewProductModal from "~/components/admin/ViewProductModal";
 import AdminAddToCartModal from "~/components/admin/AdminAddToCartModal";
 import { readToken } from "~/utils/session.server";
 import { requireAdmin } from "~/utils/auth.server";
+import { compressImages } from "~/utils/imageCompression";
 
 // Mettre à jour l'interface pour correspondre à l'API
 export interface Product {
@@ -211,20 +212,38 @@ function EditProductModal({
     }));
   };
 
-  const handleMainImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMainImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
-    setNewImages(files);
-    setImagePreviewUrls(files.map(f => URL.createObjectURL(f)));
+    try {
+      // Compresser les images
+      const compressedFiles = await compressImages(files);
+      setNewImages(compressedFiles);
+      setImagePreviewUrls(compressedFiles.map(f => URL.createObjectURL(f)));
+    } catch (error) {
+      console.error('Erreur lors de la compression des images principales:', error);
+      // En cas d'erreur, utiliser les fichiers originaux
+      setNewImages(files);
+      setImagePreviewUrls(files.map(f => URL.createObjectURL(f)));
+    }
   };
 
-  const handleHoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleHoverImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
-    setNewHoverImages(files);
-    setHoverImagePreviewUrls(files.map(f => URL.createObjectURL(f)));
+    try {
+      // Compresser les images de survol
+      const compressedFiles = await compressImages(files);
+      setNewHoverImages(compressedFiles);
+      setHoverImagePreviewUrls(compressedFiles.map(f => URL.createObjectURL(f)));
+    } catch (error) {
+      console.error('Erreur lors de la compression des images de survol:', error);
+      // En cas d'erreur, utiliser les fichiers originaux
+      setNewHoverImages(files);
+      setHoverImagePreviewUrls(files.map(f => URL.createObjectURL(f)));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

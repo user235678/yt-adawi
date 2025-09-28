@@ -219,10 +219,10 @@ export default function AdminDashboard() {
                   <span className="text-gray-600">Produits en rupture:</span>
                   <span className="font-medium text-red-600">{data.low_stock_products}</span>
                 </div>
-                <div className="flex justify-between">
+                {/* <div className="flex justify-between">
                   <span className="text-gray-600">Marge brute:</span>
                   <span className="font-medium text-green-600">{data.gross_margin_percent?.toFixed(1)}%</span>
-                </div>
+                </div> */}
               </div>
             </div>
             <div className="bg-white rounded-lg shadow p-6">

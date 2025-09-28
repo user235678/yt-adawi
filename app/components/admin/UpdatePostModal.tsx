@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Dialog } from "@headlessui/react";
 import { X, Upload, Tag, Save } from "lucide-react";
+import { compressImage } from "~/utils/imageCompression";
 
 interface BlogPost {
   id: string;
@@ -25,12 +26,12 @@ interface UpdatePostModalProps {
   onSuccess?: () => void;
 }
 
-export default function UpdatePostModal({ 
-  isOpen, 
-  onClose, 
-  slug, 
-  token, 
-  onSuccess 
+export default function UpdatePostModal({
+  isOpen,
+  onClose,
+  slug,
+  token,
+  onSuccess
 }: UpdatePostModalProps) {
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(false);
@@ -50,12 +51,13 @@ export default function UpdatePostModal({
   });
 
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
+  const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Test de connexion à l'API
   const testConnection = async () => {
     if (!token) return;
-    
+
     setConnectionStatus('checking');
     try {
       const response = await fetch(
@@ -68,7 +70,7 @@ export default function UpdatePostModal({
           }
         }
       );
-      
+
       if (response.ok) {
         setConnectionStatus('ok');
         setTimeout(() => setConnectionStatus(null), 3000);
@@ -87,7 +89,7 @@ export default function UpdatePostModal({
     const fetchPost = async () => {
       setLoading(true);
       setError(null);
-      
+
       try {
         // Ajouter un timeout et une meilleure gestion d'erreur
         const controller = new AbortController();
@@ -120,7 +122,7 @@ export default function UpdatePostModal({
 
         const data = await response.json();
         setPost(data);
-        
+
         // Pré-remplir le formulaire avec des valeurs par défaut sécurisées
         setFormData({
           title: data.title || "",
@@ -158,6 +160,7 @@ export default function UpdatePostModal({
       setError(null);
       setNewTag("");
       setCoverImageFile(null);
+      setCoverImagePreview(null);
       setFormData({
         title: "",
         excerpt: "",
@@ -202,13 +205,31 @@ export default function UpdatePostModal({
     fileInputRef.current?.click();
   };
 
-  // Gérer la sélection de fichier
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Gérer la sélection de fichier avec compression
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (!file) return;
+
+    try {
+      // Compresser l'image avant de la stocker
+      const compressedFile = await compressImage(file);
+
+      setCoverImageFile(compressedFile);
+
+      // Créer une URL d'aperçu pour le fichier compressé
+      const previewUrl = URL.createObjectURL(compressedFile);
+      setCoverImagePreview(previewUrl);
+      setFormData(prev => ({
+        ...prev,
+        cover_image: previewUrl
+      }));
+    } catch (error) {
+      console.error('Erreur lors de la compression de l\'image:', error);
+      // En cas d'erreur, utiliser le fichier original
       setCoverImageFile(file);
-      // Créer une URL d'aperçu pour le fichier sélectionné
+
       const previewUrl = URL.createObjectURL(file);
+      setCoverImagePreview(previewUrl);
       setFormData(prev => ({
         ...prev,
         cover_image: previewUrl
@@ -380,8 +401,8 @@ export default function UpdatePostModal({
                     onClick={testConnection}
                     disabled={connectionStatus === 'checking'}
                     className={`px-4 py-2 rounded-md text-white ${
-                      connectionStatus === 'checking' 
-                        ? 'bg-gray-400 cursor-not-allowed' 
+                      connectionStatus === 'checking'
+                        ? 'bg-gray-400 cursor-not-allowed'
                         : connectionStatus === 'ok'
                         ? 'bg-green-600 hover:bg-green-700'
                         : connectionStatus === 'error'
@@ -416,7 +437,7 @@ export default function UpdatePostModal({
                     Fermer
                   </button>
                 </div>
-                
+
                 {/* Informations de diagnostic */}
                 <div className="mt-4 p-3 bg-gray-50 rounded text-left text-sm">
                   <p><strong>Diagnostic:</strong></p>

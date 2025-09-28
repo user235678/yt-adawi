@@ -13,6 +13,8 @@ interface StatsCardsProps {
     total_visiteurs: number;
     weekly_revenue: number;
     weekly_orders: number;
+    total_commande_semaine:number;
+    total_orders_week: number;
     weekly_customers: number;
     total_visiteurs_semaine: number;
     pourcentage_visiteurs_semaine: number;
@@ -55,7 +57,7 @@ export default function StatsCards({ data }: StatsCardsProps) {
     },
     {
       title: showWeekly ? "Commandes Semaine" : "Commandes",
-      value: formatNumber(showWeekly ? data.weekly_orders : data.total_orders),
+      value: formatNumber(showWeekly ? data.total_commande_semaine : data.total_orders),
       subtitle: showWeekly ? "Commandes cette semaine" : "Total des commandes",
       // change: showWeekly
       //   ? `${data.weekly_orders_growth >= 0 ? '+' : ''}${data.weekly_orders_growth}%`
@@ -74,7 +76,7 @@ export default function StatsCards({ data }: StatsCardsProps) {
       value: formatNumber(showWeekly ? data.weekly_customers : data.total_customers),
       subtitle: showWeekly ? "Clients cette semaine" : "Nombre de clients",
       // change: showWeekly
-      //   ? `${data.weekly_customers_growth >= 0 ? '+' : ''}${data.weekly_customers_growth}%`
+        //  ? `${data.weekly_customers_growth >= 0 ? '+' : ''}${data.weekly_customers_growth}%`
       //   : `${data.customers_growth >= 0 ? '+' : ''}${data.customers_growth}%`,
       // changeValue: showWeekly ? "+1.2k cette semaine" : "+1.2k cette semaine",
       trend: showWeekly
