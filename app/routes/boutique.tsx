@@ -71,7 +71,7 @@ export default function Boutique() {
 
     // États pour la pagination
     const [currentPage, setCurrentPage] = useState(1);
-    const PRODUCTS_PER_PAGE = 15;
+    const PRODUCTS_PER_PAGE = 50;
 
     // Fonction pour mapper les produits de l'API vers le format attendu
     const mapApiProductToProduct = (apiProduct: ApiProduct): Product => {
@@ -89,6 +89,7 @@ export default function Boutique() {
             }
         }
 
+        const backendUrl = "https://showroom-backend-2x3g.onrender.com";
         return {
             id: apiProduct.id, // Garder l'ID original (string)
             name: apiProduct.name,
@@ -96,10 +97,10 @@ export default function Boutique() {
             priceValue: apiProduct.price,
             discounted_price: apiProduct.discounted_price,
             discount_amount: apiProduct.discount_amount,
-            image: apiProduct.images[0] || "/placeholder.jpg",
-            hoverImage: apiProduct.hover_images?.[0] || apiProduct.images[1],
-            image1: apiProduct.images[1],
-            image2: apiProduct.images[2],
+            image: apiProduct.images[0] ? `${backendUrl}/${apiProduct.images[0]}` : "/placeholder.jpg",
+            hoverImage: apiProduct.hover_images?.[0] ? `${backendUrl}/${apiProduct.hover_images[0]}` : (apiProduct.images[1] ? `${backendUrl}/${apiProduct.images[1]}` : "/placeholder.jpg"),
+            image1: apiProduct.images[1] ? `${backendUrl}/${apiProduct.images[1]}` : undefined,
+            image2: apiProduct.images[2] ? `${backendUrl}/${apiProduct.images[2]}` : undefined,
             date: new Date(apiProduct.created_at),
             category: category,
             size: apiProduct.sizes.length > 0 ? apiProduct.sizes[0] as ProductSize : undefined,
@@ -354,7 +355,7 @@ export default function Boutique() {
                     )}
                     {!isLoading && (
                         <div className="flex flex-col md:flex-row gap-4 lg:gap-6">
-                            <div className="w-full md:w-1/3 lg:w-1/4 xl:w-1/5 md:min-w-[220px] flex-shrink-0">
+                            <div className="w-full md:w-1/3 lg:w-1/4 xl:w-1/5 md:min-w-[220px] flex-shrink-0 md:sticky md:top-4 md:self-start">
                                 <div className="mb-4">
                                     <SortButton onSort={handleSortChange} currentSort={sortOption} />
                                 </div>

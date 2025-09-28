@@ -313,9 +313,9 @@ export default function CheckoutPage() {
       <div className="absolute bottom-10 sm:bottom-20 right-4 sm:right-20 w-20 h-20 sm:w-40 sm:h-40 bg-adawi-brown/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
       <div className="absolute top-1/2 left-8 sm:left-1/4 w-12 h-12 sm:w-20 sm:h-20 bg-adawi-gold/5 rounded-full blur-xl animate-bounce" style={{ animationDelay: '2s' }}></div>
       <div className="absolute bottom-1/3 right-8 sm:right-1/3 w-8 h-8 sm:w-16 sm:h-16 bg-adawi-brown/10 rounded-full blur-lg animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-
-      <CompactHeader />
       <TopBanner />
+      <CompactHeader />
+
 
       <div className="relative z-10">
         {/* Hero Section - Responsive */}
@@ -340,16 +340,14 @@ export default function CheckoutPage() {
               <div className="flex flex-col sm:hidden space-y-4">
                 {[1, 2, 3].map((step) => (
                   <div key={step} className="flex items-center justify-center">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-500 ${
-                      step <= currentStep
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-500 ${step <= currentStep
                         ? 'bg-adawi-gold text-black shadow-lg scale-110'
                         : 'bg-gray-200 text-gray-500'
-                    }`}>
+                      }`}>
                       {step}
                     </div>
-                    <span className={`ml-3 text-sm font-medium transition-colors duration-300 ${
-                      step <= currentStep ? 'text-adawi-brown' : 'text-gray-400'
-                    }`}>
+                    <span className={`ml-3 text-sm font-medium transition-colors duration-300 ${step <= currentStep ? 'text-adawi-brown' : 'text-gray-400'
+                      }`}>
                       {step === 1 ? 'Livraison' : step === 2 ? 'Paiement' : 'Confirmation'}
                     </span>
                   </div>
@@ -360,22 +358,19 @@ export default function CheckoutPage() {
               <div className="hidden sm:flex justify-center items-center space-x-2 md:space-x-4 lg:space-x-8">
                 {[1, 2, 3].map((step) => (
                   <div key={step} className="flex items-center">
-                    <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-500 ${
-                      step <= currentStep
+                    <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-500 ${step <= currentStep
                         ? 'bg-adawi-gold text-black shadow-lg scale-110'
                         : 'bg-gray-200 text-gray-500'
-                    }`}>
+                      }`}>
                       {step}
                     </div>
-                    <span className={`ml-2 md:ml-3 text-xs md:text-sm font-medium transition-colors duration-300 ${
-                      step <= currentStep ? 'text-adawi-brown' : 'text-gray-400'
-                    }`}>
+                    <span className={`ml-2 md:ml-3 text-xs md:text-sm font-medium transition-colors duration-300 ${step <= currentStep ? 'text-adawi-brown' : 'text-gray-400'
+                      }`}>
                       {step === 1 ? 'Livraison' : step === 2 ? 'Paiement' : 'Confirmation'}
                     </span>
                     {step < 3 && (
-                      <div className={`w-4 md:w-8 h-0.5 mx-2 md:mx-4 transition-colors duration-300 ${
-                        step < currentStep ? 'bg-adawi-gold' : 'bg-gray-200'
-                      }`}></div>
+                      <div className={`w-4 md:w-8 h-0.5 mx-2 md:mx-4 transition-colors duration-300 ${step < currentStep ? 'bg-adawi-gold' : 'bg-gray-200'
+                        }`}></div>
                     )}
                   </div>
                 ))}
@@ -545,11 +540,10 @@ export default function CheckoutPage() {
                           onChange={handleDeliveryPhoneChange}
                           placeholder="70123456"
                           required
-                          className={`w-full pl-14 sm:pl-16 pr-10 sm:pr-12 py-3 sm:py-4 border-2 rounded-xl focus:ring-4 focus:ring-adawi-gold/20 focus:border-adawi-gold transition-all duration-300 hover:border-adawi-brown/50 text-sm sm:text-base ${
-                            deliveryPhone && !isValidPhone(deliveryPhone)
+                          className={`w-full pl-14 sm:pl-16 pr-10 sm:pr-12 py-3 sm:py-4 border-2 rounded-xl focus:ring-4 focus:ring-adawi-gold/20 focus:border-adawi-gold transition-all duration-300 hover:border-adawi-brown/50 text-sm sm:text-base ${deliveryPhone && !isValidPhone(deliveryPhone)
                               ? 'border-red-300 bg-red-50 focus:border-red-500 focus:ring-red-200'
                               : 'border-gray-200'
-                          }`}
+                            }`}
                         />
                         <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-adawi-gold transition-colors duration-300">
                           <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -573,16 +567,14 @@ export default function CheckoutPage() {
                       type="button"
                       onClick={nextStep}
                       disabled={!isStep1Valid()}
-                      className={`w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center group text-sm sm:text-base ${
-                        isStep1Valid()
+                      className={`w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center group text-sm sm:text-base ${isStep1Valid()
                           ? 'bg-adawi-gold hover:bg-adawi-gold/90 text-black transform hover:scale-105 hover:shadow-lg'
                           : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      }`}
+                        }`}
                     >
                       Continuer vers le paiement
-                      <svg className={`w-4 h-4 sm:w-5 sm:h-5 ml-2 transition-transform duration-300 ${
-                        isStep1Valid() ? 'transform group-hover:translate-x-1' : ''
-                      }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className={`w-4 h-4 sm:w-5 sm:h-5 ml-2 transition-transform duration-300 ${isStep1Valid() ? 'transform group-hover:translate-x-1' : ''
+                        }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                       </svg>
                     </button>
@@ -627,11 +619,10 @@ export default function CheckoutPage() {
                           onChange={handlePhoneChange}
                           placeholder="70123456"
                           required
-                          className={`w-full pl-14 sm:pl-16 pr-10 sm:pr-12 py-3 sm:py-4 border-2 rounded-xl focus:ring-4 focus:ring-adawi-gold/20 focus:border-adawi-gold transition-all duration-300 hover:border-adawi-brown/50 text-sm sm:text-base ${
-                            phoneNumber && !isValidPhone(phoneNumber)
+                          className={`w-full pl-14 sm:pl-16 pr-10 sm:pr-12 py-3 sm:py-4 border-2 rounded-xl focus:ring-4 focus:ring-adawi-gold/20 focus:border-adawi-gold transition-all duration-300 hover:border-adawi-brown/50 text-sm sm:text-base ${phoneNumber && !isValidPhone(phoneNumber)
                               ? 'border-red-300 bg-red-50 focus:border-red-500 focus:ring-red-200'
                               : 'border-gray-200'
-                          }`}
+                            }`}
                         />
                         <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-adawi-gold transition-colors duration-300">
                           <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
