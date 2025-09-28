@@ -59,7 +59,7 @@ const Hero: React.FC<HeroProps> = ({
           </div>
 
           {/* Features avec animation en cascade */}
-          <ul className="space-y-3 sm:space-y-4 mb-6 sm:mb-8 lg:mb-10">
+          <ul className="space-y-3 sm:space-y-4 mb-8 sm:mb-10 lg:mb-12">
             {features.map((feature, index) => (
               <li 
                 key={index} 
@@ -91,29 +91,45 @@ const Hero: React.FC<HeroProps> = ({
             ))}
           </ul>
 
-          {/* Bouton CTA avec animation */}
+          {/* Bouton CTA avec amélioration mobile */}
           <div className={`transition-all duration-1000 ease-out ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`} style={{ transitionDelay: '800ms' }}>
-            <Link 
-              className="group relative inline-flex items-center bg-adawi-gold hover:bg-adawi-gold/90 text-black px-6 sm:px-8 lg:px-10 py-3 sm:py-4 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-xl active:scale-95 text-sm sm:text-base lg:text-lg"
-              to="/boutique"
-            >
-              <span className="relative z-10">{buttonText}</span>
-              
-              {/* Effet de brillance au survol */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/20 to-transparent transform -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-              
-              {/* Icône flèche animée */}
-              <svg 
-                className="w-4 h-4 sm:w-5 sm:h-5 ml-2 sm:ml-3 transform group-hover:translate-x-1 transition-transform duration-300" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
+            
+            {/* Zone de touch élargie pour mobile */}
+            <div className="inline-block p-2 sm:p-0">
+              <Link 
+                className="group relative inline-flex items-center justify-center bg-adawi-gold text-black font-semibold rounded-full transition-all duration-300 active:scale-95 
+                          /* Tailles responsives optimisées pour le touch */
+                          min-h-[48px] px-6 py-3 text-base
+                          sm:min-h-[52px] sm:px-8 sm:py-4 sm:text-base
+                          md:min-h-[56px] md:px-10 md:py-4 md:text-lg
+                          lg:hover:bg-adawi-gold/90 lg:hover:scale-105 lg:hover:shadow-xl
+                          /* Touch feedback pour mobile */
+                          touch-manipulation select-none
+                          /* Focus visible pour l'accessibilité */
+                          focus:outline-none focus:ring-4 focus:ring-adawi-gold/30 focus:ring-offset-2"
+                to="/boutique"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </Link>
+                <span className="relative z-10 whitespace-nowrap">{buttonText}</span>
+                
+                {/* Effet de brillance au survol (desktop seulement) */}
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/20 to-transparent transform -translate-x-full lg:group-hover:translate-x-full transition-transform duration-700"></div>
+                
+                {/* Icône flèche animée */}
+                <svg 
+                  className="w-5 h-5 ml-3 transform lg:group-hover:translate-x-1 transition-transform duration-300 flex-shrink-0" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+
+                {/* Indicateur de touch sur mobile */}
+                <div className="absolute inset-0 rounded-full bg-black/5 opacity-0 group-active:opacity-100 transition-opacity duration-150 lg:hidden"></div>
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -242,8 +258,31 @@ const Hero: React.FC<HeroProps> = ({
           }
         }
 
-        /* Effet de parallax léger */
-        @media (min-width: 1024px) {
+        /* Touch targets optimisés pour mobile */
+        @media (max-width: 1023px) {
+          /* Suppression des effets hover sur mobile */
+          .group:hover .hero-hover-effect {
+            transform: none !important;
+          }
+          
+          /* Zone de touch élargie */
+          .touch-target {
+            padding: 8px;
+            margin: -8px;
+          }
+          
+          /* Feedback tactile amélioré */
+          .mobile-button {
+            -webkit-tap-highlight-color: rgba(212, 175, 55, 0.3);
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+          }
+        }
+
+        /* Effet de parallax léger (desktop uniquement) */
+        @media (min-width: 1024px) and (hover: hover) {
           .hero-image {
             transition: transform 0.3s ease-out;
           }
@@ -265,18 +304,23 @@ const Hero: React.FC<HeroProps> = ({
           animation: shimmer 2s infinite;
         }
 
-        /* Effets pour les devices avec hover */
-        @media (hover: hover) {
+        /* Effets pour les devices avec hover uniquement */
+        @media (hover: hover) and (pointer: fine) {
           .feature-item:hover svg {
             transform: scale(1.2) rotate(10deg);
             color: #d4af37;
           }
         }
 
-        /* Optimisations pour les petits écrans */
-        @media (max-width: 640px) {
+        /* Optimisations pour les très petits écrans */
+        @media (max-width: 360px) {
           .hero-mobile {
-            padding: 2rem 1rem;
+            padding: 1.5rem 0.75rem;
+          }
+          
+          .mobile-button {
+            min-width: 280px;
+            max-width: 90vw;
           }
         }
 
@@ -297,6 +341,18 @@ const Hero: React.FC<HeroProps> = ({
           
           .hero-feature {
             color: #e5e7eb;
+          }
+        }
+
+        /* Amélioration du focus pour la navigation au clavier */
+        .focus\\:ring-4:focus {
+          box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.3);
+        }
+
+        /* Prévention du zoom sur iOS lors du focus */
+        @supports (-webkit-touch-callout: none) {
+          input, button, select, textarea {
+            font-size: 16px !important;
           }
         }
       `}</style>
