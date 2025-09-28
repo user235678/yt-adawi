@@ -212,7 +212,7 @@ export const action: ActionFunction = async ({ request }) => {
       }
 
       return json(
-        { error: `Erreur technique: ${error.message}` },
+        { error: `Erreur technique: ${error instanceof Error ? error.message : String(error)}` },
         { status: 500 }
       );
     }
@@ -231,6 +231,15 @@ export default function CheckoutPage() {
   const [deliveryPhone, setDeliveryPhone] = useState("");
   const [isVisible, setIsVisible] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+
+  // Nouvel état pour les informations de livraison
+  const [deliveryInfo, setDeliveryInfo] = useState({
+    street: "",
+    city: "",
+    postal_code: "",
+    country: "Togo",
+    phone: ""
+  });
 
   const total = Number(searchParams.get("total")) || 0;
   const isSubmitting = navigation.state === "submitting";
@@ -256,13 +265,37 @@ export default function CheckoutPage() {
     const value = e.target.value.replace(/\D/g, "");
     if (value.length <= 8) {
       setDeliveryPhone(value);
+      setDeliveryInfo(prev => ({
+        ...prev,
+        phone: value
+      }));
     }
+  };
+
+  // Fonction pour gérer les changements dans les champs de livraison
+  const handleDeliveryInfoChange = (field: string, value: string) => {
+    setDeliveryInfo(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   // Validate phone number format
   const isValidPhone = (phone: string) => {
     const phoneRegex = /^(70|79|90|91|92|93|96|97|98|99)\d{6}$/;
     return phoneRegex.test(phone);
+  };
+
+  // Fonction pour vérifier si tous les champs de l'étape 1 sont valides
+  const isStep1Valid = () => {
+    return (
+      deliveryInfo.street.trim() !== "" &&
+      deliveryInfo.city.trim() !== "" &&
+      deliveryInfo.postal_code.trim() !== "" &&
+      deliveryInfo.country.trim() !== "" &&
+      deliveryPhone.trim() !== "" &&
+      isValidPhone(deliveryPhone)
+    );
   };
 
   const nextStep = () => {
@@ -438,6 +471,8 @@ export default function CheckoutPage() {
                         <input
                           name="street"
                           type="text"
+                          value={deliveryInfo.street}
+                          onChange={(e) => handleDeliveryInfoChange('street', e.target.value)}
                           placeholder="123 Rue de la République, Quartier Administratif"
                           className="w-full p-3 sm:p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-adawi-gold/20 focus:border-adawi-gold transition-all duration-300 hover:border-adawi-brown/50 text-sm sm:text-base"
                           required
@@ -458,6 +493,8 @@ export default function CheckoutPage() {
                       <input
                         name="city"
                         type="text"
+                        value={deliveryInfo.city}
+                        onChange={(e) => handleDeliveryInfoChange('city', e.target.value)}
                         placeholder="Lomé"
                         className="w-full p-3 sm:p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-adawi-gold/20 focus:border-adawi-gold transition-all duration-300 hover:border-adawi-brown/50 text-sm sm:text-base"
                         required
@@ -471,6 +508,8 @@ export default function CheckoutPage() {
                       <input
                         name="postal_code"
                         type="text"
+                        value={deliveryInfo.postal_code}
+                        onChange={(e) => handleDeliveryInfoChange('postal_code', e.target.value)}
                         placeholder="BP 1234"
                         className="w-full p-3 sm:p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-adawi-gold/20 focus:border-adawi-gold transition-all duration-300 hover:border-adawi-brown/50 text-sm sm:text-base"
                         required
@@ -484,7 +523,8 @@ export default function CheckoutPage() {
                       <input
                         name="country"
                         type="text"
-                        defaultValue="Togo"
+                        value={deliveryInfo.country}
+                        onChange={(e) => handleDeliveryInfoChange('country', e.target.value)}
                         className="w-full p-3 sm:p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-adawi-gold/20 focus:border-adawi-gold transition-all duration-300 hover:border-adawi-brown/50 text-sm sm:text-base"
                         required
                       />
@@ -532,14 +572,33 @@ export default function CheckoutPage() {
                     <button
                       type="button"
                       onClick={nextStep}
-                      className="w-full sm:w-auto bg-adawi-gold hover:bg-adawi-gold/90 text-black px-6 sm:px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center group text-sm sm:text-base"
+                      disabled={!isStep1Valid()}
+                      className={`w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center group text-sm sm:text-base ${
+                        isStep1Valid()
+                          ? 'bg-adawi-gold hover:bg-adawi-gold/90 text-black transform hover:scale-105 hover:shadow-lg'
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      }`}
                     >
                       Continuer vers le paiement
-                      <svg className="w-4 h-4 sm:w-5 sm:h-5 ml-2 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className={`w-4 h-4 sm:w-5 sm:h-5 ml-2 transition-transform duration-300 ${
+                        isStep1Valid() ? 'transform group-hover:translate-x-1' : ''
+                      }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                       </svg>
                     </button>
                   </div>
+
+                  {/* Message d'aide si les champs ne sont pas valides */}
+                  {!isStep1Valid() && (
+                    <div className="mt-3 text-center">
+                      <p className="text-sm text-gray-500 flex items-center justify-center">
+                        <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                        Veuillez remplir tous les champs obligatoires
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Step 2: Payment Information - Responsive */}
@@ -714,6 +773,14 @@ export default function CheckoutPage() {
           }
         }
 
+        .animate-slideDown {
+          animation: slideDown 0.5s ease-out;
+        }
+
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out;
+        }
+
         /* Enhanced focus states */
         .group:focus-within input,
         .group:focus-within select {
@@ -823,7 +890,7 @@ export default function CheckoutPage() {
 
         /* Better loading state for slow connections */
         .loading-skeleton {
-          background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+          background: linear-gradient(90deg, #f0f0f0 25%, #e0e0f0 50%, #f0f0f0 75%);
           background-size: 200% 100%;
           animation: loading 1.5s infinite;
         }
