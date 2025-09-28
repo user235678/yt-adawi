@@ -30,7 +30,7 @@ export default function ClientSidebar({ onClose }: ClientSidebarProps) {
     { name: "Suivi", href: "/client/tracking", icon: TruckElectric },
     { name: "Rendez-vous", href: "/client/appointments", icon: Clock1 },
     { name: "Mes Rendez-vous", href: "/client/list", icon: ListCheck },
-    { name: "Créneaux", href: "/client/booking", icon: Clock, icon1: Ban },
+    // { name: "Créneaux", href: "/client/booking", icon: Clock, icon1: Ban },
   ];
 
   const isActive = (href: string) =>

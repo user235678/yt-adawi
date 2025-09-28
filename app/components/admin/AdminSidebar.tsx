@@ -53,7 +53,7 @@ export default function AdminSidebar({ onClose }: AdminSidebarProps) {
     { id: "Blogs", label: "Blog", icon: FileText, path: "/admin/blog" },
   { id: "refunds", label: "Remboursements", icon: RotateCcw, path: "/admin/refunds" },
     { id: "Rendez-Vous", label: "Rendez-Vous", icon: Settings, path: "/admin/appointments" },
-    { id: "availability", label: "Disponibilités", icon: Clock, path: "/admin/availability" },
+    // { id: "availability", label: "Disponibilités", icon: Clock, path: "/admin/availability" },
     { id: "promotions", label: "Promotions", icon: TicketPercent, path: "/admin/promotions" },
     { id: "settings", label: "Paramètres", icon: Settings, path: "/admin/settings" },
   ];

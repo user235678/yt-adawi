@@ -137,8 +137,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function panier() {
-    const { cartItems, total, isLoggedIn, error, debugInfo } = useLoaderData<LoaderData>();
+    const loaderData = useLoaderData<LoaderData>();
     const navigate = useNavigate();
+    const fetcher = useFetcher<LoaderData>();
+
+    // Use fetcher data when available, otherwise use loader data
+    const currentData = fetcher.data || loaderData;
+    const cartItems = currentData.cartItems || [];
+    const total = currentData.total || 0;
+    const isLoggedIn = currentData.isLoggedIn || false;
+    const error = currentData.error;
+    const debugInfo = currentData.debugInfo;
+
     const [orderNote, setOrderNote] = useState('');
     const [isUpdating, setIsUpdating] = useState<string | null>(null);
     const [isClearing, setIsClearing] = useState(false);
@@ -237,7 +247,7 @@ export default function panier() {
             });
             if (response.ok) {
                 setTimeout(() => {
-                    window.location.reload();
+                    fetcher.load('/panier');
                 }, 300);
             } else {
                 console.error('Failed to increase quantity');
@@ -274,7 +284,7 @@ export default function panier() {
             });
             if (response.ok) {
                 setTimeout(() => {
-                    window.location.reload();
+                    fetcher.load('/panier');
                 }, 300);
             } else {
                 console.error('Failed to decrease quantity');
@@ -319,7 +329,7 @@ export default function panier() {
             if (result.success) {
                 // Animation de suppression
                 setTimeout(() => {
-                    window.location.reload();
+                    fetcher.load('/panier');
                 }, 300);
             } else {
                 console.error('❌ Erreur lors de la suppression:', result.error);
@@ -363,7 +373,7 @@ export default function panier() {
 
             if (result.success) {
                 setTimeout(() => {
-                    window.location.reload();
+                    fetcher.load('/panier');
                 }, 500);
             } else {
                 console.error('❌ Erreur lors du vidage:', result.error);

@@ -69,7 +69,9 @@ export const loader: LoaderFunction = async ({ request }) => {
         total_orders_today: 0,
         total_orders_week: 0,
         total_revenue_today: 0,
-        total_revenue_week: 0
+        total_revenue_week: 0,
+        total_revenue_month: 0,
+        total_orders_month: 0
       }
     });
   }
@@ -117,12 +119,14 @@ interface DashboardData {
   total_orders_week: number;
   total_revenue_today: number;
   total_revenue_week: number;
+  total_revenue_month: number;
+  total_orders_month: number;
 }
 
 export default function SellerDashboard() {
   const { user, dashboardData } = useLoaderData<typeof loader>();
 
-  const [activePeriod, setActivePeriod] = useState<'total' | 'week' | 'day'>('total');
+  const [activePeriod, setActivePeriod] = useState<'mois' | 'week' | 'day'>('mois');
   const [showDetails, setShowDetails] = useState(true);
 
   // Formater la devise
@@ -220,12 +224,12 @@ export default function SellerDashboard() {
               <div className="flex justify-center mb-6">
                 <div className="bg-white rounded-xl shadow-lg p-1 flex space-x-1">
                   <button
-                    onClick={() => setActivePeriod('total')}
+                    onClick={() => setActivePeriod('mois')}
                     className={`px-6 py-2 rounded-lg font-medium transition-all ${
-                      activePeriod === 'total' ? 'bg-adawi-gold text-white' : 'text-gray-600 hover:bg-gray-100'
+                      activePeriod === 'mois' ? 'bg-adawi-gold text-white' : 'text-gray-600 hover:bg-gray-100'
                     }`}
                   >
-                    Total
+                    Le mois
                   </button>
                   <button
                     onClick={() => setActivePeriod('week')}
@@ -256,13 +260,13 @@ export default function SellerDashboard() {
                     <div className="text-right">
                       <p className="text-2xl font-bold text-gray-900">
                         {formatCurrency(
-                          activePeriod === 'total' ? dashboardData.total_revenue :
+                          activePeriod === 'mois' ? dashboardData.total_revenue_month :
                           activePeriod === 'week' ? dashboardData.total_revenue_week :
                           dashboardData.total_revenue_today
                         )}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {activePeriod === 'total' ? 'Chiffre d\'affaires' :
+                        {activePeriod === 'mois' ? 'Chiffre d\'affaires' :
                          activePeriod === 'week' ? 'Semaine' :
                          ' Aujourd\'hui'}
                       </p>
@@ -278,12 +282,12 @@ export default function SellerDashboard() {
                     </div>
                     <div className="text-right">
                       <p className="text-2xl font-bold text-gray-900">
-                        {activePeriod === 'total' ? dashboardData.total_orders :
+                        {activePeriod === 'mois' ? dashboardData.total_orders :
                          activePeriod === 'week' ? dashboardData.total_orders_week :
                          dashboardData.total_orders_today}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {activePeriod === 'total' ? 'Commandes Totales' :
+                        {activePeriod === 'mois' ? 'Commandes Totales' :
                          activePeriod === 'week' ? 'Commandes Semaine' :
                          'Commandes Aujourd\'hui'}
                       </p>
