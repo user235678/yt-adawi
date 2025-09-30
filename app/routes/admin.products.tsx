@@ -755,7 +755,7 @@ export default function AdminProducts() {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
-  const itemsPerPage = 50; // Augmenter à 50 ou plus pour voir tous vos produits
+  const itemsPerPage = 20; // Augmenter à 50 ou plus pour voir tous vos produits
 
   // Catégories disponibles
   const [categories, setCategories] = useState<{ id: string, name: string }[]>([]);

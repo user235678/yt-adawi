@@ -8,11 +8,10 @@ import ViewProductModal from "~/components/admin/ViewProductModal";
 import SellerAddToCartModal from "~/components/seller/SellerAddToCartModal";
 import { requireVendor } from "~/utils/auth.server";
 import SellerLayout from "~/components/seller/SellerLayout";
+
 import {
   Package,
   RefreshCw,
-  DollarSign,
-  BarChart2,
   AlertCircle,
   CheckCircle,
   XCircle,
@@ -531,9 +530,79 @@ function EditProductModal({
   );
 }
 
+// Delete Confirmation Modal Component
+function DeleteConfirmationModal({
+  isOpen,
+  onClose,
+  product,
+  onConfirmDelete,
+  isDeleting
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  product: Product;
+  onConfirmDelete: (productId: string) => void;
+  isDeleting: boolean;
+}) {
+  if (!isOpen || !product) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-md w-full">
+        <div className="p-6">
+          <div className="flex items-center mb-4">
+            <div className="p-2 bg-red-100 rounded-full mr-3">
+              <Trash2 className="w-6 h-6 text-red-600" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900">Confirmer la suppression</h2>
+          </div>
+
+          <p className="text-gray-600 mb-6">
+            Êtes-vous sûr de vouloir supprimer le produit <strong>"{product.name}"</strong> ?
+            Cette action est irréversible.
+          </p>
+
+          <div className="flex justify-end space-x-4">
+            <button
+              onClick={onClose}
+              disabled={isDeleting}
+              className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+            >
+              Annuler
+            </button>
+            <button
+              onClick={() => onConfirmDelete(product.id)}
+              disabled={isDeleting}
+              className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+            >
+              {isDeleting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Suppression...</span>
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4" />
+                  <span>Supprimer</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export const loader: LoaderFunction = async ({ request }) => {
   const user = await requireVendor(request);
-  return json({ user });
+  const token = await readToken(request);
+
+  if (!token) {
+    throw new Response("Unauthorized", { status: 401 });
+  }
+
+  return json({ user, token });
 };
 // Interface pour les produits
 interface Product {
@@ -588,6 +657,8 @@ export default function SellerDashboard() {
   // const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
 
+
+
   // États pour le modal d'ajout de produit
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [categories, setCategories] = useState<{ id: string, name: string }[]>([]);
@@ -595,6 +666,8 @@ export default function SellerDashboard() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddToCartModalOpen, setIsAddToCartModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const openViewModal = (product: Product) => {
     setSelectedProduct(product);
@@ -616,7 +689,7 @@ export default function SellerDashboard() {
     setProductsError(null);
 
     try {
-      const response = await fetch('/api/products/vendor?limit=100&skip=0');
+      const response = await fetch(`/api/products/vendor`);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -760,7 +833,7 @@ export default function SellerDashboard() {
     // loadNotifications();
   }, []);
 
-  // Calculer les statistiques
+// Calculer les statistiques
   const stats = {
     totalProducts: products.length,
     activeProducts: products.filter(p => p.is_active).length,
@@ -796,6 +869,37 @@ export default function SellerDashboard() {
       alert("Produit modifié avec succès !");
     } catch (error) {
       console.error("❌ Erreur dans handleEditProduct:", error);
+    }
+  };
+
+  const handleDeleteProduct = async (productId: string) => {
+    setIsDeleting(true);
+    try {
+      console.log("🗑️ Suppression du produit:", productId);
+
+      const response = await fetch(`https://showroom-backend-2x3g.onrender.com/products/${productId}`, {
+        method: "DELETE",
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || errorData.message || "Erreur lors de la suppression");
+      }
+
+      console.log("✅ Produit supprimé avec succès");
+      // Recharger la liste des produits
+      await loadProducts();
+      setIsDeleteModalOpen(false);
+      setSelectedProduct(null);
+      alert("Produit supprimé avec succès !");
+    } catch (error: any) {
+      console.error("❌ Erreur lors de la suppression:", error);
+      alert(`Erreur lors de la suppression: ${error.message}`);
+    } finally {
+      setIsDeleting(false);
     }
   };
   useEffect(() => {
@@ -921,7 +1025,7 @@ export default function SellerDashboard() {
                   </p>
                 </div>
                 <button
-                  onClick={loadProducts}
+                  onClick={() => loadProducts()}
                   disabled={isLoadingProducts}
                   className="flex items-center px-4 py-2 text-adawi-brown hover:text-adawi-gold transition-colors"
                 >
@@ -947,7 +1051,7 @@ export default function SellerDashboard() {
                     <p className="text-red-800 font-medium mb-2">Erreur de chargement</p>
                     <p className="text-red-600 text-sm mb-4">{productsError}</p>
                     <button
-                      onClick={loadProducts}
+                      onClick={() => loadProducts()}
                       className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
                     >
                       Réessayer
@@ -1094,7 +1198,7 @@ export default function SellerDashboard() {
                             >
                               <Eye className="w-4 h-4" />
                             </button>
-                            {/* <button
+                             <button
                               onClick={() => openEditModal(product)}
                               className="p-2 text-gray-400 hover:text-green-600 transition-colors"
                               title="Modifier"
@@ -1102,11 +1206,15 @@ export default function SellerDashboard() {
                               <Edit className="w-4 h-4" />
                             </button>
                             <button
+                              onClick={() => {
+                                setSelectedProduct(product);
+                                setIsDeleteModalOpen(true);
+                              }}
                               className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                               title="Supprimer le produit"
                             >
                               <Trash2 className="w-4 h-4" />
-                            </button> */}
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -1115,6 +1223,8 @@ export default function SellerDashboard() {
                 </table>
               )}
             </div>
+
+
           </div>
         </div>
 
@@ -1134,7 +1244,7 @@ export default function SellerDashboard() {
             product={selectedProduct}
           />
         )}
-        {/* {selectedProduct && (
+         {selectedProduct && (
           <EditProductModal
             isOpen={isEditModalOpen}
             onClose={() => setIsEditModalOpen(false)}
@@ -1144,7 +1254,7 @@ export default function SellerDashboard() {
             token={token}
           />
 
-        )} */}
+        )} 
 
         {/* Seller Add to Cart Modal */}
         {selectedProduct && (
@@ -1152,6 +1262,20 @@ export default function SellerDashboard() {
             isOpen={isAddToCartModalOpen}
             onClose={() => setIsAddToCartModalOpen(false)}
             product={selectedProduct}
+          />
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {selectedProduct && (
+          <DeleteConfirmationModal
+            isOpen={isDeleteModalOpen}
+            onClose={() => {
+              setIsDeleteModalOpen(false);
+              setSelectedProduct(null);
+            }}
+            product={selectedProduct}
+            onConfirmDelete={handleDeleteProduct}
+            isDeleting={isDeleting}
           />
         )}
       </div>
