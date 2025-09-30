@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { X, Upload } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useSubmit, useNavigation, useActionData } from "@remix-run/react";
+import { X, Upload, Loader2, CheckCircle } from "lucide-react";
 
 interface AddUserModalProps {
   isOpen: boolean;
@@ -7,38 +8,65 @@ interface AddUserModalProps {
 }
 
 export default function AddUserModal({ isOpen, onClose }: AddUserModalProps) {
+  const submit = useSubmit();
+  const navigation = useNavigation();
+  const actionData = useActionData<{ success?: boolean; error?: string }>();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phone: "",
     role: "",
     password: "",
-    confirmPassword: "",
     status: "Actif"
   });
 
   const roles = ["Client", "Vendeur", "Admin"];
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (formData.password !== formData.confirmPassword) {
-      alert("Les mots de passe ne correspondent pas");
-      return;
+  const isSubmitting = navigation.state === "submitting";
+
+  // Reset form fields after successful submission
+  useEffect(() => {
+    if (actionData?.success) {
+      setFormData({
+        name: "",
+        email: "",
+        role: "",
+        password: "",
+        status: "Actif"
+      });
     }
-    
-    // Logique de soumission du formulaire
-    console.log("Données de l'utilisateur:", formData);
-    onClose();
-    
-    // Reset form
+  }, [actionData?.success]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Mapper le rôle au format API
+    const roleMapping: { [key: string]: string } = {
+      "Client": "client",
+      "Vendeur": "vendeur",
+      "Admin": "admin"
+    };
+
+    const userData = {
+      intent: "createUser",
+      name: formData.name,
+      email: formData.email,
+      role: roleMapping[formData.role] || formData.role.toLowerCase(),
+      password: formData.password,
+      status: formData.status
+    };
+
+    console.log("Envoi des données utilisateur:", userData);
+
+    submit(userData, { method: "post" });
+  };
+
+  const handleCreateAnother = () => {
     setFormData({
       name: "",
       email: "",
-      phone: "",
       role: "",
       password: "",
-      confirmPassword: "",
       status: "Actif"
     });
   };
@@ -64,28 +92,26 @@ export default function AddUserModal({ isOpen, onClose }: AddUserModalProps) {
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* Avatar Upload */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Photo de profil
-            </label>
-            <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </div>
-              <button
-                type="button"
-                className="flex items-center px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                Télécharger
-              </button>
+        {/* Success Display */}
+        {actionData?.success && (
+          <div className="px-6 py-3 bg-green-50 border-l-4 border-green-400 text-green-700">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-5 h-5" />
+              <p className="text-sm font-medium">Utilisateur créé avec succès !</p>
             </div>
           </div>
+        )}
+
+        {/* Error Display */}
+        {actionData?.error && (
+          <div className="px-6 py-3 bg-red-50 border-l-4 border-red-400 text-red-700">
+            <p className="text-sm">{actionData.error}</p>
+          </div>
+        )}
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          
 
           {/* Name */}
           <div>
@@ -119,22 +145,6 @@ export default function AddUserModal({ isOpen, onClose }: AddUserModalProps) {
             />
           </div>
 
-          {/* Phone */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Numéro de téléphone *
-            </label>
-            <input
-              type="tel"
-              name="phone"
-              required
-              value={formData.phone}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
-              placeholder="+228 90 12 34 56"
-            />
-          </div>
-
           {/* Role */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -163,27 +173,13 @@ export default function AddUserModal({ isOpen, onClose }: AddUserModalProps) {
               type="password"
               name="password"
               required
+              minLength={6}
               value={formData.password}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
-              placeholder="••••••••"
+              placeholder="Au moins 6 caractères"
             />
-          </div>
-
-          {/* Confirm Password */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Confirmer le mot de passe *
-            </label>
-            <input
-              type="password"
-              name="confirmPassword"
-              required
-              value={formData.confirmPassword}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
-              placeholder="••••••••"
-            />
+            <p className="text-xs text-gray-500 mt-1">Le mot de passe doit contenir au moins 6 caractères</p>
           </div>
 
           {/* Status */}
@@ -213,9 +209,11 @@ export default function AddUserModal({ isOpen, onClose }: AddUserModalProps) {
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-adawi-gold text-white rounded-lg hover:bg-adawi-gold/90 transition-colors"
+              disabled={isSubmitting}
+              className="px-4 py-2 bg-adawi-gold text-white rounded-lg hover:bg-adawi-gold/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              Créer l'utilisateur
+              {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+              {isSubmitting ? "Création..." : "Créer l'utilisateur"}
             </button>
           </div>
         </form>

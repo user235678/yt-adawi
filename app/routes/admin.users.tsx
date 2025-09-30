@@ -283,6 +283,60 @@ export const action: ActionFunction = async ({ request }) => {
     }
   }
 
+  // --- Cas 4 : Créer un utilisateur ---
+  if (intent === "createUser") {
+    const name = String(formData.get("name") || "");
+    const email = String(formData.get("email") || "");
+    const role = String(formData.get("role") || "");
+    const password = String(formData.get("password") || "");
+    const status = String(formData.get("status") || "");
+
+    if (!name || !email || !role || !password) {
+      return json<ActionData>({ error: "Tous les champs requis doivent être remplis" }, { status: 400 });
+    }
+
+    try {
+      let token;
+      try {
+        const parsedToken = typeof tokenData === "string" ? JSON.parse(tokenData) : tokenData;
+        token = parsedToken?.access_token || tokenData;
+      } catch {
+        token = tokenData;
+      }
+
+      const userData = {
+        name,
+        email,
+        role,
+        password,
+        status
+      };
+
+      const response = await fetch(`${API_BASE}/admin/users`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(userData)
+      });
+
+      if (!response.ok) {
+        let errorMessage = `Erreur ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorData.message || errorMessage;
+        } catch { }
+        return json<ActionData>({ error: errorMessage }, { status: response.status });
+      }
+
+      return json<ActionData>({ success: true });
+
+    } catch (error: any) {
+      return json<ActionData>({ error: "Erreur de connexion au serveur" }, { status: 500 });
+    }
+  }
+
   return json<ActionData>({ error: "Intent non reconnu" }, { status: 400 });
 };
 

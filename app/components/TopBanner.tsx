@@ -1,16 +1,5 @@
 import React, { useState } from "react";
-
-// Hook simulé pour la démo
-const usePromotion = () => {
-  return {
-    promotion: {
-      description: "PROMO SPÉCIALE AUTOMNE",
-      discount_percentage: 30,
-      end_date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString() // Dans 3 jours
-    },
-    loading: false
-  };
-};
+import { usePromotion } from "~/hooks/usePromotion";
 
 const TopBanner: React.FC = () => {
   const { promotion, loading } = usePromotion();
@@ -29,13 +18,13 @@ const TopBanner: React.FC = () => {
 
   const getMessage = () => {
     console.log("getMessage - promotion:", promotion);
-   
+
     if (promotion) {
       const endDate = new Date(promotion.end_date);
       const now = new Date();
       const diffTime = endDate.getTime() - now.getTime();
       const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      
+
       console.log("Date calculation:", {
         endDate: promotion.end_date,
         endDateParsed: endDate,
@@ -45,16 +34,16 @@ const TopBanner: React.FC = () => {
       });
 
       if (daysLeft > 1) {
-        return `${promotion.description} - Plus que ${daysLeft} jours ! -${promotion.discount_percentage}%`;
+        return `🌟 ${promotion.description} -${promotion.discount_percentage}% - Plus que ${daysLeft} jours !`;
       } else if (daysLeft === 1) {
-        return `${promotion.description} - Dernière chance ! -${promotion.discount_percentage}%`;
+        return `🌟 ${promotion.description} -${promotion.discount_percentage}% - Dernière chance !`;
       } else if (daysLeft === 0) {
-        return `${promotion.description} - Dernières heures ! -${promotion.discount_percentage}%`;
+        return `🌟 ${promotion.description} -${promotion.discount_percentage}% - Dernières heures !`;
       } else {
-        return `${promotion.description} -${promotion.discount_percentage}% (Offre expirée)`;
+        return `🌟 ${promotion.description} -${promotion.discount_percentage}% (Expirée)`;
       }
     }
-   
+
     console.log("Using fallback message");
     return "Soyez les bienvenus sur notre boutique ! Nous espérons que vous trouverez votre bonheur parmi notre large gamme de produits.";
   };
@@ -161,9 +150,7 @@ const TopBanner: React.FC = () => {
 
       <div className="banner-container" onClick={toggleDirection} title="Cliquez pour changer la direction">
         <div className={direction === 'right' ? 'scrolling-text-right' : 'scrolling-text-left'}>
-          {message} &nbsp; {/* Espace pour la boucle */}
-          {message} &nbsp; {/* Espace pour la boucle */}
-          {message} {/* Répété pour une boucle fluide */}
+          {message} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {message}
         </div>
       </div>
     </div>
