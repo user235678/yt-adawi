@@ -178,17 +178,131 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
     }
   }, [product]);
 
-  const getProductColorStyle = (color: string) => {
-    const colorMap: Record<string, string> = {
-      blanc: "bg-white border-red-600",
-      noir: "bg-black border-black",
-      rouge: "bg-red-500 border-red-500",
-      vert: "bg-green-500 border-green-500",
-      marron: "bg-amber-700 border-amber-700",
-      bleu: "bg-blue-500 border-blue-500",
+  const getColorStyle = (color: string) => {
+    const colorMap: Record<string, { bg: string, border: string }> = {
+      blanc: { bg: "#FFFFFF", border: "#DC2626" },
+      noir: { bg: "#000000", border: "#000000" },
+      rouge: { bg: "#DC2626", border: "#DC2626" },
+      vert: { bg: "#16A34A", border: "#16A34A" },
+      marron: { bg: "#92400E", border: "#92400E" },
+      bleu: { bg: "#2563EB", border: "#2563EB" },
     };
 
-    return colorMap[color] || "bg-gray-400 border-gray-400";
+    // Pour les couleurs inconnues, créer un style dynamique
+    const dynamicColorMap: Record<string, string> = {
+      // Couleurs de base étendues
+      rose: "#FF69B4",
+      violet: "#8A2BE2",
+      orange: "#FFA500",
+      jaune: "#FFFF00",
+      gris: "#808080",
+      beige: "#F5F5DC",
+      turquoise: "#40E0D0",
+      magenta: "#FF00FF",
+      cyan: "#00FFFF",
+      lime: "#00FF00",
+      indigo: "#4B0082",
+      corail: "#FF7F50",
+      saumon: "#FA8072",
+      lavande: "#E6E6FA",
+      menthe: "#98FB98",
+      chocolat: "#D2691E",
+      creme: "#FFFACD",
+
+      // Nuances de rose et rouge
+      fuchsia: "#FF00FF",
+      bordeaux: "#800020",
+      rouge: "#FF0000",
+      rubis: "#E0115F",
+      cerise: "#DE3163",
+      framboise: "#C72C48",
+      pourpre: "#800080",
+
+      // Nuances de bleu
+      bleu: "#0000FF",
+      marine: "#000080",
+      navy: "#000080",
+      azur: "#007FFF",
+      cobalt: "#0047AB",
+      pétrole: "#1B4D5C",
+      canard: "#048B9A",
+      denim: "#1560BD",
+
+      // Nuances de vert
+      vert: "#008000",
+      olive: "#808000",
+      kaki: "#8B7355",
+      émeraude: "#50C878",
+      jade: "#00A86B",
+      pistache: "#BEF574",
+      sapin: "#0A3A2A",
+
+      // Nuances de marron et terre
+      marron: "#8B4513",
+      caramel: "#AF6E4D",
+      taupe: "#483C32",
+      camel: "#C19A6B",
+      cognac: "#9A463D",
+      terracotta: "#E2725B",
+      brun: "#654321",
+
+      // Nuances de blanc et clair
+      blanc: "#FFFFFF",
+      ivoire: "#FFFFF0",
+      ecru: "#F5F5DC",
+      champagne: "#F7E7CE",
+      perle: "#FDEEF4",
+
+      // Nuances de noir et foncé
+      noir: "#000000",
+      anthracite: "#293133",
+      charbon: "#36454F",
+
+      // Couleurs métalliques
+      or: "#FFD700",
+      argent: "#C0C0C0",
+      bronze: "#CD7F32",
+      cuivre: "#B87333",
+
+      // Couleurs pastel
+      "rose pâle": "#FFB6C1",
+      "bleu ciel": "#87CEEB",
+      "vert menthe": "#F5FFFA",
+      "jaune pâle": "#FFFFE0",
+      "pêche": "#FFE5B4",
+
+      // Couleurs vives
+      fluo: "#CCFF00",
+      néon: "#FF10F0",
+      électrique: "#00FFFF",
+
+      // Autres couleurs courantes
+      prune: "#8E4585",
+      aubergine: "#614051",
+      moutarde: "#FFDB58",
+      ocre: "#CC7722",
+      ardoise: "#708090",
+      lilas: "#C8A2C8",
+      mauve: "#E0B0FF",
+      grenat: "#733635",
+      safran: "#F4C430",
+      ambre: "#FFBF00",
+      topaze: "#FFC87C",
+    };
+
+    if (colorMap[color]) {
+      return {
+        backgroundColor: colorMap[color].bg,
+        borderColor: colorMap[color].border,
+      };
+    }
+
+    const cssColor = dynamicColorMap[color.toLowerCase()] || "#808080"; // Gris par défaut si inconnu
+
+    return {
+      backgroundColor: cssColor,
+      borderColor: "#D1D5DB", // gray-300
+    };
   };
 
   function isNewProduct(productDate: Date | string): boolean {
@@ -265,7 +379,7 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
                   {result.buttonText}
                 </button>
                 <button
-                  onClick={() => {/* Le bouton X du toast fermera automatiquement */}}
+                  onClick={() => {/* Le bouton X du toast fermera automatiquement */ }}
                   className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
                 >
                   Plus tard
@@ -352,12 +466,12 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
 
       if (!response.ok) {
         const result = JSON.parse(responseText);
-        
+
         // Gérer le cas où l'utilisateur n'est pas connecté
         if (result.errorType === 'auth_required' || result.errorType === 'session_expired') {
           // Créer un ID unique pour ce toast
           const toastId = `auth-toast-${Date.now()}`;
-          
+
           // Afficher un toast personnalisé avec bouton de connexion
           showToast(
             <div className="flex flex-col space-y-3">
@@ -378,7 +492,7 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
                   {result.buttonText}
                 </button>
                 <button
-                  onClick={() => {/* Le bouton X du toast fermera automatiquement */}}
+                  onClick={() => {/* Le bouton X du toast fermera automatiquement */ }}
                   className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
                 >
                   Plus tard
@@ -594,8 +708,8 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
                       key={index}
                       onClick={() => setSelectedImageIndex(index)}
                       className={`relative min-w-[4rem] w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 transition-all duration-300 hover:scale-105 active:scale-95 ${selectedImageIndex === index
-                          ? 'border-adawi-gold shadow-lg ring-2 ring-adawi-gold/20'
-                          : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-adawi-gold shadow-lg ring-2 ring-adawi-gold/20'
+                        : 'border-gray-200 hover:border-gray-300'
                         }`}
                     >
                       <img
@@ -667,10 +781,10 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
                         onClick={() => isAvailable && setSelectedSize(size)}
                         disabled={!isAvailable}
                         className={`relative h-12 border-2 text-sm font-semibold transition-all duration-300 rounded-lg hover:scale-105 active:scale-95 ${selectedSize === size && isAvailable
-                            ? 'border-black bg-adawi-gold text-white shadow-lg transform scale-105'
-                            : isAvailable
-                              ? 'border-gray-300 text-black hover:shadow-md'
-                              : 'border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50 opacity-60'
+                          ? 'border-black bg-adawi-gold text-white shadow-lg transform scale-105'
+                          : isAvailable
+                            ? 'border-gray-300 text-black hover:shadow-md'
+                            : 'border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50 opacity-60'
                           }`}
                       >
                         <span className={!isAvailable ? 'line-through decoration-2 decoration-red-500' : ''}>
@@ -700,10 +814,10 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
                     <button
                       key={color}
                       onClick={() => setSelectedColor(color)}
-                      className={`relative w-12 h-12 rounded-full border-4 transition-all duration-300 hover:scale-110 active:scale-95 ${getProductColorStyle(color)
-                        } ${selectedColor === color
-                          ? 'ring-4 ring-adawi-gold ring-offset-2 shadow-lg transform scale-110'
-                          : 'hover:ring-2 hover:ring-gray-300 hover:ring-offset-2 hover:shadow-md'
+                      style={getColorStyle(color)}
+                      className={`relative w-12 h-12 rounded-full border-4 transition-all duration-300 hover:scale-110 active:scale-95 ${selectedColor === color
+                        ? 'ring-4 ring-adawi-gold ring-offset-2 shadow-lg transform scale-110'
+                        : 'hover:ring-2 hover:ring-gray-300 hover:ring-offset-2 hover:shadow-md'
                         }`}
                       aria-label={`Sélectionner la couleur ${color}`}
                     >
@@ -726,8 +840,8 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
                 <div className="flex items-center gap-4 bg-gray-50 rounded-xl p-2 w-fit">
                   <button
                     className={`w-12 h-12 border-2 rounded-xl flex items-center justify-center text-xl font-bold transition-all duration-300 hover:scale-105 active:scale-95 ${quantity > 1
-                        ? 'border-gray-300 hover:border-black hover:bg-white text-black hover:shadow-md'
-                        : 'border-gray-200 text-gray-400 cursor-not-allowed bg-gray-100'
+                      ? 'border-gray-300 hover:border-black hover:bg-white text-black hover:shadow-md'
+                      : 'border-gray-200 text-gray-400 cursor-not-allowed bg-gray-100'
                       }`}
                     onClick={decreaseQuantity}
                     disabled={quantity <= 1}
@@ -896,11 +1010,10 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
                   <button
                     onClick={handleAddToCart}
                     disabled={isAddingToCart}
-                    className={`w-full py-4 px-6 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2 ${
-                      isAddingToCart
+                    className={`w-full py-4 px-6 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2 ${isAddingToCart
                         ? "bg-adawi-gold text-white cursor-not-allowed scale-95"
                         : "bg-adawi-gold text-white hover:shadow-xl hover:brightness-110"
-                    }`}
+                      }`}
                   >
                     {isAddingToCart ? (
                       <>
