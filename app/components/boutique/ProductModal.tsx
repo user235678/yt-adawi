@@ -696,33 +696,22 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
                   Couleur: <span className="font-normal">{selectedColor.charAt(0).toUpperCase() + selectedColor.slice(1)}</span>
                 </h4>
                 <div className="flex gap-3 flex-wrap">
-                  {allColors.map((color) => {
-                    const isAvailable = availableColors.includes(color);
-                    return (
-                      <button
-                        key={color}
-                        onClick={() => isAvailable && setSelectedColor(color)}
-                        disabled={!isAvailable}
-                        className={`relative w-12 h-12 rounded-full border-4 transition-all duration-300 hover:scale-110 active:scale-95 ${getProductColorStyle(color)
-                          } ${selectedColor === color && isAvailable
-                            ? 'ring-4 ring-adawi-gold ring-offset-2 shadow-lg transform scale-110'
-                            : isAvailable
-                              ? 'hover:ring-2 hover:ring-gray-300 hover:ring-offset-2 hover:shadow-md'
-                              : 'opacity-40 cursor-not-allowed'
-                          }`}
-                        aria-label={`Sélectionner la couleur ${color}`}
-                      >
-                        {!isAvailable && (
-                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <div className="w-full h-0.5 bg-red-600 transform rotate-45 shadow-sm"></div>
-                          </div>
-                        )}
-                        {selectedColor === color && isAvailable && (
-                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-adawi-gold rounded-full border-2 border-white shadow-sm"></div>
-                        )}
-                      </button>
-                    );
-                  })}
+                  {availableColors.map((color) => (
+                    <button
+                      key={color}
+                      onClick={() => setSelectedColor(color)}
+                      className={`relative w-12 h-12 rounded-full border-4 transition-all duration-300 hover:scale-110 active:scale-95 ${getProductColorStyle(color)
+                        } ${selectedColor === color
+                          ? 'ring-4 ring-adawi-gold ring-offset-2 shadow-lg transform scale-110'
+                          : 'hover:ring-2 hover:ring-gray-300 hover:ring-offset-2 hover:shadow-md'
+                        }`}
+                      aria-label={`Sélectionner la couleur ${color}`}
+                    >
+                      {selectedColor === color && (
+                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-adawi-gold rounded-full border-2 border-white shadow-sm"></div>
+                      )}
+                    </button>
+                  ))}
                 </div>
                 {availableColors.length > 0 && (
                   <p className="text-xs text-gray-500 mt-3 font-medium">
