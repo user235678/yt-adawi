@@ -3,7 +3,7 @@ import { usePromotion } from "~/hooks/usePromotion";
 
 const TopBanner: React.FC = () => {
   const { promotion, loading } = usePromotion();
-  const [direction, setDirection] = useState<'left' | 'right'>('right'); // Changé par défaut vers la gauche
+  const [direction, setDirection] = useState<'left' | 'right'>('left'); // Changé par défaut vers la gauche
   
   // Debug complet
   console.log("TopBanner - Hook state:", { promotion, loading });

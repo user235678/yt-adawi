@@ -6,6 +6,7 @@ import TopBanner from "~/components/TopBanner";
 import Header from "~/components/CompactHeader";
 import Footer from "~/components/Footer";
 import { readSessionData } from "~/utils/session.server";
+import { useCart } from "~/contexts/CartContext";
 
 export const meta: MetaFunction = () => {
     return [
@@ -155,6 +156,8 @@ export default function panier() {
     const [animatingItems, setAnimatingItems] = useState<Set<string>>(new Set());
     const [isLoaded, setIsLoaded] = useState(false);
 
+    const { refreshCart, dispatch } = useCart();
+
     // Animation de chargement initial
     useEffect(() => {
         const timer = setTimeout(() => setIsLoaded(true), 100);
@@ -248,6 +251,7 @@ export default function panier() {
             if (response.ok) {
                 setTimeout(() => {
                     fetcher.load('/panier');
+                    dispatch({ type: 'INCREASE_ITEM_COUNT', payload: { amount: 1 } }); // Update cart badge immediately
                 }, 300);
             } else {
                 console.error('Failed to increase quantity');
@@ -285,6 +289,7 @@ export default function panier() {
             if (response.ok) {
                 setTimeout(() => {
                     fetcher.load('/panier');
+                    dispatch({ type: 'DECREASE_ITEM_COUNT', payload: { amount: 1 } }); // Update cart badge immediately
                 }, 300);
             } else {
                 console.error('Failed to decrease quantity');
@@ -330,6 +335,10 @@ export default function panier() {
                 // Animation de suppression
                 setTimeout(() => {
                     fetcher.load('/panier');
+                    const itemToRemove = cartItems.find(item => (item.product_id || item.id) === itemId);
+                    if (itemToRemove) {
+                        dispatch({ type: 'DECREASE_ITEM_COUNT', payload: { amount: itemToRemove.quantity } });
+                    }
                 }, 300);
             } else {
                 console.error('❌ Erreur lors de la suppression:', result.error);
@@ -374,6 +383,7 @@ export default function panier() {
             if (result.success) {
                 setTimeout(() => {
                     fetcher.load('/panier');
+                    dispatch({ type: 'CLEAR_CART' });
                 }, 500);
             } else {
                 console.error('❌ Erreur lors du vidage:', result.error);

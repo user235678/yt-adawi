@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import type { Product } from "./ProductGrid";
 import { useToast } from "~/contexts/ToastContext";
+import { useCart } from "~/contexts/CartContext";
 import { Link } from "react-router-dom";
 import ZoomModal from "../blog/ZoomModal";
 import {
@@ -70,6 +71,7 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
 
 
   const { showToast } = useToast();
+  const { addToCart } = useCart();
 
   // Zoom modal handlers
   const openZoomModal = (image: string) => {
@@ -427,102 +429,19 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
     }
   };
 
-  // ✅ Fonction corrigée pour utiliser les cookies HTTP-only comme AddToCartModal
+  // ✅ Fonction corrigée pour utiliser le CartContext
   const handleAddToCart = async () => {
     if (!product) return;
 
     setIsAddingToCart(true);
 
     try {
-      // ✅ Trouver le produit API original pour obtenir les vraies données
-      const apiProduct = apiProducts.find(p => p.id === product.id);
-
-      // ✅ Préparer les données exactement comme AddToCartModal
-      const cartData = {
-        product_id: product.id, // ✅ Utiliser l'ID original (string)
-        quantity: quantity,
-        size: selectedSize || "",
-        color: selectedColor || "",
-        images: [product.image].filter(Boolean), // ✅ Simplifier les images
-        price: product.priceValue,
-        name: product.name
-      };
-
-      console.log('Données envoyées à l\'API:', cartData);
-
-      // ✅ Appel à l'API avec credentials pour les cookies HTTP-only
-      const response = await fetch('/api/cart/add', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // ✅ Important pour les cookies HTTP-only
-        body: JSON.stringify(cartData)
-      });
-
-      // ✅ Log de la réponse brute pour le débogage
-      const responseText = await response.text();
-      console.log('Réponse brute de l\'API:', responseText);
-
-      if (!response.ok) {
-        const result = JSON.parse(responseText);
-
-        // Gérer le cas où l'utilisateur n'est pas connecté
-        if (result.errorType === 'auth_required' || result.errorType === 'session_expired') {
-          // Créer un ID unique pour ce toast
-          const toastId = `auth-toast-${Date.now()}`;
-
-          // Afficher un toast personnalisé avec bouton de connexion
-          showToast(
-            <div className="flex flex-col space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.876c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.062 15.5c-.77.833.192 2.5 1.732 2.5z" />
-                  </svg>
-                  <span className="font-semibold text-gray-800">{result.title}</span>
-                </div>
-              </div>
-              <p className="text-sm text-gray-600">{result.message}</p>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => window.location.href = result.loginUrl}
-                  className="px-4 py-2 bg-adawi-gold text-white rounded-lg hover:bg-adawi-brown transition-colors text-sm font-medium"
-                >
-                  {result.buttonText}
-                </button>
-                <button
-                  onClick={() => {/* Le bouton X du toast fermera automatiquement */ }}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
-                >
-                  Plus tard
-                </button>
-              </div>
-            </div>,
-            15000 // 15 secondes - assez long pour que l'utilisateur puisse lire et agir
-          );
-          return;
-        }
-
-        throw new Error(`Erreur ${response.status}: ${responseText}`);
-      }
-
-      const result = JSON.parse(responseText);
-      console.log('Réponse parsée de l\'API:', result);
+      await addToCart(product, selectedSize || "", selectedColor || "", quantity);
 
       // Attendre un peu pour l'animation
       await new Promise(resolve => setTimeout(resolve, 300));
 
       showToast(`${quantity} ${product.name} ajouté(e)s au panier ✅`);
-
-      // ✅ Déclencher un événement pour mettre à jour le compteur du panier
-      window.dispatchEvent(new CustomEvent('cartUpdated', {
-        detail: {
-          total: result.total || 0,
-          itemCount: result.items?.length || 0
-        }
-      }));
-
       handleClose();
     } catch (error) {
       console.error('Erreur lors de l\'ajout au panier:', error);

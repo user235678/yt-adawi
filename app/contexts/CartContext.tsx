@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, ReactNode } from 'react';
+import { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
 import type { Product } from '~/components/boutique/ProductGrid';
 
 export interface CartItem {
@@ -23,7 +23,13 @@ type CartAction =
   | { type: 'ADD_ITEM'; payload: { product: Product; quantity: number; size: string; color: string } }
   | { type: 'REMOVE_ITEM'; payload: { id: string } }
   | { type: 'UPDATE_QUANTITY'; payload: { id: string; quantity: number } }
-  | { type: 'CLEAR_CART' };
+  | { type: 'INCREASE_ITEM_COUNT'; payload: { amount: number } }
+  | { type: 'DECREASE_ITEM_COUNT'; payload: { amount: number } }
+  | { type: 'SET_ITEM_COUNT'; payload: { count: number } }
+  | { type: 'CLEAR_CART' }
+  | { type: 'SET_CART'; payload: { items: any[]; total: number; itemCount: number; cartId?: string } }
+  | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'SET_ERROR'; payload: string | undefined };
 
 const CartContext = createContext<{
   state: CartState;
@@ -37,9 +43,9 @@ function cartReducer(state: CartState, action: CartAction): CartState {
     case 'ADD_ITEM': {
       const { product, quantity, size, color } = action.payload;
       const itemId = `${product.id}-${size}-${color}`;
-      
+
       const existingItemIndex = state.items.findIndex(item => item.id === itemId);
-      
+
       let newItems: CartItem[];
       if (existingItemIndex >= 0) {
         // Mettre à jour la quantité si l'article existe déjà
@@ -120,6 +126,48 @@ function cartReducer(state: CartState, action: CartAction): CartState {
         itemCount: 0,
       };
 
+    case 'SET_CART':
+      return {
+        ...state,
+        items: action.payload.items,
+        total: action.payload.total,
+        itemCount: action.payload.itemCount,
+        cartId: action.payload.cartId,
+        isLoading: false,
+        error: undefined,
+      };
+
+    case 'SET_LOADING':
+      return {
+        ...state,
+        isLoading: action.payload,
+      };
+
+    case 'INCREASE_ITEM_COUNT':
+      return {
+        ...state,
+        itemCount: state.itemCount + action.payload.amount,
+      };
+
+    case 'DECREASE_ITEM_COUNT':
+      return {
+        ...state,
+        itemCount: Math.max(0, state.itemCount - action.payload.amount),
+      };
+
+    case 'SET_ITEM_COUNT':
+      return {
+        ...state,
+        itemCount: action.payload.count,
+      };
+
+    case 'SET_ERROR':
+      return {
+        ...state,
+        error: action.payload,
+        isLoading: false,
+      };
+
     default:
       return state;
   }
@@ -130,16 +178,144 @@ export function CartProvider({ children }: { children: ReactNode }) {
     items: [],
     total: 0,
     itemCount: 0,
+    isLoading: true,
   });
 
+  const fetchCart = async () => {
+    try {
+      console.log('CartContext: Starting to fetch cart');
+      dispatch({ type: 'SET_LOADING', payload: true });
+
+      // Get session data
+      const sessionResponse = await fetch('/api/session', {
+        credentials: 'include',
+      });
+
+      console.log('CartContext: Session response status:', sessionResponse.status);
+
+      if (!sessionResponse.ok) {
+        console.log('CartContext: Session fetch failed');
+        dispatch({ type: 'SET_ERROR', payload: 'Not authenticated' });
+        return;
+      }
+
+      const sessionData = await sessionResponse.json();
+      console.log('CartContext: Session data:', sessionData);
+
+      if (!sessionData.session_id) {
+        console.log('CartContext: No session ID');
+        dispatch({ type: 'SET_ERROR', payload: 'No session ID' });
+        return;
+      }
+
+      // Fetch cart from API
+      const apiUrl = `https://showroom-backend-2x3g.onrender.com/cart/?session-id=${sessionData.session_id}`;
+      console.log('CartContext: Fetching cart from:', apiUrl);
+      const cartResponse = await fetch(apiUrl, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `${sessionData.token_type || 'Bearer'} ${sessionData.access_token}`,
+        },
+      });
+
+      console.log('CartContext: Cart response status:', cartResponse.status);
+
+      if (!cartResponse.ok) {
+        console.log('CartContext: Cart fetch failed');
+        if (cartResponse.status === 401) {
+          dispatch({ type: 'SET_ERROR', payload: 'Not authenticated' });
+        } else {
+          dispatch({ type: 'SET_ERROR', payload: 'Failed to fetch cart' });
+        }
+        return;
+      }
+
+      const cartData = await cartResponse.json();
+      console.log('CartContext: Cart data received:', cartData);
+
+      // Transform items to local format if needed
+      const items: CartItem[] = cartData.items?.map((item: any) => ({
+        id: item.product_id,
+        product: {
+          id: item.product_id,
+          name: item.name,
+          price: item.price.toString(),
+          images: item.images || [],
+          // Add other required fields with defaults
+          description: '',
+          category: '',
+          stock: item.stock || 0,
+          sizes: [],
+          colors: [],
+          isActive: true,
+        },
+        quantity: item.quantity,
+        selectedSize: item.size,
+        selectedColor: item.color,
+      })) || [];
+
+      console.log('CartContext: Setting cart with itemCount:', cartData.item_count);
+
+      dispatch({
+        type: 'SET_CART',
+        payload: {
+          items,
+          total: cartData.total || 0,
+          itemCount: cartData.item_count || 0,
+          cartId: cartData.id,
+        },
+      });
+    } catch (error) {
+      console.error('CartContext: Error fetching cart:', error);
+      dispatch({ type: 'SET_ERROR', payload: 'Network error' });
+    }
+  };
+
+  useEffect(() => {
+    fetchCart();
+  }, []);
+
   const refreshCart = async () => {
-    // For now, just simulate loading
-    dispatch({ type: 'CLEAR_CART' }); // or load from API, but since local, do nothing
+    await fetchCart();
   };
 
   const addToCart = async (product: Product, size: string, color: string, quantity: number) => {
-    dispatch({ type: 'ADD_ITEM', payload: { product, quantity, size, color } });
-    return true;
+    try {
+      // Get session data first
+      const sessionResponse = await fetch('/api/session', { credentials: 'include' });
+      if (!sessionResponse.ok) {
+        throw new Error('Not authenticated');
+      }
+      const sessionData = await sessionResponse.json();
+
+      // Add item to cart via API
+      const apiUrl = `https://showroom-backend-2x3g.onrender.com/cart/add`;
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `${sessionData.token_type || 'Bearer'} ${sessionData.access_token}`,
+        },
+        body: JSON.stringify({
+          product_id: product.id,
+          size,
+          color,
+          quantity,
+          session_id: sessionData.session_id,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add to cart');
+      }
+
+      // Refresh cart to get updated data from server
+      await refreshCart();
+      return true;
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      return false;
+    }
   };
 
   return (
