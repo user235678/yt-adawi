@@ -13,6 +13,7 @@ import {
   FileText,
   RotateCcw,
   Clock10,
+  Users,
   CalendarCheck
 } from "lucide-react";
 
@@ -32,7 +33,7 @@ export default function SellerSidebar({ onClose }: SellerSidebarProps) {
     { id: "remboursements", label: "Remboursements", icon: RotateCcw, path: "/seller/refund" },
     { id: "blog", label: "Blog", icon: FileText, path: "/seller/blog" },
     { id: "appointments", label: "Rendez-vous", icon: Clock10, path: "/seller/appointments" },
-    // { id: "availability", label: "Disponibilités", icon: CalendarCheck, path: "/seller/availability" },
+     { id: "Utilisateurs", label: "Utilisateurs", icon: Users, path: "/seller/users" },
   ];
 
   const handleLinkClick = () => {

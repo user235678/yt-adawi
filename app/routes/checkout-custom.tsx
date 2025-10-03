@@ -1,6 +1,6 @@
 import type { LoaderFunction, ActionFunction, MetaFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, useActionData, useNavigation } from "@remix-run/react";
+import { Form, useActionData, useNavigation, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
 import { API_BASE } from "~/utils/auth.server";
 import { readToken } from "~/utils/session.server";
@@ -13,8 +13,41 @@ export const meta: MetaFunction = () => [
   { name: "description", content: "Commandez un vêtement sur mesure" },
 ];
 
-export const loader: LoaderFunction = async () => {
-  return json({});
+export const loader: LoaderFunction = async ({ request }) => {
+  const token = await readToken(request);
+  if (!token) {
+    return redirect("/login");
+  }
+
+  // Correction du parsing du token (même logique que dans le code availability)
+  let authToken = "";
+  if (typeof token === "string") {
+    try {
+      const parsed = JSON.parse(token);
+      authToken = parsed?.access_token || token;
+    } catch {
+      authToken = token;
+    }
+  } else {
+    authToken = token as string;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/profile/`, {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
+
+    if (!res.ok) {
+      return json({ profile: null });
+    }
+
+    const profile = await res.json();
+    return json({ profile });
+  } catch (error) {
+    return json({ profile: null });
+  }
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -164,13 +197,57 @@ export const action: ActionFunction = async ({ request }) => {
 export default function CheckoutCustomPage() {
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
+  const { profile } = useLoaderData<typeof loader>();
+
+  // Initialize state with profile data or defaults
   const [deliveryType, setDeliveryType] = useState("pickup");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [deliveryPhone, setDeliveryPhone] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState(profile?.address?.phone || "");
+  const [deliveryPhone, setDeliveryPhone] = useState(profile?.address?.phone || "");
   const [photos, setPhotos] = useState<File[]>([]);
+
+  // Measurements state initialized from profile or default 0
+  const [measurements, setMeasurements] = useState({
+    height: profile?.measurements?.height || 0,
+    weight: profile?.measurements?.weight || 0,
+    shoulder_width: profile?.measurements?.shoulder_width || 0,
+    chest: profile?.measurements?.chest || 0,
+    waist_length: profile?.measurements?.waist_length || 0,
+    ventral_circumference: profile?.measurements?.ventral_circumference || 0,
+    hips: profile?.measurements?.hips || 0,
+    corsage_length: profile?.measurements?.corsage_length || 0,
+    belt: profile?.measurements?.belt || 0,
+    skirt_length: profile?.measurements?.skirt_length || 0,
+    dress_length: profile?.measurements?.dress_length || 0,
+    sleeve_length: profile?.measurements?.sleeve_length || 0,
+    sleeve_circumference: profile?.measurements?.sleeve_circumference || 0,
+    pants_length: profile?.measurements?.pants_length || 0,
+    short_dress_length: profile?.measurements?.short_dress_length || 0,
+    thigh_circumference: profile?.measurements?.thigh_circumference || 0,
+    knee_length: profile?.measurements?.knee_length || 0,
+    knee_circumference: profile?.measurements?.knee_circumference || 0,
+    bottom: profile?.measurements?.bottom || 0,
+    inseam: profile?.measurements?.inseam || 0,
+    other_measurements: profile?.measurements?.other_measurements || "",
+  });
+
+  // Description state (empty, no profile field for it)
+  const [description, setDescription] = useState("");
+
+  // Current size state initialized from profile.size or empty
+  const [currentSize, setCurrentSize] = useState(profile?.size || "");
+
+  // Address state initialized from profile.address or empty strings
+  const [address, setAddress] = useState({
+    street: profile?.address?.street || "",
+    city: profile?.address?.city || "",
+    postal_code: profile?.address?.postal_code || "",
+    country: profile?.address?.country || "Togo",
+    phone: profile?.address?.phone || "",
+  });
 
   const isSubmitting = navigation.state === "submitting";
 
+  // Handlers for controlled inputs
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, "");
     if (value.length <= 8) {
@@ -182,6 +259,7 @@ export default function CheckoutCustomPage() {
     const value = e.target.value.replace(/\D/g, "");
     if (value.length <= 8) {
       setDeliveryPhone(value);
+      setAddress((prev) => ({ ...prev, phone: value }));
     }
   };
 
@@ -193,6 +271,39 @@ export default function CheckoutCustomPage() {
   const isValidPhone = (phone: string) => {
     const phoneRegex = /^(70|79|90|91|92|93|96|97|98|99)\d{6}$/;
     return phoneRegex.test(phone);
+  };
+
+  // Handlers for measurements inputs
+  const handleMeasurementChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setMeasurements((prev) => ({
+      ...prev,
+      [name]: name === "other_measurements" ? value : parseFloat(value) || 0,
+    }));
+  };
+
+  // Handler for description
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setDescription(e.target.value);
+  };
+
+  // Handler for current size
+  const handleCurrentSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setCurrentSize(e.target.value);
+  };
+
+  // Handler for address inputs
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setAddress((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  // Handler for delivery type select
+  const handleDeliveryTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setDeliveryType(e.target.value);
   };
 
   return (
@@ -224,6 +335,8 @@ export default function CheckoutCustomPage() {
               rows={4}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-brown focus:border-transparent"
               required
+              value={description}
+              onChange={handleDescriptionChange}
             />
           </div>
 
@@ -234,6 +347,8 @@ export default function CheckoutCustomPage() {
               name="current_size"
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-brown focus:border-transparent"
               required
+              value={currentSize}
+              onChange={handleCurrentSizeChange}
             >
               <option value="">Sélectionnez votre taille</option>
               <option value="XS">XS</option>
@@ -249,95 +364,36 @@ export default function CheckoutCustomPage() {
           <div>
             <h2 className="text-xl font-semibold mb-4 text-adawi-brown">Vos mesures (en cm)</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Taille (cm)</label>
-                <input type="number" name="height" step="0.1" className="w-full p-2 border border-gray-300 rounded" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Poids (kg)</label>
-                <input type="number" name="weight" step="0.1" className="w-full p-2 border border-gray-300 rounded" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Largeur d'épaules</label>
-                <input type="number" name="shoulder_width" step="0.1" className="w-full p-2 border border-gray-300 rounded" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Tour de poitrine</label>
-                <input type="number" name="chest" step="0.1" className="w-full p-2 border border-gray-300 rounded" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Longueur taille</label>
-                <input type="number" name="waist_length" step="0.1" className="w-full p-2 border border-gray-300 rounded" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Tour de ventre</label>
-                <input type="number" name="ventral_circumference" step="0.1" className="w-full p-2 border border-gray-300 rounded" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Tour de hanches</label>
-                <input type="number" name="hips" step="0.1" className="w-full p-2 border border-gray-300 rounded" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Longueur corsage</label>
-                <input type="number" name="corsage_length" step="0.1" className="w-full p-2 border border-gray-300 rounded" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Ceinture</label>
-                <input type="number" name="belt" step="0.1" className="w-full p-2 border border-gray-300 rounded" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Longueur jupe</label>
-                <input type="number" name="skirt_length" step="0.1" className="w-full p-2 border border-gray-300 rounded" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Longueur robe</label>
-                <input type="number" name="dress_length" step="0.1" className="w-full p-2 border border-gray-300 rounded" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Longueur manche</label>
-                <input type="number" name="sleeve_length" step="0.1" className="w-full p-2 border border-gray-300 rounded" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Tour de manche</label>
-                <input type="number" name="sleeve_circumference" step="0.1" className="w-full p-2 border border-gray-300 rounded" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Longueur pantalon</label>
-                <input type="number" name="pants_length" step="0.1" className="w-full p-2 border border-gray-300 rounded" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Longueur robe courte</label>
-                <input type="number" name="short_dress_length" step="0.1" className="w-full p-2 border border-gray-300 rounded" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Tour de cuisse</label>
-                <input type="number" name="thigh_circumference" step="0.1" className="w-full p-2 border border-gray-300 rounded" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Longueur genou</label>
-                <input type="number" name="knee_length" step="0.1" className="w-full p-2 border border-gray-300 rounded" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Tour de genou</label>
-                <input type="number" name="knee_circumference" step="0.1" className="w-full p-2 border border-gray-300 rounded" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Bas</label>
-                <input type="number" name="bottom" step="0.1" className="w-full p-2 border border-gray-300 rounded" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Entrejambe</label>
-                <input type="number" name="inseam" step="0.1" className="w-full p-2 border border-gray-300 rounded" />
-              </div>
-            </div>
-            <div className="mt-4">
-              <label className="block text-sm font-medium mb-1">Autres mesures</label>
-              <textarea
-                name="other_measurements"
-                placeholder="Précisez toute autre mesure importante"
-                rows={2}
-                className="w-full p-2 border border-gray-300 rounded"
-              />
+              {Object.entries(measurements).map(([key, value]) => {
+                if (key === "other_measurements") {
+                  return (
+                    <div key={key} className="mt-4 col-span-full">
+                      <label className="block text-sm font-medium mb-1">Autres mesures</label>
+                      <textarea
+                        name={key}
+                        placeholder="Précisez toute autre mesure importante"
+                        rows={2}
+                        className="w-full p-2 border border-gray-300 rounded"
+                        value={value as string}
+                        onChange={handleMeasurementChange}
+                      />
+                    </div>
+                  );
+                }
+                return (
+                  <div key={key}>
+                    <label className="block text-sm font-medium mb-1">{key.replace(/_/g, " ")}</label>
+                    <input
+                      type="number"
+                      name={key}
+                      step="0.1"
+                      className="w-full p-2 border border-gray-300 rounded"
+                      value={value as number}
+                      onChange={handleMeasurementChange}
+                    />
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -350,7 +406,7 @@ export default function CheckoutCustomPage() {
                 <select
                   name="delivery_type"
                   value={deliveryType}
-                  onChange={(e) => setDeliveryType(e.target.value)}
+                  onChange={handleDeliveryTypeChange}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-brown focus:border-transparent"
                   required
                 >
@@ -381,6 +437,8 @@ export default function CheckoutCustomPage() {
                         placeholder="123 Rue de la République"
                         className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-brown focus:border-transparent"
                         required
+                        value={address.street}
+                        onChange={handleAddressChange}
                       />
                     </div>
                     <div>
@@ -391,6 +449,8 @@ export default function CheckoutCustomPage() {
                         placeholder="Lomé"
                         className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-brown focus:border-transparent"
                         required
+                        value={address.city}
+                        onChange={handleAddressChange}
                       />
                     </div>
                     <div>
@@ -401,6 +461,8 @@ export default function CheckoutCustomPage() {
                         placeholder="BP 1234"
                         className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-brown focus:border-transparent"
                         required
+                        value={address.postal_code}
+                        onChange={handleAddressChange}
                       />
                     </div>
                     <div>
@@ -411,6 +473,8 @@ export default function CheckoutCustomPage() {
                         defaultValue="Togo"
                         className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-brown focus:border-transparent"
                         required
+                        value={address.country}
+                        onChange={handleAddressChange}
                       />
                     </div>
                     <div>

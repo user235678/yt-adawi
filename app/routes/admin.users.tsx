@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import type { MetaFunction, LoaderFunction, ActionFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData, useSubmit, useActionData, useNavigation } from "@remix-run/react";
-import { Plus, Search, Filter, Edit, Trash2, Eye, Mail, Phone, MoreVertical, AlertCircle, CheckCircle } from "lucide-react";
+import { Plus, Search, Filter, Edit, Trash2, Eye, Mail, Phone, MoreVertical, AlertCircle, CheckCircle, User } from "lucide-react";
 import AddUserModal from "~/components/admin/AddUserModal";
 import EditRoleModal from "~/components/admin/EditRoleModal";
+import UpdateUserModal from "~/components/admin/UpdateUserModal";
 import { readToken } from "~/utils/session.server";
 import ViewUserModal from "~/components/admin/ViewUserModal";
 import { requireAdmin } from "~/utils/auth.server";
@@ -47,111 +48,99 @@ interface ActionData {
 
 export const loader: LoaderFunction = async ({ request }) => {
   console.log("🔍 Début du loader admin.users");
-  // Vérifier que l'utilisateur est admin
+  
+  const url = new URL(request.url);
+  const intent = url.searchParams.get("intent");
+  const userId = url.searchParams.get("userId");
+
+  // Cas spécial : récupérer le profil d'un utilisateur
+  if (intent === "getUserProfile" && userId) {
+    await requireAdmin(request);
+    const tokenData = await readToken(request);
+    
+    if (!tokenData) {
+      return json({ error: "Non autorisé" }, { status: 401 });
+    }
+
+    try {
+      let token;
+      try {
+        const parsedToken = typeof tokenData === 'string' ? JSON.parse(tokenData) : tokenData;
+        token = parsedToken?.access_token || tokenData;
+      } catch {
+        token = tokenData;
+      }
+
+      const response = await fetch(`${API_BASE}/admin/users/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+      }); 
+
+      if (!response.ok) {
+        let errorMessage = `Erreur ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorData.message || errorMessage;
+        } catch { }
+        return json({ error: errorMessage }, { status: response.status });
+      }
+
+      const userData = await response.json();
+      return json(userData);
+
+    } catch (error: any) {
+      return json({ error: `Erreur de connexion: ${error.message}` }, { status: 500 });
+    }
+  }
+
   await requireAdmin(request);
-
   const tokenData = await readToken(request);
-  console.log("🔑 Token data récupéré:", !!tokenData);
-
+  
   if (!tokenData) {
-    console.log("❌ Pas de token trouvé");
     throw new Response("Non autorisé", { status: 401 });
   }
 
-  // Récupérer les paramètres de l'URL pour les messages de succès
-  const url = new URL(request.url);
-  const success = url.searchParams.get("success");
-
   try {
-    // Parse le token
     let token;
     try {
       const parsedToken = typeof tokenData === 'string' ? JSON.parse(tokenData) : tokenData;
       token = parsedToken?.access_token || tokenData;
-      console.log("🔑 Token extrait:", token ? `${token.substring(0, 20)}...` : "null");
     } catch (parseError) {
-      console.error("❌ Erreur parsing token:", parseError);
       token = tokenData;
     }
 
-    if (!token) {
-      console.log("❌ Token vide après extraction");
-      return json<LoaderData>({
-        users: [],
-        error: "Token invalide",
-        debug: { tokenData: typeof tokenData }
-      });
-    }
-
-    // Récupérer les utilisateurs
-    console.log("👥 Récupération des utilisateurs...");
-    console.log("🌐 URL utilisateurs:", `${API_BASE}/admin/users`);
-
-    const usersRes = await fetch(`${API_BASE}/admin/users`, {
+    const response = await fetch(`${API_BASE}/admin/users?skip=0&limit=1000`, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json"
       },
     });
 
-    console.log("👥 Réponse utilisateurs:", usersRes.status, usersRes.statusText);
-
-    if (!usersRes.ok) {
-      let errorMessage = `Erreur ${usersRes.status}: ${usersRes.statusText}`;
-      let errorDetail = null;
-
+    if (!response.ok) {
+      let errorMessage = `Erreur ${response.status}: ${response.statusText}`;
       try {
-        const errorData = await usersRes.json();
-        console.log("❌ Détail erreur utilisateurs:", errorData);
+        const errorData = await response.json();
         errorMessage = errorData.detail || errorData.message || errorMessage;
-        errorDetail = errorData;
-      } catch (e) {
-        console.log("❌ Impossible de parser l'erreur JSON");
-        const errorText = await usersRes.text();
-        console.log("❌ Erreur texte:", errorText);
-        errorDetail = errorText;
-      }
-
-      return json<LoaderData>({
-        users: [],
+      } catch { }
+      
+      return json<LoaderData>({ 
+        users: [], 
         error: errorMessage,
-        debug: {
-          status: usersRes.status,
-          statusText: usersRes.statusText,
-          errorDetail,
-          apiBase: API_BASE,
-          hasToken: !!token
-        }
+        debug: { status: response.status, statusText: response.statusText }
       });
     }
 
-    const users = await usersRes.json();
-    console.log("✅ Utilisateurs récupérés:", users?.length || 0);
-
-    return json<LoaderData>({
-      users: users || [],
-      error: undefined,
-      success: success || undefined,
-      debug: {
-        usersCount: users?.length || 0,
-        apiBase: API_BASE,
-        hasToken: !!token
-      }
-    });
+    const users = await response.json();
+    return json<LoaderData>({ users, error: null, debug: null });
 
   } catch (error: any) {
-    console.error("💥 Erreur dans le loader:", error);
-    console.error("💥 Stack trace:", error.stack);
-
-    return json<LoaderData>({
-      users: [],
+    console.error("❌ Erreur dans le loader:", error);
+    return json<LoaderData>({ 
+      users: [], 
       error: `Erreur de connexion: ${error.message}`,
-      debug: {
-        errorType: error.constructor.name,
-        errorMessage: error.message,
-        apiBase: API_BASE,
-        stack: error.stack
-      }
+      debug: { error: error.message, stack: error.stack }
     });
   }
 };
@@ -161,7 +150,7 @@ export const action: ActionFunction = async ({ request }) => {
   if (!tokenData) throw new Response("Non autorisé", { status: 401 });
 
   const formData = await request.formData();
-  const intent = String(formData.get("intent") || ""); // 👈 pour savoir quoi faire
+  const intent = String(formData.get("intent") || "");
 
   // --- Cas 1 : Mise à jour du rôle ---
   // --- Cas 3 : Supprimer un utilisateur ---
@@ -337,6 +326,84 @@ export const action: ActionFunction = async ({ request }) => {
     }
   }
 
+  // --- Cas : Mettre à jour le profil utilisateur ---
+  if (intent === "updateProfile") {
+    const userId = String(formData.get("userId") || "");
+    if (!userId) {
+      return json<ActionData>({ error: "ID utilisateur manquant" }, { status: 400 });
+    }
+
+    try {
+      let token;
+      try {
+        const parsedToken = typeof tokenData === "string" ? JSON.parse(tokenData) : tokenData;
+        token = parsedToken?.access_token || tokenData;
+      } catch {
+        token = tokenData;
+      }
+
+      // Construire l'objet measurements
+      const measurements: any = {};
+      const measurementFields = [
+        'height', 'weight', 'shoulder_width', 'chest', 'waist_length',
+        'ventral_circumference', 'hips', 'corsage_length', 'belt',
+        'skirt_length', 'dress_length', 'sleeve_length', 'sleeve_circumference',
+        'pants_length', 'short_dress_length', 'thigh_circumference',
+        'knee_length', 'knee_circumference', 'bottom', 'inseam'
+      ];
+      
+      measurementFields.forEach(field => {
+        const value = formData.get(`measurements.${field}`);
+        measurements[field] = value ? parseFloat(value as string) : 0;
+      });
+      measurements.other_measurements = formData.get('measurements.other_measurements') || '';
+
+      // Construire l'objet address
+      const address = {
+        street: formData.get('address.street') || '',
+        city: formData.get('address.city') || '',
+        postal_code: formData.get('address.postal_code') || '',
+        country: formData.get('address.country') || '',
+        phone: formData.get('address.phone') || ''
+      };
+
+      const updateData = new FormData();
+      updateData.append('measurements', JSON.stringify(measurements));
+      updateData.append('size', formData.get('size') as string);
+      updateData.append('address', JSON.stringify(address));
+
+      // Gérer les photos si présentes
+      const photos = formData.getAll('photos');
+      photos.forEach(photo => {
+        if (photo instanceof File && photo.size > 0) {
+          updateData.append('photos', photo);
+        }
+      });
+
+      const response = await fetch(`${API_BASE}/admin/users/${userId}/profile`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: updateData
+      });
+
+      if (!response.ok) {
+        let errorMessage = `Erreur ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorData.message || errorMessage;
+        } catch { }
+        return json<ActionData>({ error: errorMessage }, { status: response.status });
+      }
+
+      return json<ActionData>({ success: true });
+
+    } catch (error: any) {
+      return json<ActionData>({ error: "Erreur de connexion au serveur" }, { status: 500 });
+    }
+  }
+
   return json<ActionData>({ error: "Intent non reconnu" }, { status: 400 });
 };
 
@@ -350,6 +417,7 @@ export default function AdminUsers() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("all");
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isUpdateUserModalOpen, setIsUpdateUserModalOpen] = useState(false);
   const [modalKey, setModalKey] = useState(0);
 
   const submit = useSubmit();
@@ -379,6 +447,12 @@ export default function AdminUsers() {
   const handleViewUser = (user: User) => {
     setSelectedUser(user);
     setIsViewModalOpen(true);
+  };
+
+  // Nouvelle fonction pour ouvrir le modal de mise à jour du profil
+  const handleUpdateUserProfile = (user: User) => {
+    setSelectedUser(user);
+    setIsUpdateUserModalOpen(true);
   };
 
   const updateUserRole = async (userId: string, role: string) => {
@@ -722,6 +796,14 @@ export default function AdminUsers() {
                         </button>
 
                         <button
+                          className="p-2 text-gray-400 hover:text-purple-600 transition-colors"
+                          title="Modifier le profil"
+                          onClick={() => handleUpdateUserProfile(user)}
+                        >
+                          <User className="w-4 h-4" />
+                        </button>
+
+                        <button
                           className="p-2 text-gray-400 hover:text-green-600 transition-colors"
                           title="Modifier le rôle"
                           onClick={() => handleEditRole(user)}
@@ -829,6 +911,18 @@ export default function AdminUsers() {
         onClose={() => setIsViewModalOpen(false)}
         user={selectedUser}
       />
+
+      {/* Update User Profile Modal */}
+      {selectedUser && (
+        <UpdateUserModal
+          userId={selectedUser.id}
+          isOpen={isUpdateUserModalOpen}
+          onClose={() => {
+            setIsUpdateUserModalOpen(false);
+            setSelectedUser(null);
+          }}
+        />
+      )}
 
     </div>
   );
