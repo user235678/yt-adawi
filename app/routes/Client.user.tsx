@@ -1,9 +1,9 @@
 // routes/profile.tsx
-import { LoaderFunction, json, redirect } from "@remix-run/node";
-import { useLoaderData, useNavigation } from "@remix-run/react";
+import { LoaderFunction, json, redirect, ActionFunction } from "@remix-run/node";
+import { useLoaderData, useNavigation, Form, useActionData } from "@remix-run/react";
 import { readToken } from "~/utils/session.server";
-import { Form } from "@remix-run/react";
 import ClientLayout from "~/components/client/ClientLayout";
+import { useState } from "react";
 
 // Fonction utilitaire pour faire des requêtes avec timeout
 async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = 10000) {
@@ -26,37 +26,34 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = 1
 export const loader: LoaderFunction = async ({ request }) => {
   const token = await readToken(request);
 
-  // Si pas de token, redirection immédiate vers login
   if (!token) {
     console.log("Pas de token trouvé, redirection vers login");
     return redirect("/login");
   }
 
   try {
-    console.log("Vérification du token utilisateur...");
+    console.log("Récupération du profil utilisateur...");
 
-    // Requête avec timeout de 10 secondes
+    // Utiliser le bon endpoint /profile/ au lieu de /auth/me
     const res = await fetchWithTimeout(
-      "https://showroom-backend-2x3g.onrender.com/auth/me",
+      "https://showroom-backend-2x3g.onrender.com/profile/",
       {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
         },
       },
-      10000 // 10 secondes de timeout
+      10000
     );
 
     if (!res.ok) {
       console.log(`Erreur API: ${res.status} ${res.statusText}`);
 
-      // Si 401 (non autorisé) ou 403 (interdit), token expiré
       if (res.status === 401 || res.status === 403) {
         console.log("Token expiré ou invalide, redirection vers login");
         return redirect("/login");
       }
 
-      // Pour les autres erreurs, on essaie de récupérer le message
       let errorMessage = "Erreur lors de la récupération des données utilisateur";
       try {
         const errorData = await res.json();
@@ -75,7 +72,6 @@ export const loader: LoaderFunction = async ({ request }) => {
   } catch (error: any) {
     console.error("Erreur lors de la vérification du token:", error);
 
-    // Gestion des différents types d'erreurs
     if (error.name === 'AbortError') {
       console.log("Timeout de la requête, redirection vers login");
       return redirect("/login?error=timeout");
@@ -86,17 +82,94 @@ export const loader: LoaderFunction = async ({ request }) => {
       return redirect("/login?error=network");
     }
 
-    // Pour toute autre erreur, redirection vers login
     console.log("Erreur inconnue, redirection vers login");
     return redirect("/login?error=unknown");
   }
 };
 
+export const action: ActionFunction = async ({ request }) => {
+  const token = await readToken(request);
+
+  if (!token) {
+    return redirect("/login");
+  }
+
+  const formData = await request.formData();
+  const intent = formData.get("intent");
+
+  if (intent === "updateMeasurements") {
+    // Créer les données form pour l'API
+    const apiFormData = new FormData();
+
+    // Extraire toutes les mesures et les convertir en string séparé par |
+    const measurementsArray = [
+      formData.get("height") || "0",
+      formData.get("weight") || "0",
+      formData.get("shoulder_width") || "0",
+      formData.get("chest") || "0",
+      formData.get("waist_length") || "0",
+      formData.get("ventral_circumference") || "0",
+      formData.get("hips") || "0",
+      formData.get("corsage_length") || "0",
+      formData.get("belt") || "0",
+      formData.get("skirt_length") || "0",
+      formData.get("dress_length") || "0",
+      formData.get("sleeve_length") || "0",
+      formData.get("sleeve_circumference") || "0",
+      formData.get("pants_length") || "0",
+      formData.get("short_dress_length") || "0",
+      formData.get("thigh_circumference") || "0",
+      formData.get("knee_length") || "0",
+      formData.get("knee_circumference") || "0",
+      formData.get("bottom") || "0",
+      formData.get("inseam") || "0"
+    ];
+
+    const measurementsString = measurementsArray.join("|");
+    const size = formData.get("size") as string;
+    const otherMeasurements = formData.get("other_measurements") as string || "";
+
+    // Ajouter les données au FormData
+    apiFormData.append("measurements", measurementsString);
+    apiFormData.append("size", size);
+    if (otherMeasurements) {
+      apiFormData.append("other_measurements", otherMeasurements);
+    }
+
+    try {
+      const res = await fetchWithTimeout(
+        "https://showroom-backend-2x3g.onrender.com/profile/",
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`
+            // Ne pas définir Content-Type, laisser le navigateur le définir pour multipart/form-data
+          },
+          body: apiFormData
+        },
+        10000
+      );
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        return json({ success: false, error: errorData.detail || "Erreur lors de la mise à jour" });
+      }
+
+      return json({ success: true, message: "Profil mis à jour avec succès" });
+    } catch (error) {
+      return json({ success: false, error: "Erreur réseau lors de la mise à jour" });
+    }
+  }
+
+  return json({ success: false, error: "Action non reconnue" });
+};
+
 export default function ProfilePage() {
   const data = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
+  const [isEditing, setIsEditing] = useState(false);
 
-  // Si on a une erreur mais pas d'utilisateur, afficher l'erreur
   if (data.error && !data.user) {
     return (
       <ClientLayout>
@@ -134,7 +207,6 @@ export default function ProfilePage() {
 
   const user = data.user;
 
-  // Indicateur de chargement pendant la navigation
   if (navigation.state === "loading") {
     return (
       <ClientLayout userName={user?.full_name}>
@@ -152,32 +224,64 @@ export default function ProfilePage() {
     <ClientLayout userName={user.full_name}>
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-adawi-brown mb-2">
-            Mon Profil
-          </h1>
-          <p className="text-gray-600">
-            Consultez et gérez vos informations personnelles
-          </p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-adawi-brown mb-2">
+              Mon Profil
+            </h1>
+            <p className="text-gray-600">
+              Consultez et gérez vos informations personnelles
+            </p>
+          </div>
+          {!isEditing && user.role === "client" && (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="px-4 py-2 bg-adawi-gold text-white rounded-lg hover:bg-adawi-gold/90 transition-colors flex items-center"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              Modifier mes mesures
+            </button>
+          )}
         </div>
+
+        {/* Messages de succès/erreur */}
+        {actionData?.success && (
+          <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg">
+            {actionData.message}
+          </div>
+        )}
+        {actionData?.error && (
+          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
+            {actionData.error}
+          </div>
+        )}
 
         {/* Profile Card */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           {/* Header Section */}
           <div className="bg-gradient-to-r from-adawi-brown via-adawi-brown-light to-adawi-gold p-8 text-white">
             <div className="flex items-center space-x-6">
-              {/* Avatar */}
-              <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
+              {/* Avatar ou Photo */}
+              <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm overflow-hidden">
+                {user.photo && user.photo.length > 0 ? (
+                  <img src={user.photo[0]} alt={user.full_name} className="w-full h-full object-cover" />
+                ) : (
+                  <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                )}
               </div>
 
               {/* User Info */}
               <div>
                 <h2 className="text-3xl font-bold mb-2">{user.full_name}</h2>
-                <p className="text-white/90 text-lg">Membre depuis {new Date().getFullYear()}</p>
+                <p className="text-white/90 text-lg">
+                  Membre depuis {new Date(user.created_at).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' })}
+                </p>
               </div>
             </div>
           </div>
@@ -221,6 +325,25 @@ export default function ProfilePage() {
                       <p className="font-semibold text-adawi-brown">{user.email}</p>
                     </div>
                   </div>
+
+                  {user.address && (
+                    <div className="flex items-start p-4 bg-gray-50 rounded-lg">
+                      <div className="w-10 h-10 bg-adawi-gold/20 rounded-full flex items-center justify-center mr-4">
+                        <svg className="w-5 h-5 text-adawi-brown" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Adresse</p>
+                        <p className="font-semibold text-adawi-brown">{user.address.street}</p>
+                        <p className="text-sm text-gray-700">{user.address.postal_code} {user.address.city}</p>
+                        <p className="text-sm text-gray-700">{user.address.country}</p>
+                        {user.address.phone && <p className="text-sm text-gray-700">{user.address.phone}</p>}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -269,21 +392,130 @@ export default function ProfilePage() {
                       </span>
                     </div>
                   </div>
+
+                  {user.size && (
+                    <div className="flex items-center p-4 bg-gray-50 rounded-lg">
+                      <div className="w-10 h-10 bg-adawi-gold/20 rounded-full flex items-center justify-center mr-4">
+                        <svg className="w-5 h-5 text-adawi-brown" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                            d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Taille</p>
+                        <p className="font-semibold text-adawi-brown">{user.size}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
+            {/* Measurements Section */}
+            {user.measurements && user.role === "client" && (
+              <div className="mt-8 pt-8 border-t border-gray-200">
+                <h3 className="text-xl font-semibold text-adawi-brown mb-6 flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                      d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                  Mes Mensurations
+                </h3>
+
+                {!isEditing ? (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {Object.entries(user.measurements).map(([key, value]) => {
+                      if (key === "other_measurements" || !value) return null;
+                      const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      return (
+                        <div key={key} className="bg-gray-50 p-3 rounded-lg">
+                          <p className="text-xs text-gray-600 mb-1">{label}</p>
+                          <p className="font-semibold text-adawi-brown">{String(value)} cm</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <Form method="post" onSubmit={() => setIsEditing(false)}>
+                    <input type="hidden" name="intent" value="updateMeasurements" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {Object.entries(user.measurements).map(([key, value]) => {
+                        if (key === "other_measurements") return null;
+                        const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        return (
+                          <div key={key}>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              {label}
+                            </label>
+                            <input
+                              type="number"
+                              name={key}
+                              defaultValue={value}
+                              step="0.1"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-adawi-gold focus:border-adawi-gold"
+                            />
+                          </div>
+                        );
+                      })}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Taille
+                        </label>
+                        <select
+                          name="size"
+                          defaultValue={user.size}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-adawi-gold focus:border-adawi-gold"
+                        >
+                          <option value="XS">XS</option>
+                          <option value="S">S</option>
+                          <option value="M">M</option>
+                          <option value="L">L</option>
+                          <option value="XL">XL</option>
+                          <option value="XXL">XXL</option>
+                        </select>
+                      </div>
+                      <div className="md:col-span-2 lg:col-span-3">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Autres mesures
+                        </label>
+                        <textarea
+                          name="other_measurements"
+                          defaultValue={user.measurements.other_measurements}
+                          rows={3}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-adawi-gold focus:border-adawi-gold"
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-6 flex gap-4">
+                      <button
+                        type="submit"
+                        className="px-6 py-3 bg-adawi-gold text-white rounded-lg hover:bg-adawi-gold/90 transition-colors"
+                      >
+                        Enregistrer les modifications
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditing(false)}
+                        className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+                      >
+                        Annuler
+                      </button>
+                    </div>
+                  </Form>
+                )}
+
+                {user.measurements.other_measurements && !isEditing && (
+                  <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                    <p className="text-sm text-gray-600 mb-1">Notes supplémentaires</p>
+                    <p className="text-adawi-brown">{user.measurements.other_measurements}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Actions Section */}
             <div className="mt-8 pt-8 border-t border-gray-200">
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                {/* <button className="px-6 py-3 bg-gray-100 text-adawi-brown rounded-lg hover:bg-gray-200 transition-colors duration-200 flex items-center justify-center">
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  Modifier le profil
-                </button> */}
-
                 <Form method="post" action="/logout">
                   <button 
                     type="submit" 
