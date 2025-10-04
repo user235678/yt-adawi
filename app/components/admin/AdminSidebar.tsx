@@ -22,6 +22,8 @@ import {
   ChevronRight,
   Package as Package2,
   TicketPercent,
+  CreditCard,
+  Repeat
 } from "lucide-react";
 import { useState } from "react";
 
@@ -55,7 +57,7 @@ export default function AdminSidebar({ onClose }: AdminSidebarProps) {
     { id: "Rendez-Vous", label: "Rendez-Vous", icon: Settings, path: "/admin/appointments" },
     // { id: "availability", label: "Disponibilités", icon: Clock, path: "/admin/availability" },
     { id: "promotions", label: "Promotions", icon: TicketPercent, path: "/admin/promotions" },
-    { id: "settings", label: "Paramètres", icon: Settings, path: "/admin/settings" },
+    { id: "installments", label: "Versements", icon: CreditCard, path: "/admin/installments" },
   ];
 
   const toggleMenu = (menuId: string) => {
