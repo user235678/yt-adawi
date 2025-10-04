@@ -16,3 +16,27 @@
 - Use requireVendor instead of requireAdmin
 - Follow similar structure to admin.users.tsx but simplified for sellers
 - Ensure proper error handling and success messages
+
+---
+
+# TODO: Create Admin Installments Route
+
+## Current Task: Create admin route for managing installments
+
+### Steps:
+- [ ] Create `app/routes/admin.installments.tsx` with installments management page
+- [ ] Implement loader with requireAdmin auth
+- [ ] Add state for stats, installments list, filters
+- [ ] Fetch installment stats on load
+- [ ] Display stats cards (total, paid, overdue, etc.)
+- [ ] Create table with installments, filters (status, date range)
+- [ ] Add actions: view, pay, cancel
+- [ ] Create modals for pay installment and cancel installment
+- [ ] Add button to update overdue status
+- [ ] Test the new admin installments functionality
+- [ ] Verify proper authorization and API integration
+
+### Notes:
+- Follow similar structure to admin.products.tsx
+- Use external API https://showroom-backend-2x3g.onrender.com/installments/*
+- Implement proper error handling and success messages
