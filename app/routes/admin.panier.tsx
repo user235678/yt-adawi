@@ -1,10 +1,11 @@
-import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { json, type LoaderFunctionArgs, type MetaFunction, ActionFunctionArgs } from "@remix-run/node";
 import { useLoaderData, useNavigate, useFetcher } from "@remix-run/react";
 import { useState, useEffect } from "react";
 import { Link } from "@remix-run/react";
 import TopBanner from "~/components/TopBanner";
 import Header from "~/components/CompactHeader";
 import { readSessionData } from "~/utils/session.server";
+import { CreditCard, Loader2, X, CheckCircle, Calendar, Users } from "lucide-react";
 
 
 export const meta: MetaFunction = () => {
@@ -36,6 +37,18 @@ interface LoaderData {
         session_id: string;
         access_token: string;
     };
+}
+
+// Ajouter une nouvelle interface pour la création de commande en versements
+interface CreateInstallmentOrderData {
+  installments_count: number;
+  first_payment_amount: number;
+  installment_amount: number;
+  due_dates: string[];
+  customer_name: string;
+  customer_phone: string;
+  user_email?: string;
+  notes?: string;
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -144,10 +157,62 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
 }
 
+export async function action({ request }: ActionFunctionArgs) {
+  const sessionData = await readSessionData(request);
+  if (!sessionData || !sessionData.session_id) {
+    return json({ error: "Non autorisé" }, { status: 401 });
+  }
+
+  const formData = await request.formData();
+  const intent = formData.get("intent") as string;
+
+  try {
+    if (intent === "createInstallmentOrder") {
+      const orderData: CreateInstallmentOrderData = {
+        installments_count: parseInt(formData.get("installments_count") as string),
+        first_payment_amount: parseFloat(formData.get("first_payment_amount") as string),
+        installment_amount: parseFloat(formData.get("installment_amount") as string),
+        due_dates: JSON.parse(formData.get("due_dates") as string),
+        customer_name: formData.get("customer_name") as string,
+        customer_phone: formData.get("customer_phone") as string,
+        user_email: formData.get("user_email") as string || undefined,
+        notes: formData.get("notes") as string || undefined,
+      };
+
+      const apiUrl = `${process.env.API_BASE_URL || 'https://showroom-backend-2x3g.onrender.com'}/installments/create-order`;
+      
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionData.access_token}`,
+        },
+        body: JSON.stringify(orderData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        return json({ 
+          error: errorData.detail || `Erreur ${response.status}: ${response.statusText}` 
+        }, { status: response.status });
+      }
+
+      const result = await response.json();
+      return json({ success: true, data: result });
+    }
+
+    return json({ error: "Action non reconnue" }, { status: 400 });
+  } catch (error) {
+    console.error("Erreur dans l'action:", error);
+    return json({ error: "Erreur de connexion au serveur" }, { status: 500 });
+  }
+}
+
 export default function panier() {
     const loaderData = useLoaderData<LoaderData>();
     const navigate = useNavigate();
     const fetcher = useFetcher<LoaderData>();
+    const actionFetcher = useFetcher();
 
     // Use fetcher data when available, otherwise use loader data
     const currentData = fetcher.data || loaderData;
@@ -162,12 +227,90 @@ export default function panier() {
     const [isClearing, setIsClearing] = useState(false);
     const [animatingItems, setAnimatingItems] = useState<Set<string>>(new Set());
     const [isLoaded, setIsLoaded] = useState(false);
+    
+    // État pour le modal de création de commande en versements
+    const [showInstallmentModal, setShowInstallmentModal] = useState(false);
+    const [installmentData, setInstallmentData] = useState<Partial<CreateInstallmentOrderData>>({
+      installments_count: 2,
+      first_payment_amount: Math.round(total * 0.5), // 50% du total par défaut
+      installment_amount: Math.round(total * 0.5), // Reste divisé par (nombre de versements - 1)
+      due_dates: [],
+      customer_name: '',
+      customer_phone: '',
+      user_email: '',
+      notes: ''
+    });
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     // Animation de chargement initial
     useEffect(() => {
         const timer = setTimeout(() => setIsLoaded(true), 100);
         return () => clearTimeout(timer);
     }, []);
+
+    // Mettre à jour les montants par défaut quand le total change
+    useEffect(() => {
+        if (total > 0) {
+          setInstallmentData(prev => ({
+            ...prev,
+            first_payment_amount: Math.round(total * 0.5),
+            installment_amount: Math.round(total * 0.5)
+          }));
+        }
+    }, [total]);
+
+    // Gérer les réponses de l'action
+    useEffect(() => {
+        if (actionFetcher.data?.success) {
+          setSuccessMessage("Commande en versements créée avec succès!");
+          setShowInstallmentModal(false);
+          
+          // Rediriger vers la page des commandes après un court délai
+          setTimeout(() => {
+            navigate('/admin/orders');
+          }, 2000);
+        }
+        
+        if (actionFetcher.data?.error) {
+          setErrorMessage(actionFetcher.data.error);
+        }
+    }, [actionFetcher.data, navigate]);
+
+    // Auto-hide messages after 5 seconds
+    useEffect(() => {
+        if (successMessage) {
+          const timer = setTimeout(() => setSuccessMessage(null), 5000);
+          return () => clearTimeout(timer);
+        }
+    }, [successMessage]);
+
+    useEffect(() => {
+        if (errorMessage) {
+          const timer = setTimeout(() => setErrorMessage(null), 5000);
+          return () => clearTimeout(timer);
+        }
+    }, [errorMessage]);
+
+    // Fonction pour calculer les dates d'échéance automatiquement
+    const calculateDueDates = (count: number, startDate: Date = new Date()) => {
+        const dates = [];
+        for (let i = 0; i < count; i++) {
+          const date = new Date(startDate);
+          date.setMonth(date.getMonth() + i);
+          dates.push(date.toISOString());
+        }
+        return dates;
+    };
+
+    // Fonction pour formater les montants
+    const formatAmount = (amount: number) => {
+        return new Intl.NumberFormat('fr-FR', {
+            style: 'currency',
+            currency: 'XOF',
+            minimumFractionDigits: 0
+        }).format(amount);
+    };
 
     // Gestion des erreurs
     if (error) {
@@ -798,42 +941,66 @@ export default function panier() {
                                     Frais de livraison payé à la réception de la marchandise
                                 </p>
 
-                                {/* Bouton checkout avec animation de pulse */}
-                                <button
+                                {/* Boutons d'action */}
+                                <div className="space-y-3">
+                                  {/* Bouton vente physique */}
+                                  <button
                                     onClick={handlePhysicalSale}
                                     disabled={isClearing}
                                     className={`w-full bg-gradient-to-r from-adawi-gold to-adawi-gold text-white font-medium py-4 px-6 text-base rounded-full hover:bg-adawi-gold transition-all duration-300 tracking-wider transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl ${isClearing ? 'opacity-50 cursor-not-allowed' : 'animate-pulse hover:animate-none'
-                                        }`}
-                                >
+                                      }`}
+                                  >
                                     <span className="flex items-center justify-center">
-                                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                        </svg>
-                                        VENDRE
+                                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                      </svg>
+                                      VENDRE
                                     </span>
-                                </button>
+                                  </button>
+
+                                  {/* Nouveau bouton pour créer une commande en versements */}
+                                  <button
+                                    onClick={() => {
+                                      setInstallmentData(prev => ({
+                                        ...prev,
+                                        installments_count: 2,
+                                        first_payment_amount: Math.round(total * 0.5),
+                                        installment_amount: Math.round(total * 0.5),
+                                        due_dates: calculateDueDates(2)
+                                      }));
+                                      setShowInstallmentModal(true);
+                                    }}
+                                    disabled={isClearing || total <= 0}
+                                    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium py-4 px-6 text-base rounded-full hover:from-blue-600 hover:to-blue-700 transition-all duration-300 tracking-wider transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    <span className="flex items-center justify-center">
+                                      <CreditCard className="w-5 h-5 mr-2" />
+                                      CRÉER VERSEMENTS
+                                    </span>
+                                  </button>
+                                </div>
 
                                 {/* Méthodes de paiement acceptées */}
                                 <div className="text-center">
-                                    <p className="text-xs text-gray-500 mb-2">Méthodes de paiement acceptées:</p>
-                                    <div className="flex justify-center space-x-2">
-                                        <div className="w-8 h-5 bg-gradient-to-r from-blue-500 to-blue-600 rounded text-white text-[8px] flex items-center justify-center font-bold">FLOOZ</div>
-                                        <div className="w-8 h-5 bg-gradient-to-r from-red-500 to-orange-500 rounded text-white text-[8px] flex items-center justify-center font-bold">MIX</div>
-                                        <div className="w-8 h-5 bg-gradient-to-r from-green-500 to-green-600 rounded text-white text-[8px] flex items-center justify-center font-bold">$</div>
-                                    </div>
+                                  <p className="text-xs text-gray-500 mb-2">Méthodes de paiement acceptées:</p>
+                                  <div className="flex justify-center space-x-2">
+                                    <div className="w-8 h-5 bg-gradient-to-r from-blue-500 to-blue-600 rounded text-white text-[8px] flex items-center justify-center font-bold">FLOOZ</div>
+                                    <div className="w-8 h-5 bg-gradient-to-r from-red-500 to-orange-500 rounded text-white text-[8px] flex items-center justify-center font-bold">MIX</div>
+                                    <div className="w-8 h-5 bg-gradient-to-r from-green-500 to-green-600 rounded text-white text-[8px] flex items-center justify-center font-bold">$</div>
+                                  </div>
                                 </div>
 
                                 {/* Lien continuer les achats */}
                                 <div className="text-center pt-2">
-                                    <Link
-                                        to="/boutique"
-                                        className="text-sm text-gray-600 hover:text-adawi-gold underline transition-all duration-300 hover:no-underline flex items-center justify-center group"
-                                    >
-                                        <svg className="w-4 h-4 mr-1 transform group-hover:-translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                                        </svg>
-                                        Continuer les achats
-                                    </Link>
+                                  <Link
+                                    to="/boutique"
+                                    className="text-sm text-gray-600 hover:text-adawi-gold underline transition-all duration-300 hover:no-underline flex items-center justify-center group"
+                                  >
+                                    <svg className="w-4 h-4 mr-1 transform group-hover:-translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                    </svg>
+                                    Continuer les achats
+                                  </Link>
                                 </div>
                             </div>
                         </div>
@@ -879,6 +1046,264 @@ export default function panier() {
                 </div>
             </div>
 
+            {/* Modal de création de commande en versements */}
+            {showInstallmentModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                  <div className="flex justify-between items-center p-6 border-b">
+                    <h3 className="text-lg font-semibold flex items-center">
+                      <CreditCard className="w-5 h-5 mr-2" />
+                      Créer une commande en versements
+                    </h3>
+                    <button
+                      onClick={() => setShowInstallmentModal(false)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <actionFetcher.Form method="post" className="p-6">
+                    <input type="hidden" name="intent" value="createInstallmentOrder" />
+                    <input type="hidden" name="due_dates" value={JSON.stringify(installmentData.due_dates)} />
+
+                    <div className="space-y-6">
+                      {/* Informations client */}
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <h4 className="font-medium text-gray-900 mb-4">Informations Client</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Nom du client *
+                            </label>
+                            <input
+                              type="text"
+                              name="customer_name"
+                              value={installmentData.customer_name}
+                              onChange={(e) => setInstallmentData(prev => ({ ...prev, customer_name: e.target.value }))}
+                              required
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
+                              placeholder="John Doe"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Téléphone *
+                            </label>
+                            <input
+                              type="tel"
+                              name="customer_phone"
+                              value={installmentData.customer_phone}
+                              onChange={(e) => setInstallmentData(prev => ({ ...prev, customer_phone: e.target.value }))}
+                              required
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
+                              placeholder="+2250102030405"
+                            />
+                          </div>
+
+                          <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Email utilisateur (optionnel)
+                            </label>
+                            <input
+                              type="email"
+                              name="user_email"
+                              value={installmentData.user_email}
+                              onChange={(e) => setInstallmentData(prev => ({ ...prev, user_email: e.target.value }))}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
+                              placeholder="client@example.com"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">
+                              Si fourni, la commande sera associée à cet utilisateur existant
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Configuration des versements */}
+                      <div className="bg-blue-50 p-4 rounded-lg">
+                        <h4 className="font-medium text-gray-900 mb-4">Configuration des Versements</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Nombre de versements *
+                            </label>
+                            <input
+                              type="number"
+                              name="installments_count"
+                              value={installmentData.installments_count}
+                              onChange={(e) => {
+                                const count = parseInt(e.target.value);
+                                if (count >= 2) {
+                                  setInstallmentData(prev => ({ 
+                                    ...prev, 
+                                    installments_count: count,
+                                    due_dates: calculateDueDates(count)
+                                  }));
+                                }
+                              }}
+                              min="2"
+                              max="12"
+                              required
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Premier paiement (F CFA) *
+                            </label>
+                            <input
+                              type="number"
+                              name="first_payment_amount"
+                              value={installmentData.first_payment_amount}
+                              onChange={(e) => {
+                                const firstPayment = parseFloat(e.target.value);
+                                setInstallmentData(prev => ({ 
+                                  ...prev, 
+                                  first_payment_amount: firstPayment
+                                }));
+                              }}
+                              min="0"
+                              step="0.01"
+                              required
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
+                              placeholder="50000"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Montant par versement (F CFA) *
+                            </label>
+                            <input
+                              type="number"
+                              name="installment_amount"
+                              value={installmentData.installment_amount}
+                              onChange={(e) => setInstallmentData(prev => ({ ...prev, installment_amount: parseFloat(e.target.value) }))}
+                              min="0"
+                              step="0.01"
+                              required
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
+                              placeholder="20000"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Total calculé
+                            </label>
+                            <div className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-700">
+                              {formatAmount((installmentData.first_payment_amount || 0) + (installmentData.installment_amount || 0) * ((installmentData.installments_count || 2) - 1))}
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">
+                              Panier actuel: {formatAmount(total)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Dates d'échéance */}
+                      <div className="bg-yellow-50 p-4 rounded-lg">
+                        <h4 className="font-medium text-gray-900 mb-4">Dates d'Échéance</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {installmentData.due_dates?.map((date, index) => (
+                            <div key={index}>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                {index === 0 ? 'Premier paiement' : `Versement ${index + 1}`}
+                              </label>
+                              <input
+                                type="datetime-local"
+                                value={date ? new Date(date).toISOString().slice(0, 16) : ''}
+                                onChange={(e) => {
+                                  const newDates = [...(installmentData.due_dates || [])];
+                                  newDates[index] = new Date(e.target.value).toISOString();
+                                  setInstallmentData(prev => ({ ...prev, due_dates: newDates }));
+                                }}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setInstallmentData(prev => ({ 
+                            ...prev, 
+                            due_dates: calculateDueDates(prev.installments_count || 2) 
+                          }))}
+                          className="mt-2 text-sm text-blue-600 hover:text-blue-800 underline"
+                        >
+                          <Calendar className="w-4 h-4 inline mr-1" />
+                          Générer automatiquement les dates (mensuel)
+                        </button>
+                      </div>
+
+                      {/* Notes */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Notes (optionnel)
+                        </label>
+                        <textarea
+                          name="notes"
+                          value={installmentData.notes}
+                          onChange={(e) => setInstallmentData(prev => ({ ...prev, notes: e.target.value }))}
+                          rows={3}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
+                          placeholder="Informations supplémentaires sur cette commande en versements..."
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-6 flex flex-col space-y-4">
+                      <button
+                        type="submit"
+                        disabled={actionFetcher.state === "submitting"}
+                        className="w-full bg-adawi-gold hover:bg-adawi-gold/90 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center"
+                      >
+                        {actionFetcher.state === "submitting" ? (
+                          <>
+                            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                            Création en cours...
+                          </>
+                        ) : (
+                          <>
+                            <CreditCard className="w-5 h-5 mr-2" />
+                            Créer la commande en versements
+                          </>
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowInstallmentModal(false)}
+                        className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-3 px-6 rounded-lg transition-all duration-300"
+                      >
+                        Annuler
+                      </button>
+                    </div>
+                  </actionFetcher.Form>
+                </div>
+              </div>
+            )}
+
+            {/* Messages de notification */}
+            {successMessage && (
+              <div className="fixed bottom-4 right-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-lg max-w-md animate-fade-in-up">
+                <div className="flex">
+                  <CheckCircle className="w-5 h-5 mr-2" />
+                  <p>{successMessage}</p>
+                </div>
+              </div>
+            )}
+
+            {errorMessage && (
+              <div className="fixed bottom-4 right-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-lg max-w-md animate-fade-in-up">
+                <div className="flex">
+                  <X className="w-5 h-5 mr-2" />
+                  <p>{errorMessage}</p>
+                </div>
+              </div>
+            )}
         </div>
     );
 }
