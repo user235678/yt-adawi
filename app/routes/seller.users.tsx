@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import type { MetaFunction, LoaderFunction, ActionFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData, useSubmit, useActionData, useNavigation } from "@remix-run/react";
-import { Plus, Search, Filter, Eye, Mail, Phone, AlertCircle, CheckCircle } from "lucide-react";
+import { Plus, Search, Filter, Eye, Mail, Phone, AlertCircle, CheckCircle, User } from "lucide-react";
 import AddUserModal from "~/components/admin/AddUserModal";
 import ViewUserModal from "~/components/admin/ViewUserModal";
+import UpdateUserModal from "~/components/seller/UpdateUserModal";
 import { readToken } from "~/utils/session.server";
 import SellerLayout from "~/components/seller/SellerLayout";
 import { requireVendor } from "~/utils/auth.server";
@@ -47,6 +48,53 @@ interface ActionData {
 
 export const loader: LoaderFunction = async ({ request }) => {
   console.log("🔍 Début du loader seller.users");
+  
+  const url = new URL(request.url);
+  const intent = url.searchParams.get("intent");
+  const userId = url.searchParams.get("userId");
+
+  // Cas spécial : récupérer le profil d'un utilisateur
+  if (intent === "getUserProfile" && userId) {
+    await requireVendor(request);
+    const tokenData = await readToken(request);
+    
+    if (!tokenData) {
+      return json({ error: "Non autorisé" }, { status: 401 });
+    }
+
+    try {
+      let token;
+      try {
+        const parsedToken = typeof tokenData === 'string' ? JSON.parse(tokenData) : tokenData;
+        token = parsedToken?.access_token || tokenData;
+      } catch {
+        token = tokenData;
+      }
+
+      const response = await fetch(`${API_BASE}/admin/users/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+      });
+
+      if (!response.ok) {
+        let errorMessage = `Erreur ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorData.message || errorMessage;
+        } catch { }
+        return json({ error: errorMessage }, { status: response.status });
+      }
+
+      const userData = await response.json();
+      return json(userData);
+
+    } catch (error: any) {
+      return json({ error: `Erreur de connexion: ${error.message}` }, { status: 500 });
+    }
+  }
+
   // Vérifier que l'utilisateur est vendeur
   await requireVendor(request);
 
@@ -59,7 +107,6 @@ export const loader: LoaderFunction = async ({ request }) => {
   }
 
   // Récupérer les paramètres de l'URL pour les messages de succès
-  const url = new URL(request.url);
   const success = url.searchParams.get("success");
 
   try {
@@ -161,7 +208,7 @@ export const action: ActionFunction = async ({ request }) => {
   if (!tokenData) throw new Response("Non autorisé", { status: 401 });
 
   const formData = await request.formData();
-  const intent = String(formData.get("intent") || ""); // 👈 pour savoir quoi faire
+  const intent = String(formData.get("intent") || "");
 
   // --- Cas : Créer un utilisateur ---
   if (intent === "createUser") {
@@ -217,6 +264,84 @@ export const action: ActionFunction = async ({ request }) => {
     }
   }
 
+  // --- Cas : Mettre à jour le profil utilisateur ---
+  if (intent === "updateProfile") {
+    const userId = String(formData.get("userId") || "");
+    if (!userId) {
+      return json<ActionData>({ error: "ID utilisateur manquant" }, { status: 400 });
+    }
+
+    try {
+      let token;
+      try {
+        const parsedToken = typeof tokenData === "string" ? JSON.parse(tokenData) : tokenData;
+        token = parsedToken?.access_token || tokenData;
+      } catch {
+        token = tokenData;
+      }
+
+      // Construire l'objet measurements
+      const measurements: any = {};
+      const measurementFields = [
+        'height', 'weight', 'shoulder_width', 'chest', 'waist_length',
+        'ventral_circumference', 'hips', 'corsage_length', 'belt',
+        'skirt_length', 'dress_length', 'sleeve_length', 'sleeve_circumference',
+        'pants_length', 'short_dress_length', 'thigh_circumference',
+        'knee_length', 'knee_circumference', 'bottom', 'inseam'
+      ];
+      
+      measurementFields.forEach(field => {
+        const value = formData.get(`measurements.${field}`);
+        measurements[field] = value ? parseFloat(value as string) : 0;
+      });
+      measurements.other_measurements = formData.get('measurements.other_measurements') || '';
+
+      // Construire l'objet address
+      const address = {
+        street: formData.get('address.street') || '',
+        city: formData.get('address.city') || '',
+        postal_code: formData.get('address.postal_code') || '',
+        country: formData.get('address.country') || '',
+        phone: formData.get('address.phone') || ''
+      };
+
+      const updateData = new FormData();
+      updateData.append('measurements', JSON.stringify(measurements));
+      updateData.append('size', formData.get('size') as string);
+      updateData.append('address', JSON.stringify(address));
+
+      // Gérer les photos si présentes
+      const photos = formData.getAll('photos');
+      photos.forEach(photo => {
+        if (photo instanceof File && photo.size > 0) {
+          updateData.append('photos', photo);
+        }
+      });
+
+      const response = await fetch(`${API_BASE}/admin/users/${userId}/profile`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: updateData
+      });
+
+      if (!response.ok) {
+        let errorMessage = `Erreur ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorData.message || errorMessage;
+        } catch { }
+        return json<ActionData>({ error: errorMessage }, { status: response.status });
+      }
+
+      return json<ActionData>({ success: true });
+
+    } catch (error: any) {
+      return json<ActionData>({ error: "Erreur de connexion au serveur" }, { status: 500 });
+    }
+  }
+
   return json<ActionData>({ error: "Intent non reconnu" }, { status: 400 });
 };
 
@@ -229,6 +354,7 @@ export default function SellerUsers() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("all");
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isUpdateUserModalOpen, setIsUpdateUserModalOpen] = useState(false);
 
   const submit = useSubmit();
 
@@ -250,6 +376,12 @@ export default function SellerUsers() {
   const handleViewUser = (user: User) => {
     setSelectedUser(user);
     setIsViewModalOpen(true);
+  };
+
+  // Nouvelle fonction pour ouvrir le modal de mise à jour du profil
+  const handleUpdateUserProfile = (user: User) => {
+    setSelectedUser(user);
+    setIsUpdateUserModalOpen(true);
   };
 
   const getRoleColor = (role: string) => {
@@ -541,6 +673,14 @@ export default function SellerUsers() {
                           >
                             <Eye className="w-4 h-4" />
                           </button>
+
+                          <button
+                            className="p-2 text-gray-400 hover:text-purple-600 transition-colors"
+                            title="Modifier le profil"
+                            onClick={() => handleUpdateUserProfile(user)}
+                          >
+                            <User className="w-4 h-4" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -586,6 +726,18 @@ export default function SellerUsers() {
           onClose={() => setIsViewModalOpen(false)}
           user={selectedUser}
         />
+
+        {/* Update User Profile Modal */}
+        {selectedUser && (
+          <UpdateUserModal
+            userId={selectedUser.id}
+            isOpen={isUpdateUserModalOpen}
+            onClose={() => {
+              setIsUpdateUserModalOpen(false);
+              setSelectedUser(null);
+            }}
+          />
+        )}
 
       </div>
     </SellerLayout>
