@@ -971,8 +971,8 @@ export default function panier() {
                                       setShowInstallmentModal(true);
                                     }}
                                     disabled={isClearing || total <= 0}
-                                    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium py-4 px-6 text-base rounded-full hover:from-blue-600 hover:to-blue-700 transition-all duration-300 tracking-wider transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                                  >
+className={`w-full bg-gradient-to-r from-adawi-gold to-adawi-gold text-white font-medium py-4 px-6 text-base rounded-full hover:bg-adawi-gold transition-all duration-300 tracking-wider transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl ${isClearing ? 'opacity-50 cursor-not-allowed' : 'animate-pulse hover:animate-none'
+                                      }`}                                  >
                                     <span className="flex items-center justify-center">
                                       <CreditCard className="w-5 h-5 mr-2" />
                                       CRÉER VERSEMENTS
