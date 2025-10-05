@@ -146,8 +146,8 @@ export default function SellerInventory() {
                     </div>
 
                     {/* Cartes de statistiques principales */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
+                        {/* <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                             <div className="flex items-center justify-between mb-4">
                                 <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
                                     <Package className="w-6 h-6 text-white" />
@@ -160,7 +160,7 @@ export default function SellerInventory() {
                                 </div>
                             </div>
                             <span className="text-sm text-gray-600">En inventaire</span>
-                        </div>
+                        </div> */}
 
                         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                             <div className="flex items-center justify-between mb-4">
@@ -243,7 +243,10 @@ export default function SellerInventory() {
                                     <ul className="space-y-2">
                                         {criticalAlerts.map((alert) => (
                                             <li key={alert.product_id} className="text-sm text-gray-700 bg-red-50 p-3 rounded-lg hover:bg-red-100 transition-colors">
-                                                <Link to={`/seller/products/${alert.product_id}/edit`} className="block w-full">
+                                                <Link to={"#"}
+                                                onClick={(e) => e.preventDefault()}
+                                                className="block w-full cursor-pointer">
+                                                    
                                                     <div className="flex items-center justify-between">
                                                         <div>
                                                             <p className="font-medium text-gray-900">{alert.product_name}</p>

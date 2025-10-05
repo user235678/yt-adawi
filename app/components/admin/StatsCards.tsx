@@ -57,7 +57,7 @@ export default function StatsCards({ data }: StatsCardsProps) {
     },
     {
       title: showWeekly ? "Commandes Semaine" : "Commandes",
-      value: formatNumber(showWeekly ? data.total_commande_semaine : data.total_orders),
+      value: formatNumber(showWeekly ? data.total_orders_week : data.total_orders),
       subtitle: showWeekly ? "Commandes cette semaine" : "Total des commandes",
       // change: showWeekly
       //   ? `${data.weekly_orders_growth >= 0 ? '+' : ''}${data.weekly_orders_growth}%`

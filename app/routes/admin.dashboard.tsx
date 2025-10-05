@@ -336,7 +336,7 @@ export default function AdminDashboard() {
         {renderContent()}
       </div>
 
-      {/* Quick Stats Sidebar - Draggable - Rendu côté client uniquement */}
+      {/* Quick Stats Sidebar - Draggable - Rendu côté client uniquement
       {isClient && isStatsVisible && (
         <div
           ref={statsRef}
@@ -351,8 +351,8 @@ export default function AdminDashboard() {
             opacity: isDragging ? 0.8 : 1,
           }}
           className="bg-white rounded-lg shadow-lg border border-gray-200"
-        >
-          {/* Header avec poignée de déplacement */}
+        > */}
+          {/* Header avec poignée de déplacement
           <div
             className="flex items-center justify-between p-3 bg-adawi-brown/10 rounded-t-lg cursor-grab border-b border-gray-200 select-none"
             onMouseDown={handleMouseDown}
@@ -387,9 +387,9 @@ export default function AdminDashboard() {
                 <X className="w-4 h-4 text-gray-500" />
               </button>
             </div>
-          </div>
+          </div> */}
 
-          {/* Contenu */}
+          {/* Contenu
           {!isStatsMinimized && (
             <div className="p-4">
               <div className="space-y-3 text-sm">
@@ -436,7 +436,7 @@ export default function AdminDashboard() {
             </div>
           )}
         </div>
-      )}
+      )} */}
 
       {/* Bouton pour réafficher les stats si masquées */}
       {isClient && !isStatsVisible && (

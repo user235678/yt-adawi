@@ -205,28 +205,28 @@ export default function CheckoutCustomPage() {
   const [deliveryPhone, setDeliveryPhone] = useState(profile?.address?.phone || "");
   const [photos, setPhotos] = useState<File[]>([]);
 
-  // Measurements state initialized from profile or default 0
+  // Measurements state initialized from profile default || 0 
   const [measurements, setMeasurements] = useState({
-    height: profile?.measurements?.height || 0,
-    weight: profile?.measurements?.weight || 0,
-    shoulder_width: profile?.measurements?.shoulder_width || 0,
-    chest: profile?.measurements?.chest || 0,
-    waist_length: profile?.measurements?.waist_length || 0,
-    ventral_circumference: profile?.measurements?.ventral_circumference || 0,
-    hips: profile?.measurements?.hips || 0,
-    corsage_length: profile?.measurements?.corsage_length || 0,
-    belt: profile?.measurements?.belt || 0,
-    skirt_length: profile?.measurements?.skirt_length || 0,
-    dress_length: profile?.measurements?.dress_length || 0,
-    sleeve_length: profile?.measurements?.sleeve_length || 0,
-    sleeve_circumference: profile?.measurements?.sleeve_circumference || 0,
-    pants_length: profile?.measurements?.pants_length || 0,
-    short_dress_length: profile?.measurements?.short_dress_length || 0,
-    thigh_circumference: profile?.measurements?.thigh_circumference || 0,
-    knee_length: profile?.measurements?.knee_length || 0,
-    knee_circumference: profile?.measurements?.knee_circumference || 0,
-    bottom: profile?.measurements?.bottom || 0,
-    inseam: profile?.measurements?.inseam || 0,
+    height: profile?.measurements?.height ,
+    weight: profile?.measurements?.weight ,
+    shoulder_width: profile?.measurements?.shoulder_width ,
+    chest: profile?.measurements?.chest ,
+    waist_length: profile?.measurements?.waist_length ,
+    ventral_circumference: profile?.measurements?.ventral_circumference ,
+    hips: profile?.measurements?.hips ,
+    corsage_length: profile?.measurements?.corsage_length,
+    belt: profile?.measurements?.belt ,
+    skirt_length: profile?.measurements?.skirt_length ,
+    dress_length: profile?.measurements?.dress_length ,
+    sleeve_length: profile?.measurements?.sleeve_length ,
+    sleeve_circumference: profile?.measurements?.sleeve_circumference ,
+    pants_length: profile?.measurements?.pants_length ,
+    short_dress_length: profile?.measurements?.short_dress_length ,
+    thigh_circumference: profile?.measurements?.thigh_circumference ,
+    knee_length: profile?.measurements?.knee_length ,
+    knee_circumference: profile?.measurements?.knee_circumference ,
+    bottom: profile?.measurements?.bottom ,
+    inseam: profile?.measurements?.inseam ,
     other_measurements: profile?.measurements?.other_measurements || "",
   });
 
@@ -386,7 +386,7 @@ export default function CheckoutCustomPage() {
                     <input
                       type="number"
                       name={key}
-                      step="0.1"
+                      step="1"
                       className="w-full p-2 border border-gray-300 rounded"
                       value={value as number}
                       onChange={handleMeasurementChange}

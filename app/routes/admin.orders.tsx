@@ -14,7 +14,7 @@ export const meta: MetaFunction = () => [
   { name: "description", content: "Gestion des commandes" },
 ];
 
-export interface Order {
+export interface Order { 
   id: string;
   items: Array<{
     product_id: string;

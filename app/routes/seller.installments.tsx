@@ -4,7 +4,8 @@ import { json } from "@remix-run/node";
 import { useLoaderData, useFetcher, Form, useNavigation } from "@remix-run/react";
 import { Search, Filter, Eye, X, AlertCircle, Loader2, CreditCard, Ban, RefreshCw, Calendar, DollarSign, Clock, CheckCircle, XCircle, Download, FileText, Users } from "lucide-react";
 import { readToken } from "~/utils/session.server";
-import { requireAdmin } from "~/utils/auth.server";
+import { requireVendor } from "~/utils/auth.server";
+import SellerLayout from "~/components/seller/SellerLayout";
 
 const API_BASE = "https://showroom-backend-2x3g.onrender.com";
 
@@ -100,7 +101,7 @@ export const meta: MetaFunction = () => {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const token = await readToken(request);
-  await requireAdmin(request);
+  await requireVendor(request);
 
   if (!token) {
     throw new Response("Unauthorized", { status: 401 });
@@ -283,7 +284,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export async function action({ request }: ActionFunctionArgs) {
   const token = await readToken(request);
-  await requireAdmin(request);
+  await requireVendor(request);
 
   if (!token) {
     throw new Response("Unauthorized", { status: 401 });
@@ -376,7 +377,7 @@ export async function action({ request }: ActionFunctionArgs) {
   return json<ActionData>({ error: "Action non reconnue" }, { status: 400 });
 }
 
-export default function AdminInstallments() {
+export default function SellerInstallments() {
   const { token, stats, overdueInstallments, searchResults, userSearchResults, paymentSummary } = useLoaderData<LoaderData>();
   
   // Vérification de sécurité pour stats (mise à jour selon la nouvelle structure)
@@ -511,6 +512,7 @@ export default function AdminInstallments() {
   };
 
   return (
+    <SellerLayout>
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -1661,5 +1663,6 @@ export default function AdminInstallments() {
         )}
       </div>
     </div>
+    </SellerLayout>
   );
 }

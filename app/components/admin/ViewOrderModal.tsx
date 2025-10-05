@@ -40,6 +40,18 @@ type StatusHistoryItem = {
   comment: string;
 };
 
+type Installment = {
+  id: string;
+  installment_number: number;
+  amount: number;
+  paid_amount: number;
+  due_date: string;
+  status: "pending" | "paid" | "overdue" | "cancelled";
+  payment_method?: string;
+  paid_at?: string;
+  notes?: string;
+};
+
 type Order = {
   id: string;
   items: OrderItem[];
@@ -66,6 +78,14 @@ type Order = {
   delivery_date?: string;
   current_size?: string;
   description?: string;
+  // Nouvelles propriétés pour les versements
+  payment_type?: "full" | "installments";
+  installments_count?: number;
+  paid_amount?: number;
+  remaining_amount?: number;
+  installments?: Installment[];
+  customer_name?: string;
+  customer_phone?: string;
 };
 
 interface ViewOrderModalProps {
@@ -91,6 +111,48 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ isOpen, orderId, token,
       const isScrollable = scrollHeight > clientHeight;
       const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10;
       setShowScrollIndicator(isScrollable && !isAtBottom);
+    }
+  };
+
+  // Fonction pour formater les montants
+  const formatAmount = (amount: number) => {
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'XOF',
+      minimumFractionDigits: 0
+    }).format(amount);
+  };
+
+  // Fonction pour formater les dates
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('fr-FR', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  // Fonction pour obtenir la couleur du statut
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'paid': return 'text-green-600 bg-green-100';
+      case 'pending': return 'text-yellow-600 bg-yellow-100';
+      case 'overdue': return 'text-red-600 bg-red-100';
+      case 'cancelled': return 'text-gray-600 bg-gray-100';
+      default: return 'text-gray-600 bg-gray-100';
+    }
+  };
+
+  // Fonction pour obtenir le libellé du statut
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'paid': return 'Payé';
+      case 'pending': return 'En attente';
+      case 'overdue': return 'En retard';
+      case 'cancelled': return 'Annulé';
+      default: return status;
     }
   };
 
@@ -143,7 +205,7 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ isOpen, orderId, token,
     } else {
       document.body.style.overflow = 'unset';
     }
-    
+
     return () => {
       document.body.style.overflow = 'unset';
     };
@@ -157,8 +219,8 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ isOpen, orderId, token,
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-6 border-b bg-gray-50 flex-shrink-0">
           <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Détails de la commande</h2>
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className="text-gray-500 hover:text-gray-700 text-xl sm:text-2xl p-1 hover:bg-gray-200 rounded-full transition-colors"
           >
             ✕
@@ -167,7 +229,7 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ isOpen, orderId, token,
 
         {/* Content */}
         <div className="flex-1 overflow-hidden relative">
-          <div 
+          <div
             ref={setContentRef}
             className="h-full overflow-y-auto p-4 sm:p-6 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
             onScroll={checkScrollIndicator}
@@ -208,7 +270,7 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ isOpen, orderId, token,
                     </div>
                     <div className="flex flex-col">
                       <span className="text-gray-500 text-xs uppercase tracking-wide">Total</span>
-                      <span className="font-bold text-lg text-green-600">{order.total} F CFA</span>
+                      <span className="font-bold text-lg text-green-600">{formatAmount(order.total)}</span>
                     </div>
                     <div className="flex flex-col">
                       <span className="text-gray-500 text-xs uppercase tracking-wide">Méthode</span>
@@ -243,6 +305,120 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ isOpen, orderId, token,
                   )}
                 </div>
 
+                {/* Informations client (nouvelles propriétés) */}
+                {(order.customer_name || order.customer_phone) && (
+                  <div className="bg-blue-50 rounded-lg p-4">
+                    <h3 className="font-semibold mb-3 text-gray-900">Informations Client</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                      {order.customer_name && (
+                        <div className="flex flex-col">
+                          <span className="text-gray-500 text-xs uppercase tracking-wide">Nom du client</span>
+                          <span className="font-medium text-gray-900">{order.customer_name}</span>
+                        </div>
+                      )}
+                      {order.customer_phone && (
+                        <div className="flex flex-col">
+                          <span className="text-gray-500 text-xs uppercase tracking-wide">Téléphone</span>
+                          <span className="font-medium text-gray-900">{order.customer_phone}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Informations de paiement en versements */}
+                {order.payment_type === "installments" && (
+                  <div className="bg-yellow-50 rounded-lg p-4">
+                    <h3 className="font-semibold mb-3 text-gray-900">Paiement en Versements</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm mb-4">
+                      <div className="flex flex-col">
+                        <span className="text-gray-500 text-xs uppercase tracking-wide">Type de paiement</span>
+                        <span className="font-medium text-gray-900">Versements</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-gray-500 text-xs uppercase tracking-wide">Nombre de versements</span>
+                        <span className="font-medium text-gray-900">{order.installments_count || 0}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-gray-500 text-xs uppercase tracking-wide">Montant payé</span>
+                        <span className="font-medium text-green-600">{formatAmount(order.paid_amount || 0)}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-gray-500 text-xs uppercase tracking-wide">Montant restant</span>
+                        <span className="font-medium text-red-600">{formatAmount(order.remaining_amount || 0)}</span>
+                      </div>
+                    </div>
+
+                    {/* Barre de progression */}
+                    <div className="mb-4">
+                      <div className="flex justify-between text-sm text-gray-600 mb-1">
+                        <span>Progression du paiement</span>
+                        <span>
+                          {order.total > 0 
+                            ? Math.round(((order.paid_amount || 0) / order.total) * 100)
+                            : 0
+                          }%
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                          style={{ 
+                            width: `${order.total > 0 
+                              ? ((order.paid_amount || 0) / order.total) * 100 
+                              : 0
+                            }%` 
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Liste des versements */}
+                    {order.installments && order.installments.length > 0 && (
+                      <div>
+                        <h4 className="font-medium text-gray-900 mb-3">Détail des versements</h4>
+                        <div className="space-y-2">
+                          {order.installments.map((installment, index) => (
+                            <div key={installment.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                              <div className="flex items-center space-x-3">
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold ${
+                                  installment.status === 'paid' ? 'bg-green-500' :
+                                  installment.status === 'overdue' ? 'bg-red-500' :
+                                  installment.status === 'pending' ? 'bg-yellow-500' :
+                                  'bg-gray-500'
+                                }`}>
+                                  {installment.installment_number}
+                                </div>
+                                <div>
+                                  <p className="font-medium text-gray-900">
+                                    Versement #{installment.installment_number}
+                                  </p>
+                                  <p className="text-sm text-gray-600">
+                                    Échéance: {formatDate(installment.due_date)}
+                                  </p>
+                                  {installment.paid_at && (
+                                    <p className="text-sm text-green-600">
+                                      Payé le: {formatDate(installment.paid_at)}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <p className="font-semibold text-gray-900">
+                                  {formatAmount(installment.amount)}
+                                </p>
+                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(installment.status)}`}>
+                                  {getStatusLabel(installment.status)}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Adresse */}
                 <div>
                   <h3 className="font-semibold mb-3 text-gray-900">Adresse de livraison</h3>
@@ -274,9 +450,9 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ isOpen, orderId, token,
                           {/* Image */}
                           <div className="flex-shrink-0 mx-auto sm:mx-0">
                             {it.images && it.images.length > 0 ? (
-                              <img 
-                                src={it.images[0]} 
-                                alt={it.name || it.product_id} 
+                              <img
+                                src={it.images[0]}
+                                alt={it.name || it.product_id}
                                 className="w-20 h-20 sm:w-16 sm:h-16 object-cover rounded-lg border shadow-sm"
                                 onError={(e) => {
                                   (e.target as HTMLImageElement).style.display = 'none';
@@ -288,7 +464,7 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ isOpen, orderId, token,
                               </div>
                             )}
                           </div>
-                          
+
                           {/* Détails */}
                           <div className="flex-1 text-center sm:text-left">
                             <h4 className="font-semibold text-gray-900 mb-2">{it.name || it.product_id}</h4>
@@ -298,10 +474,10 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ isOpen, orderId, token,
                               {it.color && <div>Couleur: <span className="font-medium">{it.color}</span></div>}
                             </div>
                           </div>
-                          
+
                           {/* Prix */}
                           <div className="flex-shrink-0 text-center sm:text-right">
-                            <div className="text-lg font-bold text-gray-900">{it.price} F CFA</div>
+                            <div className="text-lg font-bold text-gray-900">{formatAmount(it.price)}</div>
                             <div className="text-sm text-gray-500">Prix unitaire</div>
                           </div>
                         </div>
@@ -372,8 +548,8 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ isOpen, orderId, token,
         {/* Footer */}
         <div className="border-t bg-gray-50 p-4 sm:p-6 flex-shrink-0">
           <div className="flex justify-end">
-            <button 
-              onClick={onClose} 
+            <button
+              onClick={onClose}
               className="px-6 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               Fermer

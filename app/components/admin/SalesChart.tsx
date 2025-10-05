@@ -115,10 +115,10 @@ export default function SalesChart({ data, token }: SalesChartProps) {
           <span className="w-3 h-3 bg-gray-800 rounded-full" />
           Revenus
         </div>
-        <div className="flex items-center gap-2">
+        {/* <div className="flex items-center gap-2">
           <span className="w-3 h-3 bg-gray-300 rounded-full" />
           Coûts
-        </div>
+        </div> */}
       </div>
 
       {/* Chart */}
