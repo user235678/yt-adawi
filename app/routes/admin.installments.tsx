@@ -27,12 +27,7 @@ export interface Installment {
 }
 
 export interface InstallmentStats {
-  null: {
-    count: number;
-    total_amount: number;
-    total_paid: number;
-  };
-  overdue: {
+  paid: {
     count: number;
     total_amount: number;
     total_paid: number;
@@ -42,7 +37,7 @@ export interface InstallmentStats {
     total_amount: number;
     total_paid: number;
   };
-  paid: {
+  null: {
     count: number;
     total_amount: number;
     total_paid: number;
@@ -119,6 +114,19 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const status = url.searchParams.get("status");
   const userQuery = url.searchParams.get("userQuery");
 
+  // Valeurs par défaut pour les statistiques (mise à jour selon la nouvelle structure)
+  const defaultStats: InstallmentStats = {
+    paid: { count: 0, total_amount: 0, total_paid: 0 },
+    cancelled: { count: 0, total_amount: 0, total_paid: 0 },
+    null: { count: 0, total_amount: 0, total_paid: 0 },
+    total_installments: 0,
+    paid_installments: 0,
+    pending_installments: 0,
+    overdue_installments: 0,
+    total_amount: 0,
+    paid_amount: 0
+  };
+
   try {
     let parsedToken;
     try {
@@ -128,24 +136,45 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
     const accessToken = parsedToken?.access_token || token;
 
-    // Récupérer les statistiques
-    const statsResponse = await fetch(`${API_BASE}/installments/stats`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json"
-      }
-    });
+    // Récupérer les statistiques avec gestion d'erreur
+    let stats = defaultStats;
+    try {
+      const statsResponse = await fetch(`${API_BASE}/installments/stats`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json"
+        }
+      });
 
-    // Récupérer les versements en retard
-    const overdueResponse = await fetch(`${API_BASE}/installments/overdue?days_overdue=0`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json"
+      if (statsResponse.ok) {
+        const statsData = await statsResponse.json();
+        stats = statsData || defaultStats;
+      } else {
+        console.warn("Impossible de récupérer les statistiques:", statsResponse.status);
       }
-    });
+    } catch (error) {
+      console.error("Erreur lors de la récupération des statistiques:", error);
+    }
 
-    const stats = statsResponse.ok ? await statsResponse.json() : null;
-    const overdueInstallments = overdueResponse.ok ? await overdueResponse.json() : { installments: [], count: 0 };
+    // Récupérer les versements en retard avec gestion d'erreur
+    let overdueInstallments = { installments: [], count: 0 };
+    try {
+      const overdueResponse = await fetch(`${API_BASE}/installments/overdue?days_overdue=0`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (overdueResponse.ok) {
+        const overdueData = await overdueResponse.json();
+        overdueInstallments = overdueData || { installments: [], count: 0 };
+      } else {
+        console.warn("Impossible de récupérer les versements en retard:", overdueResponse.status);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la récupération des versements en retard:", error);
+    }
 
     let searchResults = undefined;
     let userSearchResults = undefined;
@@ -153,79 +182,84 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     // Gérer les recherches via le loader
     if (intent === "searchByOrder" && orderId) {
-      const searchResponse = await fetch(`${API_BASE}/installments/order/${orderId}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json"
+      try {
+        const searchResponse = await fetch(`${API_BASE}/installments/order/${orderId}`, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json"
+          }
+        });
+
+        if (searchResponse.ok) {
+          const installments = await searchResponse.json();
+          searchResults = { installments: installments || [], count: installments?.length || 0 };
         }
-      });
 
-      if (searchResponse.ok) {
-        const installments = await searchResponse.json();
-        searchResults = { installments: installments || [], count: installments?.length || 0 };
-      }
+        // Récupérer également le résumé de paiement pour cette commande
+        try {
+          const summaryResponse = await fetch(`${API_BASE}/installments/order/${orderId}/payment-summary`, {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json"
+            }
+          });
 
-      // Récupérer également le résumé de paiement pour cette commande
-      const summaryResponse = await fetch(`${API_BASE}/installments/order/${orderId}/payment-summary`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json"
+          if (summaryResponse.ok) {
+            paymentSummary = await summaryResponse.json();
+          }
+        } catch (error) {
+          console.error("Erreur lors de la récupération du résumé de paiement:", error);
         }
-      });
-
-      if (summaryResponse.ok) {
-        paymentSummary = await summaryResponse.json();
+      } catch (error) {
+        console.error("Erreur lors de la recherche par commande:", error);
       }
     }
 
     if (intent === "searchByDateRange" && startDate && endDate) {
-      const params = new URLSearchParams({
-        start_date: startDate,
-        end_date: endDate,
-        ...(status && status !== 'all' && { status })
-      });
+      try {
+        const params = new URLSearchParams({
+          start_date: startDate,
+          end_date: endDate,
+          ...(status && status !== 'all' && { status })
+        });
 
-      const searchResponse = await fetch(`${API_BASE}/installments/date-range?${params}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json"
+        const searchResponse = await fetch(`${API_BASE}/installments/date-range?${params}`, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json"
+          }
+        });
+
+        if (searchResponse.ok) {
+          const data = await searchResponse.json();
+          searchResults = { installments: data.installments || [], count: data.installments?.length || 0 };
         }
-      });
-
-      if (searchResponse.ok) {
-        const data = await searchResponse.json();
-        searchResults = { installments: data.installments || [], count: data.installments?.length || 0 };
+      } catch (error) {
+        console.error("Erreur lors de la recherche par plage de dates:", error);
       }
     }
 
     // Recherche d'utilisateurs par email
     if (intent === "searchUsers" && userQuery) {
-      const userSearchResponse = await fetch(`${API_BASE}/installments/users/search?q=${encodeURIComponent(userQuery)}&limit=10`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json"
-        }
-      });
+      try {
+        const userSearchResponse = await fetch(`${API_BASE}/installments/users/search?q=${encodeURIComponent(userQuery)}&limit=10`, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json"
+          }
+        });
 
-      if (userSearchResponse.ok) {
-        userSearchResults = await userSearchResponse.json();
+        if (userSearchResponse.ok) {
+          userSearchResults = await userSearchResponse.json();
+        }
+      } catch (error) {
+        console.error("Erreur lors de la recherche d'utilisateurs:", error);
       }
     }
 
     return json<LoaderData>({ 
       token: accessToken,
-      stats: stats || {
-        null: { count: 0, total_amount: 0, total_paid: 0 },
-        overdue: { count: 0, total_amount: 0, total_paid: 0 },
-        cancelled: { count: 0, total_amount: 0, total_paid: 0 },
-        paid: { count: 0, total_amount: 0, total_paid: 0 },
-        total_installments: 0,
-        paid_installments: 0,
-        pending_installments: 0,
-        overdue_installments: 0,
-        total_amount: 0,
-        paid_amount: 0
-      },
+      stats,
       overdueInstallments,
       searchResults,
       userSearchResults,
@@ -234,7 +268,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   } catch (error) {
     console.error("Erreur lors du chargement des données:", error);
-    throw new Response("Erreur serveur", { status: 500 });
+    
+    // Retourner des données par défaut en cas d'erreur
+    return json<LoaderData>({ 
+      token: "",
+      stats: defaultStats,
+      overdueInstallments: { installments: [], count: 0 },
+      searchResults: undefined,
+      userSearchResults: undefined,
+      paymentSummary: undefined
+    });
   }
 }
 
@@ -335,6 +378,22 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function AdminInstallments() {
   const { token, stats, overdueInstallments, searchResults, userSearchResults, paymentSummary } = useLoaderData<LoaderData>();
+  
+  // Vérification de sécurité pour stats (mise à jour selon la nouvelle structure)
+  const safeStats = stats || {
+    paid: { count: 0, total_amount: 0, total_paid: 0 },
+    cancelled: { count: 0, total_amount: 0, total_paid: 0 },
+    null: { count: 0, total_amount: 0, total_paid: 0 },
+    total_installments: 0,
+    paid_installments: 0,
+    pending_installments: 0,
+    overdue_installments: 0,
+    total_amount: 0,
+    paid_amount: 0
+  };
+
+  // Vérification de sécurité pour overdueInstallments
+  const safeOverdueInstallments = overdueInstallments || { installments: [], count: 0 };
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
@@ -459,6 +518,16 @@ export default function AdminInstallments() {
           <p className="text-gray-600">Suivi et gestion des paiements échelonnés</p>
         </div>
 
+        {/* Message d'erreur si les données ne peuvent pas être chargées */}
+        {!token && (
+          <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg mb-6">
+            <div className="flex items-center">
+              <AlertCircle className="w-5 h-5 mr-2" />
+              <span>Impossible de charger certaines données. Veuillez actualiser la page.</span>
+            </div>
+          </div>
+        )}
+
         {/* Statistiques */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-4 sm:p-6">
@@ -468,7 +537,7 @@ export default function AdminInstallments() {
               </div>
               <div className="ml-4">
                 <p className="text-xs sm:text-sm font-medium text-gray-600">Total Versements</p>
-                <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.total_installments}</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{safeStats.total_installments}</p>
               </div>
             </div>
           </div>
@@ -480,8 +549,8 @@ export default function AdminInstallments() {
               </div>
               <div className="ml-4">
                 <p className="text-xs sm:text-sm font-medium text-gray-600">Payés</p>
-                <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.paid_installments}</p>
-                <p className="text-xs sm:text-sm text-gray-500">{formatAmount(stats.paid_amount)}</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{safeStats.paid_installments}</p>
+                <p className="text-xs sm:text-sm text-gray-500">{formatAmount(safeStats.paid_amount)}</p>
               </div>
             </div>
           </div>
@@ -493,8 +562,10 @@ export default function AdminInstallments() {
               </div>
               <div className="ml-4">
                 <p className="text-xs sm:text-sm font-medium text-gray-600">En Retard</p>
-                <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.overdue_installments}</p>
-                <p className="text-xs sm:text-sm text-gray-500">{formatAmount(stats.overdue.total_amount)}</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{safeStats.overdue_installments}</p>
+                <p className="text-xs sm:text-sm text-gray-500">
+                  {formatAmount(safeStats.null?.total_amount || 0)}
+                </p>
               </div>
             </div>
           </div>
@@ -506,8 +577,87 @@ export default function AdminInstallments() {
               </div>
               <div className="ml-4">
                 <p className="text-xs sm:text-sm font-medium text-gray-600">Montant Total</p>
-                <p className="text-xl sm:text-2xl font-bold text-gray-900">{formatAmount(stats.total_amount)}</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{formatAmount(safeStats.total_amount)}</p>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Ajout d'une section de statistiques détaillées */}
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-8">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Statistiques Détaillées</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="bg-green-50 p-4 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-green-600">Versements Payés</p>
+                  <p className="text-2xl font-bold text-green-900">{safeStats.paid.count}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-green-600">Montant</p>
+                  <p className="text-lg font-semibold text-green-900">
+                    {formatAmount(safeStats.paid.total_amount)}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-yellow-50 p-4 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-yellow-600">En Attente</p>
+                  <p className="text-2xl font-bold text-yellow-900">{safeStats.null.count}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-yellow-600">Montant</p>
+                  <p className="text-lg font-semibold text-yellow-900">
+                    {formatAmount(safeStats.null.total_amount)}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-red-50 p-4 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-red-600">Annulés</p>
+                  <p className="text-2xl font-bold text-red-900">{safeStats.cancelled.count}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-red-600">Montant</p>
+                  <p className="text-lg font-semibold text-red-900">
+                    {formatAmount(safeStats.cancelled.total_amount)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Barre de progression globale */}
+          <div className="mt-6">
+            <div className="flex justify-between text-sm text-gray-600 mb-2">
+              <span>Progression des paiements</span>
+              <span>
+                {safeStats.total_amount > 0 
+                  ? Math.round((safeStats.paid_amount / safeStats.total_amount) * 100)
+                  : 0
+                }%
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-3">
+              <div 
+                className="bg-green-600 h-3 rounded-full transition-all duration-300"
+                style={{ 
+                  width: `${safeStats.total_amount > 0 
+                    ? (safeStats.paid_amount / safeStats.total_amount) * 100 
+                    : 0
+                  }%` 
+                }}
+              ></div>
+            </div>
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>Payé: {formatAmount(safeStats.paid_amount)}</span>
+              <span>Total: {formatAmount(safeStats.total_amount)}</span>
             </div>
           </div>
         </div>
@@ -795,15 +945,15 @@ export default function AdminInstallments() {
         </div>
 
         {/* Versements en retard */}
-        {overdueInstallments.count > 0 && (
+        {safeOverdueInstallments.count > 0 && (
           <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
               <h2 className="text-lg font-semibold text-red-600 mb-2 sm:mb-0 flex items-center">
                 <AlertCircle className="w-5 h-5 mr-2" />
-                Versements en Retard ({overdueInstallments.count})
+                Versements en Retard ({safeOverdueInstallments.count})
               </h2>
               <button
-                onClick={() => exportData(overdueInstallments.installments, 'versements-en-retard')}
+                onClick={() => exportData(safeOverdueInstallments.installments, 'versements-en-retard')}
                 className="flex items-center px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
               >
                 <Download className="w-4 h-4 mr-2" />
@@ -833,7 +983,7 @@ export default function AdminInstallments() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {overdueInstallments.installments.map((installment) => (
+                  {safeOverdueInstallments.installments.map((installment) => (
                     <tr key={installment.id} className="hover:bg-gray-50">
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                         {installment.order_id}
