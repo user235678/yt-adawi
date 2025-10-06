@@ -28,19 +28,29 @@ export const loader: LoaderFunction = async ({ request }) => {
       throw new Error("No authentication token found");
     }
 
-    const response = await fetch("https://showroom-backend-2x3g.onrender.com/dashboard/admin", {
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
+    // Parallel fetch for dashboard data and inventory alerts
+    const [dashboardResponse, inventoryResponse] = await Promise.all([
+      fetch("https://showroom-backend-2x3g.onrender.com/dashboard/admin", {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }),
+      fetch("https://showroom-backend-2x3g.onrender.com/inventory/low-stock", {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }),
+    ]);
 
-    if (!response.ok) {
-      throw new Error(`API request failed with status ${response.status}`);
+    if (!dashboardResponse.ok || !inventoryResponse.ok) {
+      throw new Error(`API request failed with status ${dashboardResponse.status} or ${inventoryResponse.status}`);
     }
 
-    const data = await response.json();
-    return json({ ...data, user, token });
+    const dashboardData = await dashboardResponse.json();
+    const inventoryData = await inventoryResponse.json();
+    return json({ ...dashboardData, inventory_alerts: inventoryData, user, token });
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
     // Return empty data or handle error

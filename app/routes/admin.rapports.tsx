@@ -215,7 +215,7 @@ export default function AdminRapports() {
             <div className="min-w-0 flex-1">
               <p className="text-sm text-gray-600">Revenus</p>
               <p className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
-                {reportsSummary ? `${(reportsSummary.total_revenue / 1000).toFixed(1)}K F CFA` : "—"}
+                {reportsSummary ? `${(reportsSummary.total_revenue / 1000)} F CFA` : "—"}
               </p>
               {/* <p className={`text-sm ${reportsSummary && reportsSummary.revenue_growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {reportsSummary ? `${reportsSummary.revenue_growth >= 0 ? '+' : ''}${reportsSummary.revenue_growth}% ce mois` : "—"}

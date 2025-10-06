@@ -7,6 +7,7 @@ interface InventoryAlert {
   current_stock: number;
   low_stock_threshold: number;
   seller_id: string;
+  
 }
 
 interface InventoryAlertsProps {
@@ -36,20 +37,29 @@ export default function InventoryAlerts({ data }: InventoryAlertsProps) {
           )}
         </div>
       </div>
+      
 
       {/* Alerts List */}
       <div className="space-y-4">
         {criticalAlerts.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium text-red-600 mb-2 flex items-center gap-2">
+            <h4 className="text-sm font-medium text-red-600 mb-3 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4" />
-              Produits en rupture de stock
+              Produits en rupture de stock ({criticalAlerts.length})
             </h4>
             <ul className="space-y-2">
               {criticalAlerts.map((alert) => (
-                <li key={alert.product_id} className="text-sm text-gray-700 bg-red-50 p-2 rounded hover:bg-red-100 cursor-pointer">
-                  <Link to={`/admin/products`} className="block w-full">
-                    {alert.product_name} - Stock: {alert.current_stock}
+                <li key={alert.product_id} className="text-sm text-gray-700 bg-red-50 p-3 rounded-lg hover:bg-red-100 transition-colors">
+                  <Link to={`/admin/products`} className="block w-full cursor-pointer">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-gray-900">{alert.product_name}</p>
+                        <p className="text-xs text-gray-500">Stock: {alert.current_stock} / Min: {alert.low_stock_threshold}</p>
+                      </div>
+                      <div className="text-red-600 font-semibold">
+                        RUPTURE
+                      </div>
+                    </div>
                   </Link>
                 </li>
               ))}
@@ -59,14 +69,24 @@ export default function InventoryAlerts({ data }: InventoryAlertsProps) {
 
         {lowStockAlerts.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium text-orange-600 mb-2 flex items-center gap-2">
+            <h4 className="text-sm font-medium text-orange-600 mb-3 flex items-center gap-2">
               <TrendingDown className="w-4 h-4" />
-              Produits en stock faible
+              Produits en stock faible ({lowStockAlerts.length})
             </h4>
             <ul className="space-y-2">
               {lowStockAlerts.map((alert) => (
-                <li key={alert.product_id} className="text-sm text-gray-700 bg-orange-50 p-2 rounded hover:bg-orange-100 cursor-pointer">
-                    {alert.product_name} - Stock: {alert.current_stock} / Min: {alert.low_stock_threshold}
+                <li key={alert.product_id} className="text-sm text-gray-700 bg-orange-50 p-3 rounded-lg hover:bg-orange-100 transition-colors">
+                  <Link to={`/admin/products`} className="block w-full cursor-pointer">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-gray-900">{alert.product_name}</p>
+                        <p className="text-xs text-gray-500">
+                          Stock: {alert.current_stock} / Min: {alert.low_stock_threshold}
+                        </p>
+                      </div>
+                      <div className="text-orange-600 font-semibold">FAIBLE</div>
+                    </div>
+                  </Link>
                 </li>
               ))}
             </ul>
