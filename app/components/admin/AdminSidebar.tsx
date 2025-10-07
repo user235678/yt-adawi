@@ -47,6 +47,7 @@ export default function AdminSidebar({ onClose }: AdminSidebarProps) {
       children: [
 
         { id: "products", label: "Produits", icon: Package2, path: "/admin/products" },
+        { id: "product-photos", label: "Photos Acceuil", icon: Package, path: "/admin/NewProduits" },
         { id: "categories", label: "Catégories", icon: Box, path: "/admin/categories" }
       ]
     },

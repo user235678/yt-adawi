@@ -16,6 +16,7 @@ interface StatsCardsProps {
     total_commande_semaine:number;
     total_orders_week: number;
     weekly_customers: number;
+    total_revenue_week: number;
     total_visiteurs_semaine: number;
     pourcentage_visiteurs_semaine: number;
     pourcentage_visiteur_total: number;
@@ -41,7 +42,7 @@ export default function StatsCards({ data }: StatsCardsProps) {
   const stats = [
     {
       title: showWeekly ? "Ventes Semaine" : "Ventes Totales",
-      value: formatNumber(showWeekly ? data.total_revenue_semaine : data.total_revenue),
+      value: formatNumber(showWeekly ? data.total_revenue_week : data.total_revenue),
       unit: "F CFA",
       // change: showWeekly
       //   ? `${data.pourcentage_revenue_semaine >= 0 ? '+' : ''}${data.pourcentage_revenue_semaine}%`

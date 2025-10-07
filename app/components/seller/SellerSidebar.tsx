@@ -31,13 +31,14 @@ export default function SellerSidebar({ onClose }: SellerSidebarProps) {
   
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/seller/dashboard" },
-    { 
+    {
       id: "products",
       label: "Boutique",
       icon: Package,
       path: "/seller/products",
       children: [
         { id: "products-list", label: "Produits", icon: Package2, path: "/seller/products" },
+        { id: "product-photos", label: "Photos Acceuil", icon: Store, path: "/seller/NewProduits" },
         { id: "inventory", label: "Inventaire", icon: BarChart3, path: "/seller/inventory" }
       ]
     },
