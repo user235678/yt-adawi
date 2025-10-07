@@ -25,7 +25,8 @@ import {
   CreditCard,
   Repeat
 } from "lucide-react";
-import { useState } from "react";
+import { Children, useState } from "react";
+import { checkSlotAvailability } from "~/utils/availability.client";
 
 interface AdminSidebarProps {
   onClose?: () => void;
@@ -53,8 +54,18 @@ export default function AdminSidebar({ onClose }: AdminSidebarProps) {
     { id: "Tickets", label: "Tickets", icon: MessageSquare, path: "/admin/support", },
     { id: "rapports", label: "Rapports", icon: BarChart3, path: "/admin/rapports" },
     { id: "Blogs", label: "Blog", icon: FileText, path: "/admin/blog" },
-  { id: "refunds", label: "Remboursements", icon: RotateCcw, path: "/admin/refunds" },
-    { id: "Rendez-Vous", label: "Rendez-Vous", icon: Settings, path: "/admin/appointments" },
+    { id: "refunds", label: "Remboursements", icon: RotateCcw, path: "/admin/refunds" },
+    {
+      id: "Rendez-Vous",
+      label: "Rendez-Vous",
+      icon: Clock,
+      path: "/admin/appointments",
+      children: [
+
+        { id: "appointments", label: "Rendez-Vous", icon: Clock, path: "/admin/appointments" },
+        { id: "availability", label: "Création", icon: Clock, path: "/admin/createappointements" },
+      ]
+    },
     // { id: "availability", label: "Disponibilités", icon: Clock, path: "/admin/availability" },
     { id: "promotions", label: "Promotions", icon: TicketPercent, path: "/admin/promotions" },
     { id: "installments", label: "Versements", icon: CreditCard, path: "/admin/installments" },
@@ -142,8 +153,8 @@ export default function AdminSidebar({ onClose }: AdminSidebarProps) {
                 <div>
                   <div
                     className={`w-full flex items-center px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-colors duration-200 text-sm sm:text-base cursor-pointer ${isItemActive
-                        ? "bg-adawi-gold text-black"
-                        : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                      ? "bg-adawi-gold text-black"
+                      : "text-gray-300 hover:bg-gray-700 hover:text-white"
                       }`}
                     onClick={() => hasChildren ? toggleMenu(item.id) : (() => {
                       if (item.path) {
@@ -178,8 +189,8 @@ export default function AdminSidebar({ onClose }: AdminSidebarProps) {
                               to={child.path}
                               onClick={handleLinkClick}
                               className={`w-full flex items-center px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-colors duration-200 text-sm sm:text-base ${isChildActive
-                                  ? "bg-adawi-gold text-black"
-                                  : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                                ? "bg-adawi-gold text-black"
+                                : "text-gray-400 hover:bg-gray-700 hover:text-white"
                                 }`}
                             >
                               <ChildIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3 flex-shrink-0" />

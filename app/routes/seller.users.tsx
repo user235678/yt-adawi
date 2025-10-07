@@ -3,7 +3,7 @@ import type { MetaFunction, LoaderFunction, ActionFunction } from "@remix-run/no
 import { json } from "@remix-run/node";
 import { useLoaderData, useSubmit, useActionData, useNavigation } from "@remix-run/react";
 import { Plus, Search, Filter, Eye, Mail, Phone, AlertCircle, CheckCircle, User } from "lucide-react";
-import AddUserModal from "~/components/admin/AddUserModal";
+import AddUserModal from "~/components/seller/AddUserModal";
 import ViewUserModal from "~/components/admin/ViewUserModal";
 import UpdateUserModal from "~/components/seller/UpdateUserModal";
 import { readToken } from "~/utils/session.server";
