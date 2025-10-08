@@ -132,7 +132,7 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
     }, 300);
   };
 
-  // Fermer avec Échap
+  // Fermer avec Échap et empêcher le scroll
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -140,14 +140,37 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
       }
     };
 
+    const preventScroll = (e: WheelEvent | TouchEvent) => {
+      e.preventDefault();
+    };
+
     if (isOpen) {
       document.addEventListener("keydown", handleEscape);
       document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.position = "fixed";
+      document.body.style.width = "100%";
+      document.body.style.top = `-${window.scrollY}px`;
+
+      // Empêcher le scroll sur mobile et desktop
+      document.addEventListener("wheel", preventScroll, { passive: false });
+      document.addEventListener("touchmove", preventScroll, { passive: false });
     }
 
     return () => {
       document.removeEventListener("keydown", handleEscape);
+      document.removeEventListener("wheel", preventScroll);
+      document.removeEventListener("touchmove", preventScroll);
+
+      const scrollY = document.body.style.top;
       document.body.style.overflow = "unset";
+      document.documentElement.style.overflow = "unset";
+      document.body.style.position = "";
+      document.body.style.width = "";
+      document.body.style.top = "";
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || "0", 10) * -1);
+      }
     };
   }, [isOpen]);
 
