@@ -73,6 +73,21 @@ export default function Boutique() {
     const [currentPage, setCurrentPage] = useState(1);
     const PRODUCTS_PER_PAGE = 50;
 
+    // Fonction pour normaliser les URLs d'images
+    const normalizeImageUrl = (imagePath: string | undefined): string => {
+        if (!imagePath) return "/placeholder.jpg";
+
+        // Si l'URL est déjà absolue (commence par http ou https), l'utiliser telle quelle
+        if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+            return imagePath;
+        }
+
+        // Sinon, construire l'URL complète en évitant les doubles slashes
+        const backendUrl = "https://showroom-backend-2x3g.onrender.com";
+        const cleanPath = imagePath.startsWith('/') ? imagePath.substring(1) : imagePath;
+        return `${backendUrl}/${cleanPath}`;
+    };
+
     // Fonction pour mapper les produits de l'API vers le format attendu
     const mapApiProductToProduct = (apiProduct: ApiProduct): Product => {
         let category: ProductCategory = "vedette";
@@ -89,7 +104,6 @@ export default function Boutique() {
             }
         }
 
-        const backendUrl = "https://showroom-backend-2x3g.onrender.com";
         return {
             id: apiProduct.id, // Garder l'ID original (string)
             name: apiProduct.name,
@@ -97,10 +111,10 @@ export default function Boutique() {
             priceValue: apiProduct.price,
             discounted_price: apiProduct.discounted_price,
             discount_amount: apiProduct.discount_amount,
-            image: apiProduct.images[0] ? `${backendUrl}/${apiProduct.images[0]}` : "/placeholder.jpg",
-            hoverImage: apiProduct.hover_images?.[0] ? `${backendUrl}/${apiProduct.hover_images[0]}` : (apiProduct.images[1] ? `${backendUrl}/${apiProduct.images[1]}` : "/placeholder.jpg"),
-            image1: apiProduct.images[1] ? `${backendUrl}/${apiProduct.images[1]}` : undefined,
-            image2: apiProduct.images[2] ? `${backendUrl}/${apiProduct.images[2]}` : undefined,
+            image: normalizeImageUrl(apiProduct.images[0]),
+            hoverImage: normalizeImageUrl(apiProduct.hover_images?.[0] || apiProduct.images[1]),
+            image1: normalizeImageUrl(apiProduct.images[1]),
+            image2: normalizeImageUrl(apiProduct.images[2]),
             date: new Date(apiProduct.created_at),
             category: category,
             size: apiProduct.sizes.length > 0 ? apiProduct.sizes[0] as ProductSize : undefined,
