@@ -539,7 +539,6 @@ export default function Search() {
                           <button
                             onClick={() => handleOpenProductModal(result)}
                             className="btn-view-details"
-                            disabled={stockLevel === 'out'}
                           >
                             Voir détails
                           </button>

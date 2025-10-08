@@ -601,7 +601,10 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
                 />
 
                 {isNewProduct(product.date) && (
-                  <span className="absolute top-3 left-3 z-20 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-pulse">
+                  <span
+                    className="absolute top-3 left-3 z-20 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-pulse cursor-default select-none"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     NEW
                   </span>
                 )}
@@ -610,7 +613,10 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
                 {productImages.length > 1 && (
                   <>
                     <button
-                      onClick={() => changeImage("prev")}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        changeImage("prev");
+                      }}
                       className="absolute left-3 top-1/2 transform -translate-y-1/2 bg-black/20 backdrop-blur-sm hover:bg-black/40 text-white rounded-full p-3 transition-all duration-200 opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-95"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -618,7 +624,10 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
                       </svg>
                     </button>
                     <button
-                      onClick={() => changeImage("next")}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        changeImage("next");
+                      }}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-black/20 backdrop-blur-sm hover:bg-black/40 text-white rounded-full p-3 transition-all duration-200 opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-95"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -949,38 +958,61 @@ export default function ProductModal({ product, isOpen, onClose, apiProducts = [
                 </details>
 
                 <div className="animate-fade-in-up" style={{ animationDelay: '400ms' }}>
-                  <button
-                    onClick={handleAddToCart}
-                    disabled={isAddingToCart}
-                    className={`w-full py-4 px-6 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2 ${isAddingToCart
-                        ? "bg-adawi-gold text-white cursor-not-allowed scale-95"
-                        : "bg-adawi-gold text-white hover:shadow-xl hover:brightness-110"
-                      }`}
-                  >
-                    {isAddingToCart ? (
-                      <>
-                        <svg
-                          className="animate-spin h-6 w-6 text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          />
-                        </svg>
-                        <span>AJOUT EN COURS...</span>
-                      </>
-                    ) : (
-                      <>
-                        <ShoppingCart className="w-5 h-5" />
-                        <span>AJOUTER AU PANIER</span>
-                      </>
-                    )}
-                  </button>
+                  {(() => {
+                    const apiProduct = apiProducts.find(p => p.id === product.id);
+                    const isOutOfStock = apiProduct && apiProduct.stock <= 0;
+
+                    if (isOutOfStock) {
+                      return (
+                        <div className="w-full py-4 px-6 rounded-2xl bg-red-50 border-2 border-red-200 text-center">
+                          <div className="flex items-center justify-center gap-2 text-red-600 font-semibold mb-2">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.876c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.062 15.5c-.77.833.192 2.5 1.732 2.5z" />
+                            </svg>
+                            <span>RUPTURE DE STOCK</span>
+                          </div>
+                          <p className="text-sm text-red-500">
+                            Ce produit n'est plus disponible. Commandez sur mesure pour une pièce unique !
+                          </p>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <button
+                        onClick={handleAddToCart}
+                        disabled={isAddingToCart}
+                        className={`w-full py-4 px-6 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2 ${isAddingToCart
+                            ? "bg-adawi-gold text-white cursor-not-allowed scale-95"
+                            : "bg-adawi-gold text-white hover:shadow-xl hover:brightness-110"
+                          }`}
+                      >
+                        {isAddingToCart ? (
+                          <>
+                            <svg
+                              className="animate-spin h-6 w-6 text-white"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              />
+                            </svg>
+                            <span>AJOUT EN COURS...</span>
+                          </>
+                        ) : (
+                          <>
+                            <ShoppingCart className="w-5 h-5" />
+                            <span>AJOUTER AU PANIER</span>
+                          </>
+                        )}
+                      </button>
+                    );
+                  })()}
                 </div>
 
                 {/* Titre et bouton contact */}

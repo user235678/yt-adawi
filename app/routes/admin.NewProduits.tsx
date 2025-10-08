@@ -40,12 +40,12 @@ const AdminNewProduits: React.FC = () => {
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Charger les photos de l'utilisateur
-  const fetchMyPhotos = async () => {
+  // Charger toutes les photos (admin)
+  const fetchAllPhotos = async () => {
     try {
       setLoading(true);
-      
-      const response = await fetch('https://showroom-backend-2x3g.onrender.com/user-photos/my-photos?skip=0&limit=100', {
+
+      const response = await fetch('https://showroom-backend-2x3g.onrender.com/user-photos/admin/all?skip=0&limit=100', {
         headers: {
           'accept': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -69,7 +69,7 @@ const AdminNewProduits: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchMyPhotos();
+    fetchAllPhotos();
   }, []);
 
   // Gestion du drag & drop
@@ -323,7 +323,7 @@ const AdminNewProduits: React.FC = () => {
               Mes Photos ({photos.length})
             </h2>
             <button
-              onClick={fetchMyPhotos}
+              onClick={fetchAllPhotos}
               disabled={loading}
               className="text-adawi-gold hover:text-adawi-gold/80 transition-colors"
             >

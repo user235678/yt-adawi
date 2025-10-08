@@ -41,8 +41,8 @@ const SellerNewProduits: React.FC = () => {
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Charger les photos de l'utilisateur
-  const fetchMyPhotos = async () => {
+  // Charger toutes les photos (vendeur)
+  const fetchAllPhotos = async () => {
     try {
       setLoading(true);
       
@@ -70,7 +70,7 @@ const SellerNewProduits: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchMyPhotos();
+    fetchAllPhotos();
   }, []);
 
   // Gestion du drag & drop
@@ -330,7 +330,7 @@ const SellerNewProduits: React.FC = () => {
               Mes Photos ({photos.length})
             </h2>
             <button
-              onClick={fetchMyPhotos}
+              onClick={fetchAllPhotos}
               disabled={loading}
               className="text-adawi-gold hover:text-adawi-gold/80 transition-colors px-3 py-1 rounded-lg hover:bg-adawi-gold/10"
             >

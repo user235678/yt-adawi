@@ -325,10 +325,6 @@ export default function Boutique() {
     };
 
     const handleProductClick = (product: Product) => {
-        // Ne pas ouvrir le modal si le produit n'est pas en stock
-
-        if (product.inStock === false) return;        
-        
         setSelectedProduct(product);
         setIsModalOpen(true);
     };

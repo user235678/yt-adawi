@@ -84,21 +84,17 @@ const ProductGrid = ({ products, selectedSize, selectedColor, onProductClick }: 
         {products.map((product) => (
           <div
             key={product.id}
-            onClick={() => product.stock && product.stock > 0 ? onProductClick?.(product) : null}
-            className={`product-card-custom group flex flex-col bg-white overflow-hidden rounded-lg ${
-              product.stock && product.stock > 0 ? "cursor-pointer" : "cursor-not-allowed opacity-80"
-            }`}
+            onClick={() => onProductClick?.(product)}
+            className="product-card-custom group flex flex-col bg-white overflow-hidden rounded-lg cursor-pointer"
             role="button"
-            tabIndex={product.stock && product.stock > 0 ? 0 : -1}
+            tabIndex={0}
             onKeyDown={(e) => {
-              if ((e.key === 'Enter' || e.key === ' ') && product.stock && product.stock > 0) {
+              if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 onProductClick?.(product);
               }
             }}
-            aria-label={product.stock && product.stock > 0 
-              ? `Voir les détails de ${product.name}` 
-              : `${product.name} - Rupture de stock`}
+            aria-label={`Voir les détails de ${product.name}`}
           >
             {/* Image du produit avec effet de survol */}
             <div className="relative w-full overflow-hidden mx-1 my-1.5 sm:mx-3 sm:my-2 xl:mx-2 xl:my-3 rounded">
@@ -133,15 +129,6 @@ const ProductGrid = ({ products, selectedSize, selectedColor, onProductClick }: 
                 <span className="absolute bottom-2 right-2 z-20 bg-adawi-gold-light text-red-500 text-[10px] sm:text-xs font-semibold px-2 py-1 rounded shadow-md uppercase">
                   NEW
                 </span>
-              )}
-
-              {/* Badge "Rupture de stock" */}
-              {(!product.stock || product.stock <= 0) && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-20">
-                  <span className="bg-red-600 text-white text-xs sm:text-sm font-bold px-3 py-1.5 rounded-full transform -rotate-12 shadow-lg">
-                    RUPTURE DE STOCK
-                  </span>
-                </div>
               )}
             </div>
 
