@@ -1,9 +1,10 @@
-import type { LoaderFunction } from "@remix-run/node";
+import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
+import { useLoaderData, Link, useFetcher, useActionData } from "@remix-run/react";
 import { requireUser, API_BASE } from "~/utils/auth.server";
 import { readToken } from "~/utils/session.server";
 import ClientLayout from "~/components/client/ClientLayout";
+import { useState } from "react";
 
 type Appointment = {
   _id: string;
@@ -37,6 +38,12 @@ type LoaderData = {
     name: string;
     email: string;
   } | null;
+};
+
+type ActionData = {
+  success?: boolean;
+  error?: string;
+  message?: string;
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -83,8 +90,67 @@ export const loader: LoaderFunction = async ({ request }) => {
   });
 };
 
+export const action: ActionFunction = async ({ request }) => {
+  const user = await requireUser(request);
+  if (!user) {
+    return redirect("/login");
+  }
+
+  const formData = await request.formData();
+  const intent = formData.get("intent") as string;
+  const token = await readToken(request);
+
+  if (intent === "cancelAppointment") {
+    const appointmentId = formData.get("appointmentId") as string;
+    const cancelReason = formData.get("cancelReason") as string;
+
+    try {
+      const url = new URL(`${API_BASE}/appointments/${appointmentId}/cancel`);
+      if (cancelReason) {
+        url.searchParams.append("cancel_reason", cancelReason);
+      }
+
+      const response = await fetch(url.toString(), {
+        method: "PUT",
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        return json<ActionData>({
+          error: errorData.detail || `Erreur ${response.status}: Impossible d'annuler le rendez-vous`
+        }, { status: response.status });
+      }
+
+      return json<ActionData>({
+        success: true,
+        message: "Rendez-vous annulé avec succès"
+      });
+
+    } catch (error) {
+      console.error("Erreur lors de l'annulation:", error);
+      return json<ActionData>({
+        error: "Erreur de connexion. Veuillez réessayer."
+      }, { status: 500 });
+    }
+  }
+
+  return json<ActionData>({
+    error: "Action non reconnue"
+  }, { status: 400 });
+};
+
 export default function ClientAppointmentsList() {
   const { appointments, user } = useLoaderData<LoaderData>();
+  const actionData = useActionData<ActionData>();
+  const fetcher = useFetcher();
+
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -101,9 +167,52 @@ export default function ClientAppointmentsList() {
     }
   };
 
+  const handleCancelClick = (appointment: Appointment) => {
+    setSelectedAppointment(appointment);
+    setCancelReason("");
+    setShowCancelModal(true);
+  };
+
+  const handleCancelSubmit = () => {
+    if (!selectedAppointment) return;
+
+    const formData = new FormData();
+    formData.append("intent", "cancelAppointment");
+    formData.append("appointmentId", selectedAppointment._id);
+    formData.append("cancelReason", cancelReason);
+
+    fetcher.submit(formData, { method: "post" });
+    setShowCancelModal(false);
+    setSelectedAppointment(null);
+    setCancelReason("");
+  };
+
   return (
     <ClientLayout userName={user?.name}>
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        {/* Messages de notification */}
+        {actionData?.success && (
+          <div className="mb-6 bg-green-50 border border-green-200 text-green-700 p-4 rounded-lg">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <p className="font-medium">{actionData.message}</p>
+            </div>
+          </div>
+        )}
+
+        {actionData?.error && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              <p className="font-medium">{actionData.error}</p>
+            </div>
+          </div>
+        )}
+
         {/* Header Section - Responsive */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Mes Rendez-vous</h1>
@@ -226,12 +335,16 @@ export default function ClientAppointmentsList() {
                   )}
                 </div>
 
-                {/* Optional: Card Actions Footer */}
+                {/* Card Actions Footer */}
                 <div className="px-4 sm:px-6 pb-4 sm:pb-6">
                   <div className="flex gap-2 text-xs">  
-                    {appt.status === 'confirmé' && (
-                      <button className="flex-1 px-3 py-2 text-red-600 border border-red-600 rounded-md hover:bg-red-600 hover:text-white transition-colors">
-                        Annuler
+                    {(appt.status === 'confirmé' || appt.status === 'en cours') && (
+                      <button 
+                        onClick={() => handleCancelClick(appt)}
+                        disabled={fetcher.state === "submitting"}
+                        className="flex-1 px-3 py-2 text-red-600 border border-red-600 rounded-md hover:bg-red-600 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {fetcher.state === "submitting" ? "Annulation..." : "Annuler"}
                       </button>
                     )}
                   </div>
@@ -241,6 +354,92 @@ export default function ClientAppointmentsList() {
           </div>
         )}
       </div>
+
+      {/* Modal d'annulation */}
+      {showCancelModal && selectedAppointment && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            <div className="flex justify-between items-center p-6 border-b">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Annuler le rendez-vous
+              </h3>
+              <button
+                onClick={() => setShowCancelModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="p-6">
+              <div className="mb-4">
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                  <div className="flex items-start">
+                    <svg className="w-5 h-5 text-red-600 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    <div>
+                      <p className="text-sm font-medium text-red-800">Attention</p>
+                      <p className="text-sm text-red-700 mt-1">
+                        Cette action annulera définitivement votre rendez-vous.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                  <h4 className="font-medium text-gray-900 mb-2">Détails du rendez-vous</h4>
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <p><strong>Titre:</strong> {selectedAppointment.title}</p>
+                    <p><strong>Date:</strong> {new Date(selectedAppointment.appointment_date).toLocaleDateString('fr-FR', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}</p>
+                    <p><strong>Service:</strong> {selectedAppointment.service_type}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Raison de l'annulation (optionnel)
+                  </label>
+                  <textarea
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-gold focus:border-transparent outline-none"
+                    placeholder="Expliquez pourquoi vous annulez ce rendez-vous..."
+                    maxLength={500}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">{cancelReason.length}/500 caractères</p>
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowCancelModal(false)}
+                  className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  Garder le rendez-vous
+                </button>
+                <button
+                  onClick={handleCancelSubmit}
+                  disabled={fetcher.state === "submitting"}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {fetcher.state === "submitting" ? "Annulation..." : "Confirmer l'annulation"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </ClientLayout>
   );
 }

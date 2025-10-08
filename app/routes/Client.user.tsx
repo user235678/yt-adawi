@@ -235,7 +235,7 @@ export default function ProfilePage() {
               Consultez et gérez vos informations personnelles
             </p>
           </div>
-          {!isEditing && (
+          {!isEditing && user.measurements && Object.keys(user.measurements).length > 0 && (
             <button
               onClick={() => setIsEditing(true)}
               className="px-4 py-2 bg-adawi-gold text-white rounded-lg hover:bg-adawi-gold/90 transition-colors flex items-center"
@@ -416,7 +416,7 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Measurements Section */}
-                {user.measurements && (
+                {user.measurements && Object.keys(user.measurements).length > 0 && (
                   <div className="mt-8 pt-8 border-t border-gray-200">
                     <h3 className="text-xl font-semibold text-adawi-brown mb-6 flex items-center">
                       <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -429,7 +429,7 @@ export default function ProfilePage() {
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                       {Object.entries(user.measurements).map(([key, value]) => {
                         if (key === "other_measurements" || !value) return null;
-                        const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        const label = key.replace(/_/g, ' ').replace(/\\b\\w/g, l => l.toUpperCase());
                         return (
                           <div key={key} className="bg-gray-50 p-3 rounded-lg">
                             <p className="text-xs text-gray-600 mb-1">{label}</p>
@@ -447,6 +447,34 @@ export default function ProfilePage() {
                     )}
                   </div>
                 )}
+
+                {/* Message si pas de mensurations */}
+                {(!user.measurements || Object.keys(user.measurements).length === 0) && (
+                  <div className="mt-8 pt-8 border-t border-gray-200">
+                    <div className="bg-white border border-blue-200 rounded-lg p-6 text-center">
+                      <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-semibold text-adawi-gold mb-2">Mensurations non renseignées</h3>
+                      <p className="text-adawi-gold mb-4">
+                        Vos mensurations ne sont pas encore enregistrées. Contactez notre équipe pour les ajouter à votre profil.
+                      </p>
+                      <a 
+                        href="tel:+22897732976" 
+                        className="inline-flex items-center px-4 py-2 bg-adawi-gold text-white rounded-lg hover:bg-adawi-brown transition-colors"
+                      >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                            d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                        </svg>
+                        Nous contacter
+                      </a>
+                    </div>
+                  </div>
+                )}
               </>
             ) : (
               /* Form d'édition */
@@ -458,7 +486,7 @@ export default function ProfilePage() {
                   <h3 className="text-xl font-semibold text-adawi-brown mb-4">Taille</h3>
                   <select
                     name="size"
-                    defaultValue={user.size}
+                    defaultValue={user.size || "M"}
                     className="w-full md:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:ring-adawi-gold focus:border-adawi-gold"
                   >
                     <option value="XS">XS</option>
@@ -479,7 +507,7 @@ export default function ProfilePage() {
                       <input
                         type="text"
                         name="address_street"
-                        defaultValue={user.address?.street}
+                        defaultValue={user.address?.street || ""}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-adawi-gold focus:border-adawi-gold"
                       />
                     </div>
@@ -488,7 +516,7 @@ export default function ProfilePage() {
                       <input
                         type="text"
                         name="address_city"
-                        defaultValue={user.address?.city}
+                        defaultValue={user.address?.city || ""}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-adawi-gold focus:border-adawi-gold"
                       />
                     </div>
@@ -497,7 +525,7 @@ export default function ProfilePage() {
                       <input
                         type="text"
                         name="address_postal_code"
-                        defaultValue={user.address?.postal_code}
+                        defaultValue={user.address?.postal_code || ""}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-adawi-gold focus:border-adawi-gold"
                       />
                     </div>
@@ -506,7 +534,7 @@ export default function ProfilePage() {
                       <input
                         type="text"
                         name="address_country"
-                        defaultValue={user.address?.country}
+                        defaultValue={user.address?.country || ""}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-adawi-gold focus:border-adawi-gold"
                       />
                     </div>
@@ -515,48 +543,50 @@ export default function ProfilePage() {
                       <input
                         type="tel"
                         name="address_phone"
-                        defaultValue={user.address?.phone}
+                        defaultValue={user.address?.phone || ""}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-adawi-gold focus:border-adawi-gold"
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* Mensurations */}
-                <div className="mb-8">
-                  <h3 className="text-xl font-semibold text-adawi-brown mb-4">Mensurations (cm)</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {Object.entries(user.measurements).map(([key, value]) => {
-                      if (key === "other_measurements") return null;
-                      const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                      return (
-                        <div key={key}>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            {label}
-                          </label>
-                          <input
-                            type="number"
-                            name={key}
-                            defaultValue={String(value)}
-                            step="0.1"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-adawi-gold focus:border-adawi-gold"
-                          />
-                        </div>
-                      );
-                    })}
-                    <div className="md:col-span-2 lg:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Autres mesures
-                      </label>
-                      <textarea
-                        name="other_measurements"
-                        defaultValue={user.measurements.other_measurements}
-                        rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-adawi-gold focus:border-adawi-gold"
-                      />
+                {/* Mensurations - seulement si elles existent */}
+                {user.measurements && Object.keys(user.measurements).length > 0 && (
+                  <div className="mb-8">
+                    <h3 className="text-xl font-semibold text-adawi-brown mb-4">Mensurations (cm)</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {Object.entries(user.measurements).map(([key, value]) => {
+                        if (key === "other_measurements") return null;
+                        const label = key.replace(/_/g, ' ').replace(/\\b\\w/g, l => l.toUpperCase());
+                        return (
+                          <div key={key}>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              {label}
+                            </label>
+                            <input
+                              type="number"
+                              name={key}
+                              defaultValue={String(value || "")}
+                              step="0.1"
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-adawi-gold focus:border-adawi-gold"
+                            />
+                          </div>
+                        );
+                      })}
+                      <div className="md:col-span-2 lg:col-span-3">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Autres mesures
+                        </label>
+                        <textarea
+                          name="other_measurements"
+                          defaultValue={user.measurements.other_measurements || ""}
+                          rows={3}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-adawi-gold focus:border-adawi-gold"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 {/* Photos */}
                 <div className="mb-8">
@@ -584,7 +614,7 @@ export default function ProfilePage() {
                     <p className="text-sm text-gray-500">Vous pouvez sélectionner plusieurs images</p>
                   </div>
                 </div>
-                
+
                 {/* Boutons d'action */}
                 <div className="flex gap-4 pt-6 border-t border-gray-200">
                   <button
