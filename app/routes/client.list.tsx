@@ -194,7 +194,7 @@ export default function ClientAppointmentsList() {
     <ClientLayout userName={user?.name}>
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         {/* Messages de notification */}
-        {(actionData?.success || fetcher.data?.success) && (
+        {(actionData?.success || fetcher.data?.success ) && (
           <div className="mb-6 bg-green-50 border border-green-200 text-green-700 p-4 rounded-lg">
             <div className="flex items-center">
               <svg className="w-5 h-5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
