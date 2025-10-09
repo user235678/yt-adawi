@@ -4,6 +4,7 @@ import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { readToken } from "~/utils/session.server";
 import { requireAdmin } from "~/utils/auth.server";
+import { compressImage } from "~/utils/imageCompression";
 
 interface UserPhoto {
   image_url: string;
@@ -97,23 +98,39 @@ const AdminNewProduits: React.FC = () => {
     handleFiles(files);
   };
 
-  const handleFiles = (files: File[]) => {
+  const handleFiles = async (files: File[]) => {
     const imageFiles = files.filter(file => file.type.startsWith('image/'));
     const remainingSlots = 10 - uploadFiles.length;
     const filesToAdd = imageFiles.slice(0, remainingSlots);
 
-    filesToAdd.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const newPhoto: PhotoUpload = {
-          file,
-          description: '',
-          preview: e.target?.result as string
+    for (const file of filesToAdd) {
+      try {
+        const compressedFile = await compressImage(file);
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const newPhoto: PhotoUpload = {
+            file: compressedFile,
+            description: '',
+            preview: e.target?.result as string
+          };
+          setUploadFiles(prev => [...prev, newPhoto]);
         };
-        setUploadFiles(prev => [...prev, newPhoto]);
-      };
-      reader.readAsDataURL(file);
-    });
+        reader.readAsDataURL(compressedFile);
+      } catch (error) {
+        console.error('Erreur de compression:', error);
+        // Fallback to original file
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const newPhoto: PhotoUpload = {
+            file,
+            description: '',
+            preview: e.target?.result as string
+          };
+          setUploadFiles(prev => [...prev, newPhoto]);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
   };
 
   const removeUploadFile = (index: number) => {

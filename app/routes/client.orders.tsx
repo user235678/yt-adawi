@@ -60,6 +60,7 @@ interface User {
 interface LoaderData {
   orders: Order[];
   user: User | null;
+  token: string | null; // Ajouter le token
   error?: string;
   debug?: any;
 }
@@ -92,6 +93,7 @@ export const loader: LoaderFunction = async ({ request }) => {
       return json<LoaderData>({
         orders: [],
         user: null,
+        token: null,
         error: "Token invalide",
         debug: { tokenData: typeof tokenData }
       });
@@ -152,6 +154,7 @@ export const loader: LoaderFunction = async ({ request }) => {
       return json<LoaderData>({
         orders: [],
         user,
+        token: tokenData, // Passer le token même en cas d'erreur
         error: errorMessage,
         debug: {
           status: ordersRes.status,
@@ -169,6 +172,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     return json<LoaderData>({
       orders: orders || [],
       user,
+      token: tokenData, // Passer le token
       error: undefined,
       debug: {
         ordersCount: orders?.length || 0,
@@ -185,6 +189,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     return json<LoaderData>({
       orders: [],
       user: null,
+      token: null,
       error: `Erreur de connexion: ${error.message}`,
       debug: {
         errorType: error.constructor.name,
@@ -197,7 +202,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function ClientOrders() {
-  const { orders, user, error, debug } = useLoaderData<LoaderData>();
+  const { orders, user, error, debug, token } = useLoaderData<LoaderData>();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [downloadingInvoice, setDownloadingInvoice] = useState<string | null>(null);
@@ -758,12 +763,17 @@ export default function ClientOrders() {
             </div>
           )}
 
-          {/* Modal de détails */}
+          {/* Modal de détails - Passer le token depuis le loader */}
           {selectedOrder && (
-            <OrderDetailsModal
+            <OrderDetailsModal 
               isOpen={isModalOpen}
-              onClose={handleCloseModal}
+              onClose={() => setIsModalOpen(false)}
               order={selectedOrder}
+              token={token} // Passer le token depuis le loader
+              onAuthError={() => {
+                // Rediriger vers la page de connexion ou afficher un message
+                window.location.href = '/login';
+              }}
             />
           )}
         </div>
