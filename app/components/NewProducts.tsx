@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "@remix-run/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import ZoomModal from "./blog/ZoomModal";
 
 interface Photo {
   image_url: string;
@@ -19,6 +20,14 @@ const NewProducts: React.FC = () => {
   const [photoError, setPhotoError] = useState<string | null>(null);
   const sectionRef = useRef<HTMLElement>(null);
   const autoScrollRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Zoom modal state
+  const [zoomModalOpen, setZoomModalOpen] = useState(false);
+  const [zoomedImage, setZoomedImage] = useState('');
+  const [zoomScale, setZoomScale] = useState(1);
+  const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [showControls, setShowControls] = useState(true);
 
   // Récupération des photos depuis l'API
   useEffect(() => {
@@ -124,8 +133,59 @@ const NewProducts: React.FC = () => {
   const startIndex = currentIndex * photosPerPage;
   const visiblePhotos = photos.slice(startIndex, startIndex + photosPerPage);
 
+  // Zoom modal handlers
+  const openZoomModal = (image: string) => {
+    setZoomedImage(image);
+    setZoomScale(1);
+    setZoomPosition({ x: 0, y: 0 });
+    setZoomModalOpen(true);
+    setShowControls(true);
+  };
+
+  const closeZoomModal = () => {
+    setZoomModalOpen(false);
+  };
+
+  const zoomIn = () => {
+    setZoomScale((prev) => Math.min(prev + 0.25, 5));
+  };
+
+  const zoomOut = () => {
+    setZoomScale((prev) => Math.max(prev - 0.25, 1));
+    setZoomPosition({ x: 0, y: 0 });
+  };
+
+  const zoomReset = () => {
+    setZoomScale(1);
+    setZoomPosition({ x: 0, y: 0 });
+  };
+
+  const toggleControls = () => {
+    setShowControls((prev) => !prev);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (zoomScale <= 1) return;
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    setZoomPosition((prev) => ({
+      x: prev.x + e.movementX,
+      y: prev.y + e.movementY,
+    }));
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
   return (
-    <section ref={sectionRef} className="bg-gradient-to-br from-gray-50 to-gray-100 px-3 sm:px-4 md:px-6 py-12 sm:py-16 lg:py-20 overflow-hidden">
+    <>
+      <section ref={sectionRef} className="bg-gradient-to-br from-gray-50 to-gray-100 px-3 sm:px-4 md:px-6 py-12 sm:py-16 lg:py-20 overflow-hidden">
       <div className="max-w-7xl mx-auto">
         
         {/* Header avec animation */}
@@ -206,7 +266,7 @@ const NewProducts: React.FC = () => {
                   <div className="bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 hover:scale-[1.02] overflow-hidden">
                     
                     {/* Image container avec overlay */}
-                    <div className="relative aspect-[4/5] overflow-hidden">
+                    <div className="relative aspect-[4/5] overflow-hidden cursor-pointer" onClick={() => openZoomModal(photo.image_url)}>
                       
                       {/* Image avec effet de zoom */}
                       <img
@@ -428,6 +488,29 @@ const NewProducts: React.FC = () => {
         }
       `}</style>
     </section>
+
+    {/* Zoom Modal */}
+    {zoomModalOpen && (
+      <ZoomModal
+        zoomedImage={zoomedImage}
+        onClose={closeZoomModal}
+        zoomScale={zoomScale}
+        zoomPosition={zoomPosition}
+        isDragging={isDragging}
+        showControls={showControls}
+        onZoomIn={zoomIn}
+        onZoomOut={zoomOut}
+        onZoomReset={zoomReset}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onToggleControls={toggleControls}
+        onSetDragging={setIsDragging}
+        onSetZoomPosition={setZoomPosition}
+        onSetZoomScale={setZoomScale}
+      />
+    )}
+    </>
   );
 };
 

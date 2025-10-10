@@ -498,7 +498,7 @@ export default function Appointments() {
                     type="email"
                     id="client_email"
                     name="client_email"
-                    defaultValue={""}
+                    defaultValue={user?.email || actionData?.fields?.client_email || ""}
                     className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-adawi-gold focus:border-transparent"
                     aria-invalid={Boolean(actionData?.fieldErrors?.client_email)}
                     aria-describedby="client_email-error"

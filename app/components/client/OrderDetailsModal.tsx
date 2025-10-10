@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { X, Package, User, MapPin, CreditCard, Calendar, CheckCircle, XCircle, Clock, Truck, AlertCircle, LogIn } from "lucide-react";
+import ZoomModal from "../blog/ZoomModal";
 
 // Interfaces pour les données
 interface OrderItem {
@@ -9,6 +10,8 @@ interface OrderItem {
   color?: string;
   price: number;
   name: string;
+  image_url?: string;
+  images?: string[];
 }
 
 interface Address {
@@ -74,6 +77,40 @@ export default function OrderDetailsModal({ isOpen, onClose, order, token, onAut
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [authError, setAuthError] = useState(false);
+
+  // Zoom modal state
+  const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
+  const [zoomedImage, setZoomedImage] = useState('');
+  const [zoomScale, setZoomScale] = useState(1);
+  const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [showControls, setShowControls] = useState(true);
+
+  // Zoom modal handlers
+  const handleZoomIn = () => setZoomScale(prev => Math.min(prev + 0.2, 5));
+  const handleZoomOut = () => setZoomScale(prev => Math.max(prev - 0.2, 0.5));
+  const handleZoomReset = () => {
+    setZoomScale(1);
+    setZoomPosition({ x: 0, y: 0 });
+  };
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (zoomScale > 1) {
+      setIsDragging(true);
+    }
+  };
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging && zoomScale > 1) {
+      setZoomPosition(prev => ({
+        x: prev.x + e.movementX,
+        y: prev.y + e.movementY,
+      }));
+    }
+  };
+  const handleMouseUp = () => setIsDragging(false);
+  const handleToggleControls = () => setShowControls(prev => !prev);
+  const handleSetDragging = (dragging: boolean) => setIsDragging(dragging);
+  const handleSetZoomPosition = (position: { x: number; y: number }) => setZoomPosition(position);
+  const handleSetZoomScale = (scale: number) => setZoomScale(scale);
 
   // Fonction pour vérifier le token
   const getAuthToken = (): string | null => {
@@ -622,6 +659,30 @@ export default function OrderDetailsModal({ isOpen, onClose, order, token, onAut
                       <tr key={index}>
                         <td className="py-4 px-4">
                           <div>
+                            {item.images && item.images.length > 0 ? (
+                              <img
+                                src={item.images[0]}
+                                alt={item.name || item.product_id}
+                                className="w-20 h-20 sm:w-16 sm:h-16 object-cover rounded-lg border shadow-sm cursor-pointer"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).style.display = 'none';
+                                }}
+                                onClick={() => {
+                                  if (item.images && item.images.length > 0) {
+                                    setZoomedImage(item.images[0]);
+                                    setIsZoomModalOpen(true);
+                                    setZoomScale(1);
+                                    setZoomPosition({ x: 0, y: 0 });
+                                    setIsDragging(false);
+                                    setShowControls(true);
+                                  }
+                                }}
+                              />
+                            ) : (
+                              <div className="w-20 h-20 sm:w-16 sm:h-16 bg-gray-100 rounded-lg flex items-center justify-center border">
+                                <span className="text-gray-400 text-xs text-center">Pas d'image</span>
+                              </div>
+                            )}
                             <p className="font-medium text-gray-900">{item.name || 'Produit sans nom'}</p>
                             <div className="text-sm text-gray-500 space-x-2">
                               {item.size && <span>Taille: {item.size}</span>}
@@ -686,6 +747,28 @@ export default function OrderDetailsModal({ isOpen, onClose, order, token, onAut
             Fermer
           </button>
         </div>
+
+        {/* Zoom Modal */}
+        {isZoomModalOpen && (
+          <ZoomModal
+            zoomedImage={zoomedImage}
+            zoomScale={zoomScale}
+            zoomPosition={zoomPosition}
+            isDragging={isDragging}
+            showControls={showControls}
+            onClose={() => setIsZoomModalOpen(false)}
+            onZoomIn={handleZoomIn}
+            onZoomOut={handleZoomOut}
+            onZoomReset={handleZoomReset}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onToggleControls={handleToggleControls}
+            onSetDragging={handleSetDragging}
+            onSetZoomPosition={handleSetZoomPosition}
+            onSetZoomScale={handleSetZoomScale}
+          />
+        )}
       </div>
     </div>
   );

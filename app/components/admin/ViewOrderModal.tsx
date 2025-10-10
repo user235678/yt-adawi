@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import ZoomModal from '../blog/ZoomModal';
 
 type OrderItem = {
   product_id: string;
@@ -104,6 +105,15 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ isOpen, orderId, token,
   const [showScrollIndicator, setShowScrollIndicator] = useState(false);
   const [contentRef, setContentRef] = useState<HTMLDivElement | null>(null);
 
+  // Zoom modal states
+  const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
+  const [zoomedImage, setZoomedImage] = useState('');
+  const [zoomScale, setZoomScale] = useState(1);
+  const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [showControls, setShowControls] = useState(true);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
   // Vérifier s'il y a du contenu à scroller
   const checkScrollIndicator = () => {
     if (contentRef) {
@@ -155,6 +165,38 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ isOpen, orderId, token,
       default: return status;
     }
   };
+
+  // Zoom handlers
+  const handleZoomIn = () => setZoomScale(prev => Math.min(prev + 0.2, 5));
+  const handleZoomOut = () => setZoomScale(prev => Math.max(prev - 0.2, 0.5));
+  const handleZoomReset = () => {
+    setZoomScale(1);
+    setZoomPosition({ x: 0, y: 0 });
+  };
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (zoomScale > 1) {
+      setIsDragging(true);
+      setDragStart({
+        x: e.clientX - zoomPosition.x,
+        y: e.clientY - zoomPosition.y,
+      });
+    }
+  };
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging) {
+      setZoomPosition({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y,
+      });
+    }
+  };
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+  const handleToggleControls = () => setShowControls(prev => !prev);
+  const handleSetDragging = (dragging: boolean) => setIsDragging(dragging);
+  const handleSetZoomPosition = (position: { x: number; y: number }) => setZoomPosition(position);
+  const handleSetZoomScale = (scale: number) => setZoomScale(scale);
 
   useEffect(() => {
     if (!isOpen || !orderId || !token) return;
@@ -453,9 +495,17 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ isOpen, orderId, token,
                               <img
                                 src={it.images[0]}
                                 alt={it.name || it.product_id}
-                                className="w-20 h-20 sm:w-16 sm:h-16 object-cover rounded-lg border shadow-sm"
+                                className="w-20 h-20 sm:w-16 sm:h-16 object-cover rounded-lg border shadow-sm cursor-pointer"
                                 onError={(e) => {
                                   (e.target as HTMLImageElement).style.display = 'none';
+                                }}
+                                onClick={() => {
+                                  setZoomedImage(it.images[0]);
+                                  setIsZoomModalOpen(true);
+                                  setZoomScale(1);
+                                  setZoomPosition({ x: 0, y: 0 });
+                                  setIsDragging(false);
+                                  setShowControls(true);
                                 }}
                               />
                             ) : (
@@ -557,6 +607,28 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ isOpen, orderId, token,
           </div>
         </div>
       </div>
+
+      {/* Zoom Modal */}
+      {isZoomModalOpen && (
+        <ZoomModal
+          zoomedImage={zoomedImage}
+          zoomScale={zoomScale}
+          zoomPosition={zoomPosition}
+          isDragging={isDragging}
+          showControls={showControls}
+          onClose={() => setIsZoomModalOpen(false)}
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
+          onZoomReset={handleZoomReset}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onToggleControls={handleToggleControls}
+          onSetDragging={handleSetDragging}
+          onSetZoomPosition={handleSetZoomPosition}
+          onSetZoomScale={handleSetZoomScale}
+        />
+      )}
     </div>
   );
 };

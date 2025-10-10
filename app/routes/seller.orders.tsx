@@ -66,7 +66,7 @@ export const loader: LoaderFunction = async ({ request }) => {
       : tokenData;
 
     const res = await fetch("https://showroom-backend-2x3g.onrender.com/orders/", {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}`},
     });
 
     if (!res.ok) throw new Error("Erreur lors de la récupération des commandes");
