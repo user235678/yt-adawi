@@ -205,28 +205,53 @@ export default function CheckoutCustomPage() {
   const [deliveryPhone, setDeliveryPhone] = useState(profile?.address?.phone || "");
   const [photos, setPhotos] = useState<File[]>([]);
 
+  // Mapping des noms de champs de mesures en français
+  const measurementLabels: Record<string, string> = {
+    height: "Taille",
+    weight: "Poids",
+    shoulder_width: "Largeur d'épaules",
+    chest: "Tour de poitrine",
+    waist_length: "Longueur de taille",
+    ventral_circumference: "Tour de ventre",
+    hips: "Tour de hanches",
+    corsage_length: "Longueur de corsage",
+    belt: "Tour de ceinture",
+    skirt_length: "Longueur de jupe",
+    dress_length: "Longueur de robe",
+    sleeve_length: "Longueur de manche",
+    sleeve_circumference: "Tour de manche",
+    pants_length: "Longueur de pantalon",
+    short_dress_length: "Longueur de robe courte",
+    thigh_circumference: "Tour de cuisse",
+    knee_length: "Longueur de genou",
+    knee_circumference: "Tour de genou",
+    bottom: "Bas",
+    inseam: "Entrejambe",
+    other_measurements: "Autres mesures",
+  };
+
   // Measurements state initialized from profile default || 0 
   const [measurements, setMeasurements] = useState({
-    height: profile?.measurements?.height ,
-    weight: profile?.measurements?.weight ,
-    shoulder_width: profile?.measurements?.shoulder_width ,
-    chest: profile?.measurements?.chest ,
-    waist_length: profile?.measurements?.waist_length ,
-    ventral_circumference: profile?.measurements?.ventral_circumference ,
-    hips: profile?.measurements?.hips ,
+    height: profile?.measurements?.height,
+    weight: profile?.measurements?.weight,
+    shoulder_width: profile?.measurements?.shoulder_width,
+    chest: profile?.measurements?.chest,
+    waist_length: profile?.measurements?.waist_length,
+    ventral_circumference: profile?.measurements?.ventral_circumference,
+    hips: profile?.measurements?.hips,
     corsage_length: profile?.measurements?.corsage_length,
-    belt: profile?.measurements?.belt ,
-    skirt_length: profile?.measurements?.skirt_length ,
-    dress_length: profile?.measurements?.dress_length ,
-    sleeve_length: profile?.measurements?.sleeve_length ,
-    sleeve_circumference: profile?.measurements?.sleeve_circumference ,
-    pants_length: profile?.measurements?.pants_length ,
-    short_dress_length: profile?.measurements?.short_dress_length ,
-    thigh_circumference: profile?.measurements?.thigh_circumference ,
-    knee_length: profile?.measurements?.knee_length ,
-    knee_circumference: profile?.measurements?.knee_circumference ,
-    bottom: profile?.measurements?.bottom ,
-    inseam: profile?.measurements?.inseam ,
+    belt: profile?.measurements?.belt,
+    skirt_length: profile?.measurements?.skirt_length,
+    dress_length: profile?.measurements?.dress_length,
+    sleeve_length: profile?.measurements?.sleeve_length,
+    sleeve_circumference: profile?.measurements?.sleeve_circumference,
+    pants_length: profile?.measurements?.pants_length,
+    short_dress_length: profile?.measurements?.short_dress_length,
+    thigh_circumference: profile?.measurements?.thigh_circumference,
+    knee_length: profile?.measurements?.knee_length,
+    knee_circumference: profile?.measurements?.knee_circumference,
+    bottom: profile?.measurements?.bottom,
+    inseam: profile?.measurements?.inseam,
     other_measurements: profile?.measurements?.other_measurements || "",
   });
 
@@ -368,7 +393,7 @@ export default function CheckoutCustomPage() {
                 if (key === "other_measurements") {
                   return (
                     <div key={key} className="mt-4 col-span-full">
-                      <label className="block text-sm font-medium mb-1">Autres mesures</label>
+                      <label className="block text-sm font-medium mb-1">{measurementLabels[key]}</label>
                       <textarea
                         name={key}
                         placeholder="Précisez toute autre mesure importante"
@@ -382,12 +407,13 @@ export default function CheckoutCustomPage() {
                 }
                 return (
                   <div key={key}>
-                    <label className="block text-sm font-medium mb-1">{key.replace(/_/g, " ")}</label>
+                    <label className="block text-sm font-medium mb-1">{measurementLabels[key]}</label>
                     <input
                       type="number"
                       name={key}
                       step="1"
-                      className="w-full p-2 border border-gray-300 rounded"
+                      placeholder="0"
+                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-adawi-brown focus:border-transparent"
                       value={value as number}
                       onChange={handleMeasurementChange}
                     />
@@ -470,11 +496,11 @@ export default function CheckoutCustomPage() {
                       <input
                         name="country"
                         type="text"
-                        defaultValue="Togo"
                         className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-brown focus:border-transparent"
                         required
                         value={address.country}
                         onChange={handleAddressChange}
+                        placeholder="Togo"
                       />
                     </div>
                     <div>
@@ -510,7 +536,7 @@ export default function CheckoutCustomPage() {
           <div>
             <h2 className="text-xl font-semibold mb-4 text-adawi-brown">Photos de référence</h2>
             <div>
-              <label className="block text-sm font-medium mb-2">Veillez nous faire parvenir votre photo</label>
+              <label className="block text-sm font-medium mb-2">Veuillez nous faire parvenir vos photos</label>
               <input
                 type="file"
                 name="photos"
@@ -559,7 +585,7 @@ export default function CheckoutCustomPage() {
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-adawi-brown focus:border-transparent"
                   required
                 >
-                  <option value="">Sélectionnez</option>
+                  <option value="">Sélectionnez votre opérateur</option>
                   <option value="TMONEY">T-money</option>
                   <option value="FLOOZ">Flooz</option>
                 </select>
@@ -573,7 +599,7 @@ export default function CheckoutCustomPage() {
             disabled={isSubmitting}
             className="w-full bg-adawi-brown text-white py-4 px-6 rounded-lg hover:bg-adawi-brown/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-lg font-medium"
           >
-            {isSubmitting ? "Traitement..." : "Commander sur mesure"}
+            {isSubmitting ? "Traitement en cours..." : "Commander sur mesure"}
           </button>
         </Form>
       </div>
