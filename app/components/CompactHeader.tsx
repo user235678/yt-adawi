@@ -405,7 +405,7 @@ const CompactHeader: React.FC = () => {
                                         </div>
                                         <div className="flex-1">
                                             <p className="text-sm font-semibold text-adawi-brown">
-                                                {user.firstName || user.first_name || "Utilisateur"}
+                                                {user.firstName || user.full_name || "Utilisateur"}
                                             </p>
                                             <p className="text-xs text-adawi-brown-light flex items-center gap-1">
                                                 <span className="w-2 h-2 bg-green-500 rounded-full"></span>

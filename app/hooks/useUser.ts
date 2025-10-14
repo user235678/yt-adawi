@@ -4,6 +4,10 @@ interface User {
   id: string;
   email: string;
   full_name: string;
+  firstName?: string;
+  first_name?: string;
+  lastName?: string;
+  last_name?: string;
   role: string;
   is_active: boolean;
 }
