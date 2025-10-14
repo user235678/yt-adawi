@@ -10,7 +10,7 @@ interface HeroProps {
 }
 
 const Hero: React.FC<HeroProps> = ({
-  mainImage = "/_VPS5758.jpg",
+  mainImage = "/_VPS5758.jpg", 
   secondaryImage = "/_VPS6328.jpg",
   title = (
     <>
