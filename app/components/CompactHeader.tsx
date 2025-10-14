@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "@remix-run/react";
 import { useCart } from "~/contexts/CartContext";
-import { useUser } from "~/hooks/useUser"; // Hook pour récupérer l'utilisateur
+import { useUser } from "~/hooks/useUser";
 
 const CompactHeader: React.FC = () => {
     const location = useLocation();
@@ -22,9 +22,8 @@ const CompactHeader: React.FC = () => {
     const logoRef = useRef<HTMLAnchorElement>(null);
 
     const { state } = useCart();
-    const { user } = useUser(); // Récupérer l'utilisateur connecté
+    const { user } = useUser();
 
-    // Debugging: Log the user object
     console.log("Current User:", user);
 
     const navItems = [
@@ -35,7 +34,6 @@ const CompactHeader: React.FC = () => {
         { name: "Contact", to: "/contact" },
     ];
 
-    // Fonction pour déterminer la route du dashboard selon le rôle
     const getDashboardRoute = () => {
         if (!user) return "/login";
 
@@ -43,7 +41,7 @@ const CompactHeader: React.FC = () => {
             case "admin":
                 return "/admin/dashboard";
             case "vendeur":
-            case "seller": // si jamais le backend renvoie seller
+            case "seller":
                 return "/seller/dashboard";
             case "client":
             case "customer":
@@ -52,12 +50,45 @@ const CompactHeader: React.FC = () => {
         }
     };
 
-    // Vérifier si on est côté client
+    // Obtenir le label du rôle en français
+    const getRoleLabel = () => {
+        if (!user) return null;
+        
+        switch (user.role?.toLowerCase()) {
+            case "admin":
+                return "Admin";
+            case "vendeur":
+            case "seller":
+                return "Vendeur";
+            case "client":
+            case "customer":
+            default:
+                return "Client";
+        }
+    };
+
+    // Obtenir les initiales de l'utilisateur
+    const getUserInitials = () => {
+        if (!user) return "";
+        
+        const firstName = user.firstName || user.first_name || "";
+        const lastName = user.lastName || user.last_name || "";
+        
+        if (firstName && lastName) {
+            return `${firstName[0]}${lastName[0]}`.toUpperCase();
+        } else if (firstName) {
+            return firstName.substring(0, 2).toUpperCase();
+        } else if (user.email) {
+            return user.email.substring(0, 2).toUpperCase();
+        }
+        
+        return "U";
+    };
+
     useEffect(() => {
         setIsClient(true);
     }, []);
 
-    // Fonction pour calculer si les éléments peuvent tenir horizontalement
     const checkIfCompactModeNeeded = useCallback(() => {
         if (!isClient || !headerRef.current || !navRef.current || !actionsRef.current || !logoRef.current) {
             return;
@@ -68,7 +99,6 @@ const CompactHeader: React.FC = () => {
         const navWidth = navRef.current.scrollWidth;
         const actionsWidth = actionsRef.current.offsetWidth;
 
-        // Ajouter une marge de sécurité de 40px
         const totalNeededWidth = logoWidth + navWidth + actionsWidth + 40;
         const shouldBeCompact = totalNeededWidth > headerWidth;
 
@@ -81,7 +111,6 @@ const CompactHeader: React.FC = () => {
         }
     }, [isCompactMode, isClient]);
 
-    // Observer pour détecter les changements de taille
     useEffect(() => {
         if (!isClient) return;
 
@@ -93,7 +122,6 @@ const CompactHeader: React.FC = () => {
             resizeObserver.observe(headerRef.current);
         }
 
-        // Vérification initiale
         checkIfCompactModeNeeded();
 
         return () => {
@@ -101,13 +129,11 @@ const CompactHeader: React.FC = () => {
         };
     }, [checkIfCompactModeNeeded, isClient]);
 
-    // Fermer le menu mobile lors du changement de route
     useEffect(() => {
         setIsMobileMenuOpen(false);
         setSearchQuery('');
     }, [location.pathname]);
 
-    // Gestion des clics en dehors du menu
     useEffect(() => {
         if (!isClient) return;
 
@@ -133,7 +159,6 @@ const CompactHeader: React.FC = () => {
         };
     }, [isMobileMenuOpen, isClient]);
 
-    // Gestion des touches clavier
     useEffect(() => {
         if (!isClient) return;
 
@@ -166,10 +191,8 @@ const CompactHeader: React.FC = () => {
         setSearchQuery(e.target.value);
     };
 
-    // Fonction pour déterminer si on doit afficher le mode compact
     const shouldShowCompactMode = () => {
         if (!isClient) {
-            // En SSR, on utilise une approche basée sur les breakpoints CSS
             return false;
         }
         return isCompactMode || (typeof window !== 'undefined' && window.innerWidth < 1024);
@@ -250,27 +273,44 @@ const CompactHeader: React.FC = () => {
                             </button>
                         </form>
 
-                        {/* User Icon or Dashboard Button */}
+                        {/* User Account Button - Version améliorée */}
                         {user ? (
                             <Link
                                 to={getDashboardRoute()}
-                                className="text-adawi-brown bg-adawi-brown-light hover:text-adawi-gold transition-all duration-200 p-1.5 rounded-full hover:bg-adawi-beige/50 inline-flex items-center justify-center group"
-                                aria-label="Dashboard"
-                            >MON COMPTE
-                                {/* <svg className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                                </svg> */}
+                                className="relative flex items-center gap-2 px-3 py-1.5 rounded-full bg-adawi-gold/10 border border-adawi-gold/30 hover:bg-adawi-gold/20 hover:border-adawi-gold/50 transition-all duration-200 group"
+                                aria-label="Mon compte"
+                            >
+                                {/* Avatar avec initiales */}
+                                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-adawi-gold to-adawi-brown flex items-center justify-center text-white text-xs font-semibold shadow-sm group-hover:shadow-md transition-shadow duration-200">
+                                    {getUserInitials()}
+                                </div>
+                                
+                                {/* Texte et indicateur de connexion */}
+                                <div className="flex flex-col items-start">
+                                    <span className="text-xs font-semibold text-adawi-brown group-hover:text-adawi-gold transition-colors duration-200">
+                                        Mon Compte
+                                    </span>
+                                    <span className="text-[10px] text-adawi-brown-light">
+                                        {getRoleLabel()}
+                                    </span>
+                                </div>
+                                
+                                {/* Indicateur de statut connecté */}
+                                <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-adawi-beige-dark animate-pulse"></div>
                             </Link>
                         ) : (
                             <Link
                                 to="/login"
-                                className="text-adawi-brown hover:text-adawi-gold transition-all duration-200 p-1.5 rounded-full hover:bg-adawi-beige/50 inline-flex items-center justify-center group"
+                                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-adawi-gold/30 hover:bg-adawi-gold/10 hover:border-adawi-gold/50 transition-all duration-200 group"
                                 aria-label="Se connecter"
                             >
-                                <svg className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 text-adawi-brown group-hover:text-adawi-gold transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                                         d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>
+                                <span className="text-xs font-medium text-adawi-brown group-hover:text-adawi-gold transition-colors duration-200">
+                                    Connexion
+                                </span>
                             </Link>
                         )}
 
@@ -280,7 +320,7 @@ const CompactHeader: React.FC = () => {
                             className="text-adawi-brown hover:text-adawi-gold transition-all duration-200 p-1.5 rounded-full hover:bg-adawi-beige/50 relative inline-flex items-center justify-center group"
                             aria-label="Panier"
                         >
-                            <svg className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                                     d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2 4h12m-8 4a1 1 0 11-2 0 1 1 0 012 0zm8 0a1 1 0 11-2 0 1 1 0 012 0z" />
                             </svg>
@@ -292,9 +332,9 @@ const CompactHeader: React.FC = () => {
                         </Link>
                     </div>
 
-                    {/* Actions Compactes - Visible en mode compact ou sur mobile */}
+                    {/* Actions Compactes - Mobile */}
                     <div className={`flex items-center space-x-2 relative transition-all duration-300 ${!isClient
-                        ? 'lg:hidden opacity-100' // Fallback SSR
+                        ? 'lg:hidden opacity-100'
                         : shouldShowCompactMode()
                             ? 'opacity-100'
                             : 'lg:hidden opacity-100'
@@ -320,18 +360,23 @@ const CompactHeader: React.FC = () => {
                         <button
                             ref={buttonRef}
                             onClick={toggleMobileMenu}
-                            className="text-adawi-brown hover:text-adawi-gold transition-all duration-200 p-2 rounded-full hover:bg-adawi-beige/50 group"
+                            className="text-adawi-brown hover:text-adawi-gold transition-all duration-200 p-2 rounded-full hover:bg-adawi-beige/50 group relative"
                             aria-label={isMobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
                             aria-expanded={isMobileMenuOpen}
                             aria-haspopup="true"
                         >
+                            {/* Indicateur de connexion sur le burger menu */}
+                            {user && (
+                                <div className="absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full border border-adawi-beige-dark"></div>
+                            )}
+                            
                             <div className="w-5 h-5 flex flex-col justify-center items-center">
                                 <span
                                     className={`block w-5 h-0.5 bg-current transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'rotate-45 translate-y-1' : ''
                                         }`}
                                 />
                                 <span
-                                    className={`block w-5 h-5 bg-current transition-all duration-300 ease-in-out mt-1 ${isMobileMenuOpen ? 'opacity-0 scale-0' : ''
+                                    className={`block w-5 h-0.5 bg-current transition-all duration-300 ease-in-out mt-1 ${isMobileMenuOpen ? 'opacity-0 scale-0' : ''
                                         }`}
                                 />
                                 <span
@@ -351,6 +396,26 @@ const CompactHeader: React.FC = () => {
                             role="menu"
                             aria-orientation="vertical"
                         >
+                            {/* User Info Section - Mobile */}
+                            {user && (
+                                <div className="px-4 pb-4 mb-4 border-b border-adawi-gold/10">
+                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-adawi-gold/10 to-adawi-beige/30">
+                                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-adawi-gold to-adawi-brown flex items-center justify-center text-white text-sm font-bold shadow-md">
+                                            {getUserInitials()}
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-sm font-semibold text-adawi-brown">
+                                                {user.firstName || user.first_name || "Utilisateur"}
+                                            </p>
+                                            <p className="text-xs text-adawi-brown-light flex items-center gap-1">
+                                                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                                                {getRoleLabel()}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Barre de recherche Mobile */}
                             <div className="px-4 pb-4 border-b border-adawi-gold/10 mb-4">
                                 <form onSubmit={handleSearchSubmit} className="flex items-center">
@@ -401,28 +466,33 @@ const CompactHeader: React.FC = () => {
                             <div className="border-t border-adawi-gold/10 my-4"></div>
 
                             {/* Actions Mobile */}
-                            <div className="px-2 space-y-1">
+                            <div className="px-4">
                                 {user ? (
                                     <Link
                                         to={getDashboardRoute()}
-                                        className="text-adawi-brown bg-adawi-brown-light hover:text-adawi-gold transition-all duration-200 p-1.5 rounded-full hover:bg-adawi-beige/50 inline-flex items-center justify-center group"
-                                        aria-label="Dashboard"
+                                        className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl bg-gradient-to-r from-adawi-gold/20 to-adawi-beige/40 border border-adawi-gold/30 hover:from-adawi-gold/30 hover:to-adawi-beige/50 transition-all duration-200 group"
+                                        onClick={() => setIsMobileMenuOpen(false)}
                                     >
-                                        <svg className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                                        <svg className="w-5 h-5 text-adawi-brown group-hover:text-adawi-gold transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                                         </svg>
-                                         MON COMPTE
+                                        <span className="text-sm font-semibold text-adawi-brown group-hover:text-adawi-gold transition-colors">
+                                            Accéder au Dashboard
+                                        </span>
                                     </Link>
                                 ) : (
                                     <Link
                                         to="/login"
-                                        className="text-adawi-brown hover:text-adawi-gold transition-all duration-200 p-1.5 rounded-full hover:bg-adawi-beige/50 inline-flex items-center justify-center group"
-                                        aria-label="Se connecter"
+                                        className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl bg-white border-2 border-adawi-gold/30 hover:bg-adawi-gold/10 hover:border-adawi-gold/50 transition-all duration-200 group"
+                                        onClick={() => setIsMobileMenuOpen(false)}
                                     >
-                                        <svg className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-5 h-5 text-adawi-brown group-hover:text-adawi-gold transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                                                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                        </svg> Mon espace
+                                        </svg>
+                                        <span className="text-sm font-semibold text-adawi-brown group-hover:text-adawi-gold transition-colors">
+                                            Se connecter
+                                        </span>
                                     </Link>
                                 )}
                             </div>

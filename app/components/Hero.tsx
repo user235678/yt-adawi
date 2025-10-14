@@ -10,8 +10,8 @@ interface HeroProps {
 }
 
 const Hero: React.FC<HeroProps> = ({
-  mainImage = "\_VPS5758.jpg",
-  secondaryImage = "/_VPS6328.jpg",
+  mainImage = "/noir.png",
+  secondaryImage = "/femme.png",
   title = (
     <>
       L'élégance est une attitude. Trouvez la
