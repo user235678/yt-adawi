@@ -11,7 +11,7 @@ import Footer from "~/components/Footer";
 export const meta: MetaFunction = () => {
   return [
     { title: "Adawi - L'élégance est une attitude" },
-    { name: "description", content: "Découvrez notre collection de vêtements élégants. Matériaux durables, fabriqué en France, livraison rapide." },
+    { name: "description", content: "Découvrez notre collection de vêtements élégants. Matériaux durables, fabriqué au Togo, livraison rapide." },
   ];
 };
 

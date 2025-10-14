@@ -19,7 +19,7 @@ const Hero: React.FC<HeroProps> = ({
       vôtre ici
     </>
   ),
-  features = ["Matériaux durables", "Fabriqué en France", "Livraison rapide"],
+  features = ["Matériaux durables", "Fabriqué au Togo", "Livraison rapide"],
   buttonText = "Voir la collection"
 }) => {
   const [isVisible, setIsVisible] = useState(false);
