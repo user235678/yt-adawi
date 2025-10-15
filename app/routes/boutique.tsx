@@ -341,7 +341,7 @@ export default function Boutique() {
                     </div>
                     <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-black text-center mb-6 sm:mb-8 px-2">
                         {activeCategory === "vedette"
-                            ? "En Vedette"
+                            ? "Tout"
                             : activeCategory === "nouveaute"
                                 ? "Nouveautés"
                                 : activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)}

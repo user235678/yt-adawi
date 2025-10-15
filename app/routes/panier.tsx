@@ -7,7 +7,7 @@ import Header from "~/components/CompactHeader";
 import Footer from "~/components/Footer";
 import { readSessionData } from "~/utils/session.server";
 import { useCart } from "~/contexts/CartContext";
-
+import { ArrowLeft, Calendar } from "lucide-react";
 export const meta: MetaFunction = () => {
     return [
         { title: "Panier - Adawi" },
@@ -171,6 +171,24 @@ export default function panier() {
                 <TopBanner />
                 <Header />
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-16 text-center">
+                    {/* Header avec boutons */}
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                        <Link
+                            to="/boutique"
+                            className="inline-flex items-center gap-2 text-gray-700 hover:text-adawi-brown transition-colors group"
+                        >
+                            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                            <span className="font-medium">Retour à la boutique</span>
+                        </Link>
+
+                        <Link
+                            to="/client/appointments"
+                            className="inline-flex items-center gap-2 px-6 py-3 bg-white border-2 border-adawi-brown text-adawi-brown rounded-xl hover:bg-adawi-brown hover:text-white transition-all shadow-sm hover:shadow-md"
+                        >
+                            <Calendar className="w-5 h-5" />
+                            <span className="font-semibold">Prendre rendez-vous</span>
+                        </Link>
+                    </div>
                     <div className={`transform transition-all duration-700 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
                         <h1 className="text-2xl sm:text-3xl font-bold text-black mb-6 sm:mb-8">PANIER</h1>
                         <div className="bg-red-50 border border-red-200 rounded-xl p-6 sm:p-12 shadow-lg">
@@ -444,6 +462,24 @@ export default function panier() {
             <Header />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
+                {/* Header avec boutons */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                    <Link
+                        to="/boutique"
+                        className="inline-flex items-center gap-2 text-gray-700 hover:text-adawi-brown transition-colors group"
+                    >
+                        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                        <span className="font-medium">Retour à la boutique</span>
+                    </Link>
+
+                    <Link
+                        to="/client/appointments"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-white border-2 border-adawi-brown text-adawi-brown rounded-xl hover:bg-adawi-brown hover:text-white transition-all shadow-sm hover:shadow-md"
+                    >
+                        <Calendar className="w-5 h-5" />
+                        <span className="font-semibold">Prendre rendez-vous</span>
+                    </Link>
+                </div>
                 {/* Titre avec compteur d'articles et bouton vider */}
                 <div className={`text-center mb-8 sm:mb-12 transform transition-all duration-700 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
                     <h1 className="text-2xl sm:text-3xl font-bold text-black mb-2 tracking-wider">PANIER</h1>
@@ -538,8 +574,8 @@ export default function panier() {
                                                         onClick={() => handleDecrease(item)}
                                                         disabled={isUpdating === itemId || quantity <= 1 || isClearing}
                                                         className={`w-8 h-8 border rounded-full flex items-center justify-center text-lg font-medium transition-all duration-200 ${quantity <= 1 || isUpdating === itemId || isClearing
-                                                                ? 'border-gray-200 text-gray-400 cursor-not-allowed'
-                                                                : 'border-gray-300 text-gray-600 hover:bg-gray-50 active:scale-95'
+                                                            ? 'border-gray-200 text-gray-400 cursor-not-allowed'
+                                                            : 'border-gray-300 text-gray-600 hover:bg-gray-50 active:scale-95'
                                                             }`}
                                                     >
                                                         {isUpdating === itemId ? (
@@ -617,8 +653,8 @@ export default function panier() {
                                             onClick={() => handleDecrease(item)}
                                             disabled={isUpdating === itemId || quantity <= 1 || isClearing}
                                             className={`w-8 h-8 border rounded-full flex items-center justify-center text-lg font-medium transition-all duration-200 ${quantity <= 1 || isUpdating === itemId || isClearing
-                                                    ? 'border-gray-200 text-gray-400 cursor-not-allowed'
-                                                    : 'border-gray-300 text-gray-600 hover:bg-gray-50 active:scale-95'
+                                                ? 'border-gray-200 text-gray-400 cursor-not-allowed'
+                                                : 'border-gray-300 text-gray-600 hover:bg-gray-50 active:scale-95'
                                                 }`}
                                         >
                                             {isUpdating === itemId ? (
@@ -691,6 +727,7 @@ export default function panier() {
                             </div>
                         </div>
                     </div>
+                    
 
                     {/* Résumé et checkout */}
                     <div className="order-1 lg:order-2">
@@ -731,6 +768,7 @@ export default function panier() {
                                     <br />
                                     Frais de livraison payé à la réception de la marchandise
                                 </p>
+                                
 
                                 {/* Bouton checkout avec animation de pulse */}
                                 <button
@@ -746,6 +784,18 @@ export default function panier() {
                                         FINALISER LA COMMANDE
                                     </span>
                                 </button>
+
+                                {/* Bouton commander sur mesure */}
+                                <Link
+                                    to="/checkout-custom"
+                                    className="w-full bg-gradient-to-r from-adawi-brown to-adawi-brown text-white font-medium py-4 px-6 text-base rounded-full hover:from-adawi-brown hover:to-adawi-brown transition-all duration-300 tracking-wider transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl flex items-center justify-center mt-3"
+                                >
+                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    COMMANDER SUR MESURE
+                                </Link>
+                               
 
                                 {/* Méthodes de paiement acceptées */}
                                 <div className="text-center">
